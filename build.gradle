@@ -14,6 +14,11 @@ configurations {
 	}
 }
 
+// prevent the creation of plain.jar file
+tasks.named("jar") {
+	enabled = false
+}
+
 repositories {
 	mavenCentral()
 }

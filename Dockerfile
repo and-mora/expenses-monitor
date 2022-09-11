@@ -1,16 +1,14 @@
-FROM maven:3.8.6-amazoncorretto-17 as buildtime
-
-WORKDIR /build
-COPY . .
-
-RUN mvn clean package
+FROM gradle:jdk17 AS build
+COPY --chown=gradle:gradle . /home/gradle/src
+WORKDIR /home/gradle/src
+RUN gradle build --no-daemon
 
 FROM amazoncorretto:17 as runtime
 
-WORKDIR /app
+#EXPOSE 8080
 
-COPY --from=buildtime /build/target/*.jar /app/app.jar
-COPY entrypoint.sh /app/entrypoint.sh
+RUN mkdir /app
 
-RUN chmod +x /app/entrypoint.sh
-ENTRYPOINT ["/app/entrypoint.sh"]
+COPY --from=build /home/gradle/src/build/libs/*.jar /app/spring-boot-application.jar
+
+ENTRYPOINT ["java", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "-Djava.security.egd=file:/dev/./urandom","-jar","/app/spring-boot-application.jar"]
