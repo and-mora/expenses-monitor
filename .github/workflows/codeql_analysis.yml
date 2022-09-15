@@ -5,9 +5,9 @@ name: CodeQL Action
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ develop, master ]
   pull_request:
-    branches: [ develop ]
+    branches: [ develop, master ]
 
 jobs:
   CodeQL-Build:
@@ -57,3 +57,4 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
+
