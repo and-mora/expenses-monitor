@@ -1,19 +1,19 @@
 package it.andmora.expensesmonitor.domain.entity;
 
-import lombok.Data;
-
 import java.time.OffsetDateTime;
-import java.util.Set;
+import lombok.Builder;
+import lombok.Data;
 
 /**
  * Domain object to represent the single payment
  */
+@Builder
 @Data
 public class Payment {
-    String description;
-    int amount;
-    String merchantDescription;
-    OffsetDateTime accountingDate;
-    PaymentType paymentType;
-    Set<String> tags;
+
+  private String description;
+  private int amount;
+  private String merchantName;
+  private OffsetDateTime accountingDate;
+  private PaymentType paymentType;
 }

@@ -1,6 +1,5 @@
 package it.andmora.expensesmonitor.usecase;
 
-import it.andmora.expensesmonitor.domain.dto.PaymentDto;
 import it.andmora.expensesmonitor.domain.entity.Payment;
 
 /**
@@ -8,5 +7,5 @@ import it.andmora.expensesmonitor.domain.entity.Payment;
  */
 public interface PaymentCreator {
 
-    Payment createPayment(PaymentDto payment);
+  Payment createPayment(Payment payment);
 }

@@ -1,18 +1,19 @@
 package it.andmora.expensesmonitor.domain.dto;
 
-import lombok.Builder;
-
 import java.time.OffsetDateTime;
-import java.util.Set;
+import lombok.Builder;
+import lombok.Data;
 
 /**
- * Pojo to communicate the request model from PaymentCreation use case
+ * Pojo used by the controller
  */
 @Builder
+@Data
 public class PaymentDto {
-    String description;
-    int amount;
-    String merchantDescription;
-    OffsetDateTime accountingDate;
-    Set<String> tags;
+
+  private String description;
+  private int amount;
+  private String merchantName;
+  private OffsetDateTime accountingDate;
+  private boolean isIncomeVoice;
 }

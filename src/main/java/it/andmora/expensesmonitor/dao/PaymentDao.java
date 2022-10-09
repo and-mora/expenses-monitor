@@ -4,5 +4,5 @@ import it.andmora.expensesmonitor.domain.entity.Payment;
 
 public interface PaymentDao {
 
-    Payment savePayment(Payment payment);
+  Payment savePayment(Payment payment);
 }
