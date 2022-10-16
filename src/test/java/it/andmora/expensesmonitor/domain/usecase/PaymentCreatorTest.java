@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import reactor.core.publisher.Mono;
 
 class PaymentCreatorTest {
 
@@ -36,11 +37,11 @@ class PaymentCreatorTest {
   @Test
   void givenAPaymentWhenIsCreatedThenReturnsThePayment() {
     Payment paymentDefault = createDefaultPayment();
-    Mockito.when(paymentDao.savePayment(paymentDefault)).thenReturn(paymentDefault);
+    Mockito.when(paymentDao.savePayment(paymentDefault)).thenReturn(Mono.just(paymentDefault));
 
-    Payment paymentResponse = paymentCreator.createPayment(paymentDefault);
+    Mono<Payment> paymentResponse = paymentCreator.createPayment(paymentDefault);
 
-    assertThat(paymentResponse).isEqualTo(paymentDefault);
+    paymentResponse.subscribe(payment -> assertThat(payment).isEqualTo(paymentDefault));
   }
 
   Payment createDefaultPayment() {

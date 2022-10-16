@@ -25,8 +25,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import reactor.core.publisher.Mono;
 
-@WebMvcTest(PaymentControllerImpl.class)
 class PaymentControllerImplTest {
 
   PaymentMapper paymentMapper = Mappers.getMapper(PaymentMapper.class);
@@ -55,16 +55,18 @@ class PaymentControllerImplTest {
 
   @Test
   void whenCreatePaymentThenReturnExpectedFields() {
-    Mockito.when(paymentCreator.createPayment(any())).thenReturn(createDefaultPayment());
+    Mockito.when(paymentCreator.createPayment(any())).thenReturn(Mono.just(createDefaultPayment()));
     PaymentDto paymentDto = createPaymentDto();
 
-    PaymentDto paymentResponse = paymentController.createPayment(paymentDto);
+    Mono<PaymentDto> paymentResponse = paymentController.createPayment(paymentDto);
 
-    assertThat(paymentResponse).extracting("description").isEqualTo("shopping");
-    assertThat(paymentResponse).extracting("merchantName").isEqualTo("H&M");
-    assertThat(paymentResponse).extracting("amount").isEqualTo(1000);
-    assertThat(paymentResponse).extracting("accountingDate").isEqualTo(dateInjected);
-    assertThat(paymentResponse).extracting("isIncomeVoice").isEqualTo(false);
+    paymentResponse.subscribe(payment -> {
+      assertThat(payment).extracting("description").isEqualTo("shopping");
+      assertThat(payment).extracting("merchantName").isEqualTo("H&M");
+      assertThat(payment).extracting("amount").isEqualTo(1000);
+      assertThat(payment).extracting("accountingDate").isEqualTo(dateInjected);
+      assertThat(payment).extracting("isIncomeVoice").isEqualTo(false);
+    });
   }
 
 //  @Test

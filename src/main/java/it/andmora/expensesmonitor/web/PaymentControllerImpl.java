@@ -6,6 +6,7 @@ import it.andmora.expensesmonitor.web.mapper.PaymentMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 /**
  * The controller in this layer is the interface between the use cases and any outside interfaces
@@ -20,9 +21,9 @@ class PaymentControllerImpl implements PaymentController {
   private final PaymentMapper paymentMapper;
 
   @Override
-  public PaymentDto createPayment(PaymentDto paymentDto) {
+  public Mono<PaymentDto> createPayment(PaymentDto paymentDto) {
     log.info("Creation of a new payment...");
-    return paymentMapper.entityToDto(
-        paymentCreator.createPayment(paymentMapper.dtoToEntity(paymentDto)));
+    return paymentCreator.createPayment(paymentMapper.dtoToEntity(paymentDto))
+        .map(paymentMapper::entityToDto);
   }
 }

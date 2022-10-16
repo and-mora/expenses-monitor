@@ -1,8 +1,10 @@
 package it.andmora.expensesmonitor.domain;
 
 import it.andmora.expensesmonitor.domain.entity.Payment;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 public interface PaymentDao {
 
-  Payment savePayment(Payment payment);
+  Mono<Payment> savePayment(Payment payment);
 }
