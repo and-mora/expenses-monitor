@@ -1,4 +1,4 @@
-package it.andmora.expensesmonitor.controller.dto;
+package it.andmora.expensesmonitor.web.dto;
 
 import java.time.OffsetDateTime;
 import lombok.Builder;

@@ -1,12 +1,12 @@
-package it.andmora.expensesmonitor.controller;
+package it.andmora.expensesmonitor.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 
-import it.andmora.expensesmonitor.controller.dto.PaymentDto;
+import it.andmora.expensesmonitor.web.dto.PaymentDto;
 import it.andmora.expensesmonitor.domain.entity.Payment;
 import it.andmora.expensesmonitor.domain.entity.PaymentType;
-import it.andmora.expensesmonitor.controller.mapper.PaymentMapper;
+import it.andmora.expensesmonitor.web.mapper.PaymentMapper;
 import it.andmora.expensesmonitor.domain.usecase.PaymentCreator;
 import java.time.OffsetDateTime;
 import org.junit.jupiter.api.AfterEach;

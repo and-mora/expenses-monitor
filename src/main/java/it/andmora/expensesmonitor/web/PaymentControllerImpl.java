@@ -1,7 +1,7 @@
-package it.andmora.expensesmonitor.controller;
+package it.andmora.expensesmonitor.web;
 
-import it.andmora.expensesmonitor.controller.dto.PaymentDto;
-import it.andmora.expensesmonitor.controller.mapper.PaymentMapper;
+import it.andmora.expensesmonitor.web.dto.PaymentDto;
+import it.andmora.expensesmonitor.web.mapper.PaymentMapper;
 import it.andmora.expensesmonitor.domain.usecase.PaymentCreator;
 import lombok.RequiredArgsConstructor;
 

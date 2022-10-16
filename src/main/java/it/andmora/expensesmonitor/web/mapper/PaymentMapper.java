@@ -1,6 +1,6 @@
-package it.andmora.expensesmonitor.controller.mapper;
+package it.andmora.expensesmonitor.web.mapper;
 
-import it.andmora.expensesmonitor.controller.dto.PaymentDto;
+import it.andmora.expensesmonitor.web.dto.PaymentDto;
 import it.andmora.expensesmonitor.domain.entity.Payment;
 import it.andmora.expensesmonitor.domain.entity.PaymentType;
 import org.mapstruct.Mapper;
