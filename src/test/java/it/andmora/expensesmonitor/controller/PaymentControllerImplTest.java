@@ -3,11 +3,11 @@ package it.andmora.expensesmonitor.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 
-import it.andmora.expensesmonitor.domain.dto.PaymentDto;
+import it.andmora.expensesmonitor.controller.dto.PaymentDto;
 import it.andmora.expensesmonitor.domain.entity.Payment;
 import it.andmora.expensesmonitor.domain.entity.PaymentType;
-import it.andmora.expensesmonitor.mapper.PaymentMapper;
-import it.andmora.expensesmonitor.usecase.PaymentCreator;
+import it.andmora.expensesmonitor.controller.mapper.PaymentMapper;
+import it.andmora.expensesmonitor.domain.usecase.PaymentCreator;
 import java.time.OffsetDateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

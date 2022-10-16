@@ -1,4 +1,4 @@
-package it.andmora.expensesmonitor.usecase;
+package it.andmora.expensesmonitor.domain.usecase;
 
 import it.andmora.expensesmonitor.dao.PaymentDao;
 import it.andmora.expensesmonitor.domain.entity.Payment;
@@ -11,12 +11,8 @@ public class PaymentCreatorImpl implements PaymentCreator {
 
   @Override
   public Payment createPayment(Payment payment) {
-    // is there validation needed here?
+    // business validation goes here
 
-    // conversion to entity object
-    Payment paymentToBeSaved = null;
-
-    // persistance
-    return paymentDao.savePayment(paymentToBeSaved);
+    return paymentDao.savePayment(payment);
   }
 }

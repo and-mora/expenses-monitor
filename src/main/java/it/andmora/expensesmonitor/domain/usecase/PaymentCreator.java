@@ -1,4 +1,4 @@
-package it.andmora.expensesmonitor.usecase;
+package it.andmora.expensesmonitor.domain.usecase;
 
 import it.andmora.expensesmonitor.domain.entity.Payment;
 

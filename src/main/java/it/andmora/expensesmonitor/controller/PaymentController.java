@@ -1,6 +1,6 @@
 package it.andmora.expensesmonitor.controller;
 
-import it.andmora.expensesmonitor.domain.dto.PaymentDto;
+import it.andmora.expensesmonitor.controller.dto.PaymentDto;
 
 public interface PaymentController {
 
