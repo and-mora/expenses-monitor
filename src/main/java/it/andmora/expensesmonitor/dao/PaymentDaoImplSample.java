@@ -1,5 +1,6 @@
 package it.andmora.expensesmonitor.dao;
 
+import it.andmora.expensesmonitor.domain.PaymentDao;
 import it.andmora.expensesmonitor.domain.entity.Payment;
 
 /**
@@ -7,7 +8,7 @@ import it.andmora.expensesmonitor.domain.entity.Payment;
  * It's used to decouple the interface for the use cases and the real implementation of persistance
  * layer
  */
-public class PaymentDaoImplSample implements PaymentDao {
+class PaymentDaoImplSample implements PaymentDao {
 
   // custom repository interface
 

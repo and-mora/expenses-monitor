@@ -1,4 +1,4 @@
-package it.andmora.expensesmonitor.dao;
+package it.andmora.expensesmonitor.domain;
 
 import it.andmora.expensesmonitor.domain.entity.Payment;
 

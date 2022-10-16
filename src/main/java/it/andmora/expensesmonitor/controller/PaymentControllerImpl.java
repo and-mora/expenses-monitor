@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
  * Here happens all the data format conversion from and to whatever is required by the use cases
  */
 @RequiredArgsConstructor
-public class PaymentControllerImpl implements PaymentController {
+class PaymentControllerImpl implements PaymentController {
 
   private final PaymentCreator paymentCreator;
   private final PaymentMapper paymentMapper;
