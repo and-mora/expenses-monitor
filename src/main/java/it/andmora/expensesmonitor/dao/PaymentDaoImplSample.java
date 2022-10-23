@@ -19,4 +19,9 @@ class PaymentDaoImplSample implements PaymentDao {
   public Mono<Payment> savePayment(Payment payment) {
     return null;
   }
+
+  @Override
+  public Mono<Integer> getOverallBalance() {
+    return null;
+  }
 }
