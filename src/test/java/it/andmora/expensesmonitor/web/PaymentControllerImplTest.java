@@ -7,11 +7,9 @@ import it.andmora.expensesmonitor.domain.entity.Payment;
 import it.andmora.expensesmonitor.domain.entity.PaymentType;
 import it.andmora.expensesmonitor.domain.usecase.PaymentCreator;
 import it.andmora.expensesmonitor.web.dto.PaymentDto;
-import it.andmora.expensesmonitor.web.mapper.PaymentMapper;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mapstruct.factory.Mappers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,7 +25,7 @@ class PaymentControllerImplTest {
   PaymentCreator paymentCreator;
   @Autowired
   PaymentController paymentController;
-  OffsetDateTime dateInjected = OffsetDateTime.now();
+  LocalDateTime dateInjected = LocalDateTime.now();
   @Autowired
   WebTestClient webTestClient;
   private static final String PUT_PAYMENT_ENDPOINT = "/payment";
