@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import it.andmora.expensesmonitor.domain.PaymentDao;
 import it.andmora.expensesmonitor.domain.entity.Payment;
 import it.andmora.expensesmonitor.domain.entity.PaymentType;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 class PaymentCreatorTest {
 
@@ -20,7 +21,7 @@ class PaymentCreatorTest {
   PaymentDao paymentDao;
   PaymentCreator paymentCreator;
   AutoCloseable autoCloseable;
-  OffsetDateTime dateInjected = OffsetDateTime.now();
+  LocalDateTime dateInjected = LocalDateTime.now();
 
   @BeforeEach
   void setup() {
@@ -41,7 +42,11 @@ class PaymentCreatorTest {
 
     Mono<Payment> paymentResponse = paymentCreator.createPayment(paymentDefault);
 
-    paymentResponse.subscribe(payment -> assertThat(payment).isEqualTo(paymentDefault));
+    StepVerifier
+        .create(paymentResponse)
+        .expectNext(paymentDefault)
+        .expectComplete()
+        .verify();
   }
 
   Payment createDefaultPayment() {
