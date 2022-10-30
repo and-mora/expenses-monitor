@@ -1,6 +1,6 @@
 package it.andmora.expensesmonitor.web.dto;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
 
@@ -14,6 +14,6 @@ public class PaymentDto {
   private String description;
   private int amount;
   private String merchantName;
-  private OffsetDateTime accountingDate;
+  private LocalDateTime accountingDate;
   private boolean isIncomeVoice;
 }
