@@ -8,7 +8,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
 @Mapper(componentModel = "spring")
-public interface PaymentMapper {
+public interface PaymentControllerMapper {
 
   @Mapping(source = "incomeVoice", target = "paymentType", qualifiedByName = "booleanToPaymentType")
   Payment dtoToEntity(PaymentDto paymentDto);

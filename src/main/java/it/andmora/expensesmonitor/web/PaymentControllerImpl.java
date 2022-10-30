@@ -3,7 +3,7 @@ package it.andmora.expensesmonitor.web;
 import it.andmora.expensesmonitor.domain.usecase.BalanceCalculator;
 import it.andmora.expensesmonitor.domain.usecase.PaymentCreator;
 import it.andmora.expensesmonitor.web.dto.PaymentDto;
-import it.andmora.expensesmonitor.web.mapper.PaymentMapper;
+import it.andmora.expensesmonitor.web.mapper.PaymentControllerMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono;
 class PaymentControllerImpl implements PaymentController {
 
   private final PaymentCreator paymentCreator;
-  private final PaymentMapper paymentMapper;
+  private final PaymentControllerMapper paymentMapper;
   private final BalanceCalculator balanceCalculator;
 
   @Override
