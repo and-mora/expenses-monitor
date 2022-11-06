@@ -25,5 +25,4 @@ public class PaymentDbEntity {
   @JsonSerialize(using = LocalDateTimeSerializer.class)
   @JsonDeserialize(using = LocalDateTimeDeserializer.class)
   private LocalDateTime accountingDate;
-  private String paymentType;
 }
