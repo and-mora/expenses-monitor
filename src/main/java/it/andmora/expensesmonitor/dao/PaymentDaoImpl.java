@@ -5,7 +5,6 @@ import it.andmora.expensesmonitor.dao.mapper.PaymentDbMapper;
 import it.andmora.expensesmonitor.dao.persistance.PaymentMongoRepository;
 import it.andmora.expensesmonitor.domain.PaymentDao;
 import it.andmora.expensesmonitor.domain.entity.Payment;
-import it.andmora.expensesmonitor.domain.entity.PaymentType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -31,12 +30,8 @@ class PaymentDaoImpl implements PaymentDao {
   @Override
   public Mono<Integer> getOverallBalance() {
     return repository.findAll()
-        .map(this::getAmountBasedOnType)
+        .map(PaymentDbEntity::getAmount)
         .reduce(0, Integer::sum);
   }
 
-  private int getAmountBasedOnType(PaymentDbEntity payment) {
-    return PaymentType.INCOME.name().equals(payment.getPaymentType()) ? payment.getAmount()
-        : Math.negateExact(payment.getAmount());
-  }
 }

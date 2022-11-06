@@ -15,5 +15,4 @@ public class PaymentDto {
   private int amount;
   private String merchantName;
   private LocalDateTime accountingDate;
-  private boolean isIncomeVoice;
 }

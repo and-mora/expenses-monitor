@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import it.andmora.expensesmonitor.dao.dbmodel.PaymentDbEntity;
 import it.andmora.expensesmonitor.domain.entity.Payment;
-import it.andmora.expensesmonitor.domain.entity.PaymentType;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
@@ -22,7 +21,6 @@ class PaymentDbMapperTest {
     assertThat(payment).extracting("merchantName").isEqualTo("H&M");
     assertThat(payment).extracting("amount").isEqualTo(1000);
     assertThat(payment).extracting("accountingDate").isEqualTo(dateInjected);
-    assertThat(payment).extracting("paymentType").isEqualTo(PaymentType.OUTCOME);
   }
 
   @Test
@@ -33,7 +31,6 @@ class PaymentDbMapperTest {
     assertThat(payment).extracting("merchantName").isEqualTo("H&M");
     assertThat(payment).extracting("amount").isEqualTo(1000);
     assertThat(payment).extracting("accountingDate").isEqualTo(dateInjected);
-    assertThat(payment).extracting("paymentType").isEqualTo("OUTCOME");
   }
 
   Payment createDefaultPayment() {
@@ -42,7 +39,7 @@ class PaymentDbMapperTest {
         .merchantName("H&M")
         .amount(1000)
         .accountingDate(dateInjected)
-        .paymentType(PaymentType.OUTCOME).build();
+        .build();
   }
 
   PaymentDbEntity createDefaultEntity() {
@@ -51,7 +48,7 @@ class PaymentDbMapperTest {
         .merchantName("H&M")
         .amount(1000)
         .accountingDate(dateInjected)
-        .paymentType("OUTCOME").build();
+        .build();
   }
 
 }

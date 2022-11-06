@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 
 import it.andmora.expensesmonitor.domain.entity.Payment;
-import it.andmora.expensesmonitor.domain.entity.PaymentType;
 import it.andmora.expensesmonitor.domain.usecase.PaymentCreator;
 import it.andmora.expensesmonitor.web.dto.PaymentDto;
 import java.time.LocalDateTime;
@@ -46,7 +45,6 @@ class PaymentControllerImplTest {
       assertThat(payment).extracting("merchantName").isEqualTo("H&M");
       assertThat(payment).extracting("amount").isEqualTo(1000);
       assertThat(payment).extracting("accountingDate").isEqualTo(dateInjected);
-      assertThat(payment).extracting("isIncomeVoice").isEqualTo(false);
     });
   }
 
@@ -73,7 +71,6 @@ class PaymentControllerImplTest {
           assertThat(payment).extracting("merchantName").isEqualTo("H&M");
           assertThat(payment).extracting("amount").isEqualTo(1000);
 //          assertThat(payment).extracting("accountingDate").isEqualTo(dateInjected);
-          assertThat(payment).extracting("isIncomeVoice").isEqualTo(false);
         });
   }
 
@@ -83,7 +80,7 @@ class PaymentControllerImplTest {
         .merchantName("H&M")
         .amount(1000)
         .accountingDate(dateInjected)
-        .isIncomeVoice(false).build();
+        .build();
   }
 
   Payment createDefaultPayment() {
@@ -92,7 +89,7 @@ class PaymentControllerImplTest {
         .merchantName("H&M")
         .amount(1000)
         .accountingDate(dateInjected)
-        .paymentType(PaymentType.OUTCOME).build();
+        .build();
   }
 
 }

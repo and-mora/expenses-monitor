@@ -81,18 +81,18 @@ class PaymentDaoImplTest {
   }
 
   Flux<PaymentDbEntity> createOutcomeResponse() {
-    return Flux.just(PaymentDbEntity.builder().id("1").paymentType("OUTCOME").amount(100).build(),
-        PaymentDbEntity.builder().id("2").paymentType("OUTCOME").amount(300).build());
+    return Flux.just(PaymentDbEntity.builder().id("1").amount(-100).build(),
+        PaymentDbEntity.builder().id("2").amount(-300).build());
   }
 
   Flux<PaymentDbEntity> createMixedResponse() {
-    return Flux.just(PaymentDbEntity.builder().id("1").paymentType("INCOME").amount(100).build(),
-        PaymentDbEntity.builder().id("2").paymentType("OUTCOME").amount(300).build());
+    return Flux.just(PaymentDbEntity.builder().id("1").amount(100).build(),
+        PaymentDbEntity.builder().id("2").amount(-300).build());
   }
 
   Flux<PaymentDbEntity> createIncomeResponse() {
-    return Flux.just(PaymentDbEntity.builder().id("1").paymentType("INCOME").amount(200).build(),
-        PaymentDbEntity.builder().id("2").paymentType("INCOME").amount(300).build());
+    return Flux.just(PaymentDbEntity.builder().id("1").amount(200).build(),
+        PaymentDbEntity.builder().id("2").amount(300).build());
   }
 
 //  Flux<PaymentDbEntity> createNegativeResponse() {

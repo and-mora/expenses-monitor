@@ -15,5 +15,4 @@ public class Payment {
   private int amount;
   private String merchantName;
   private LocalDateTime accountingDate;
-  private PaymentType paymentType;
 }
