@@ -3,7 +3,7 @@ package it.andmora.expensesmonitor.dao.mapper;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import it.andmora.expensesmonitor.dao.dbmodel.PaymentDbEntity;
-import it.andmora.expensesmonitor.domain.entity.Payment;
+import it.andmora.expensesmonitor.domain.model.Payment;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;

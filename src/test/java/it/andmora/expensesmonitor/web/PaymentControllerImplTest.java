@@ -3,7 +3,7 @@ package it.andmora.expensesmonitor.web;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 
-import it.andmora.expensesmonitor.domain.entity.Payment;
+import it.andmora.expensesmonitor.domain.model.Payment;
 import it.andmora.expensesmonitor.domain.usecase.PaymentCreator;
 import it.andmora.expensesmonitor.web.dto.PaymentDto;
 import java.time.LocalDateTime;

@@ -1,4 +1,4 @@
-package it.andmora.expensesmonitor.domain.entity;
+package it.andmora.expensesmonitor.domain.model;
 
 import java.time.LocalDateTime;
 import lombok.Builder;

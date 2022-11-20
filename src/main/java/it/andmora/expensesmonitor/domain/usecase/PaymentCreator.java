@@ -1,6 +1,6 @@
 package it.andmora.expensesmonitor.domain.usecase;
 
-import it.andmora.expensesmonitor.domain.entity.Payment;
+import it.andmora.expensesmonitor.domain.model.Payment;
 import reactor.core.publisher.Mono;
 
 /**
