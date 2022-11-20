@@ -1,7 +1,7 @@
 package it.andmora.expensesmonitor.dao.mapper;
 
 import it.andmora.expensesmonitor.dao.dbmodel.PaymentDbEntity;
-import it.andmora.expensesmonitor.domain.entity.Payment;
+import it.andmora.expensesmonitor.domain.model.Payment;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
