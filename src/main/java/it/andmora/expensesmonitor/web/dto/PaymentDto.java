@@ -1,6 +1,7 @@
 package it.andmora.expensesmonitor.web.dto;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
 
@@ -15,4 +16,5 @@ public class PaymentDto {
   private int amount;
   private String merchantName;
   private LocalDateTime accountingDate;
+  private Set<String> tags;
 }
