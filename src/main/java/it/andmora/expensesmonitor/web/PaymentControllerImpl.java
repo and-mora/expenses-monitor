@@ -1,6 +1,5 @@
 package it.andmora.expensesmonitor.web;
 
-import it.andmora.expensesmonitor.domain.usecase.BalanceCalculator;
 import it.andmora.expensesmonitor.domain.usecase.PaymentCreator;
 import it.andmora.expensesmonitor.web.dto.PaymentDto;
 import it.andmora.expensesmonitor.web.mapper.PaymentControllerMapper;
@@ -20,17 +19,11 @@ class PaymentControllerImpl implements PaymentController {
 
   private final PaymentCreator paymentCreator;
   private final PaymentControllerMapper paymentMapper;
-  private final BalanceCalculator balanceCalculator;
 
   @Override
   public Mono<PaymentDto> createPayment(PaymentDto paymentDto) {
     log.info("Creation of a new payment...");
     return paymentCreator.createPayment(paymentMapper.dtoToEntity(paymentDto))
         .map(paymentMapper::entityToDto);
-  }
-
-  @Override
-  public Mono<Integer> getOverallBalance() {
-    return balanceCalculator.getOverallBalance();
   }
 }
