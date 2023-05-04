@@ -1,7 +1,7 @@
 package it.andmora.expensesmonitor.domain.usecase;
 
 import it.andmora.expensesmonitor.domain.PaymentDao;
-import it.andmora.expensesmonitor.domain.entity.Payment;
+import it.andmora.expensesmonitor.domain.model.Payment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
