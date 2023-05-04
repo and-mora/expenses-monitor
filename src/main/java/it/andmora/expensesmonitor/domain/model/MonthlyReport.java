@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Builder
 @Data
-public class PeriodicReport {
+public class MonthlyReport {
 
   /**
    * The key represent the aggregation field. The value represent the sum of every amount aggregated

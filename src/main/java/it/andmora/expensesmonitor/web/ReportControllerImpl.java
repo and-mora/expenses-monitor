@@ -1,8 +1,7 @@
 package it.andmora.expensesmonitor.web;
 
-import it.andmora.expensesmonitor.domain.model.PeriodicReport;
-import it.andmora.expensesmonitor.domain.usecase.PeriodicReportService;
-import java.time.LocalDateTime;
+import it.andmora.expensesmonitor.domain.model.MonthlyReport;
+import it.andmora.expensesmonitor.domain.usecase.MonthlyReportService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,11 +12,10 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class ReportControllerImpl implements ReportController {
 
-  private final PeriodicReportService periodicReportService;
+  private final MonthlyReportService monthlyReportService;
 
   @Override
-  public Mono<PeriodicReport> getReport(String field, LocalDateTime startDate,
-      LocalDateTime endDate) {
-    return periodicReportService.getPeriodicReport(field, startDate, endDate);
+  public Mono<MonthlyReport> getMonthlyReport(int month, int year) {
+    return monthlyReportService.getMonthlyReport(month, year);
   }
 }
