@@ -4,7 +4,7 @@ import it.andmora.expensesmonitor.dao.dbmodel.PaymentDbEntity;
 import it.andmora.expensesmonitor.dao.mapper.PaymentDbMapper;
 import it.andmora.expensesmonitor.dao.persistance.PaymentMongoRepository;
 import it.andmora.expensesmonitor.domain.PaymentDao;
-import it.andmora.expensesmonitor.domain.entity.Payment;
+import it.andmora.expensesmonitor.domain.model.Payment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
