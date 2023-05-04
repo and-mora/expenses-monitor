@@ -24,14 +24,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/payment",
+					"raw": "http://localhost:8080/balance",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
-						"payment"
+						"balance"
 					]
 				}
 			},
@@ -57,7 +57,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"description\": \"stipendio\",\n    \"amount\": 3000,\n    \"merchantName\": \"PagoPA\",\n    \"accountingDate\": \"2022-10-30T13:10:42.000\",\n    \"isIncomeVoice\": true\n}",
+					"raw": "{\n    \"description\": \"stipendio\",\n    \"amount\": 3000,\n    \"merchantName\": \"PagoPA\",\n    \"accountingDate\": \"2022-10-30T13:10:42.000\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -98,14 +98,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/payment",
+					"raw": "http://localhost:8080/balance",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
-						"payment"
+						"balance"
 					]
 				}
 			},
@@ -131,7 +131,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"description\": \"spesa\",\n    \"amount\": 2500,\n    \"merchantName\": \"Coop\",\n    \"accountingDate\": \"2022-10-30T13:10:42.000\",\n    \"isIncomeVoice\": false\n}",
+					"raw": "{\n    \"description\": \"spesa\",\n    \"amount\": -2500,\n    \"merchantName\": \"Coop\",\n    \"accountingDate\": \"2022-10-30T13:10:42.000\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -172,14 +172,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/payment",
+					"raw": "http://localhost:8080/balance",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
-						"payment"
+						"balance"
 					]
 				}
 			},
