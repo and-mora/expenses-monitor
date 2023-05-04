@@ -18,9 +18,13 @@ public class PaymentDbEntity {
 
   @Id
   private String id;
+
   private String description;
+
   private int amount;
+
   private String merchantName;
+
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   @JsonSerialize(using = LocalDateTimeSerializer.class)
   @JsonDeserialize(using = LocalDateTimeDeserializer.class)
