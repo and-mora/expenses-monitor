@@ -56,8 +56,8 @@ class MonthlyReportServiceImplTest {
   }
 
   @Test
-  void givenPaymentsThenReturnsAggregationReport() {
-    Mockito.when(reportDao.getReport(any(), any())).thenReturn(getPayments());
+  void givenNegativePaymentsThenReturnsAggregationReport() {
+    Mockito.when(reportDao.getReport(any(), any())).thenReturn(getNegativePayments());
     Map<String, Integer> reportMap = new HashMap<>();
     reportMap.put("spesa", -600);
 
@@ -75,9 +75,36 @@ class MonthlyReportServiceImplTest {
         .verify();
   }
 
-  private Flux<Payment> getPayments() {
+  @Test
+  void givenMixedPaymentsThenReturnsAggregationReport() {
+    Mockito.when(reportDao.getReport(any(), any())).thenReturn(getMixedPayments());
+    Map<String, Integer> reportMap = new HashMap<>();
+    reportMap.put("spesa", -500);
+    reportMap.put("salary", 1000);
+
+    var report = monthlyReportService.getMonthlyReport(1, 2020);
+    var expectedReport = MonthlyReport.builder()
+        .dataMap(reportMap)
+        .startDate(LocalDateTime.of(2020, 1, 1, 0, 0))
+        .endDate(LocalDateTime.of(2020, 2, 1, 0, 0))
+        .build();
+
+    StepVerifier
+        .create(report)
+        .expectNext(expectedReport)
+        .expectComplete()
+        .verify();
+  }
+
+  private Flux<Payment> getNegativePayments() {
     return Flux.just(
         Payment.builder().description("spesa").amount(-100).merchantName("coop").build(),
+        Payment.builder().description("spesa").amount(-500).merchantName("despar").build());
+  }
+
+  private Flux<Payment> getMixedPayments() {
+    return Flux.just(
+        Payment.builder().description("salary").amount(1000).merchantName("company").build(),
         Payment.builder().description("spesa").amount(-500).merchantName("despar").build());
   }
 }

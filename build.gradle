@@ -34,7 +34,12 @@ dependencies {
 	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.3.Final'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'io.projectreactor:reactor-test'
-//	testImplementation 'de.flapdoodle.embed:de.flapdoodle.embed.mongo:3.5.1'
+
+	implementation platform('org.testcontainers:testcontainers-bom:1.18.0') //import bom
+	testImplementation('org.testcontainers:mongodb')
+	testImplementation('org.testcontainers:junit-jupiter')
+
+
 }
 
 tasks.named('test') {
