@@ -16,11 +16,11 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
 
   @Override
   public Mono<MonthlyReport> getMonthlyReport(int month, int year) {
-    // build the report
-    MonthlyReport report = MonthlyReport.builder().build();
-
     LocalDateTime startDate = LocalDateTime.of(year, month, 1, 0, 0);
     LocalDateTime endDate = LocalDateTime.of(year, month + 1, 1, 0, 0);
+
+    // build the report
+    MonthlyReport report = MonthlyReport.newInstance(startDate, endDate);
 
     return reportDao.getReport(startDate, endDate)
         .doOnNext(payment -> report.addVoice(payment.getDescription(), payment.getAmount()))

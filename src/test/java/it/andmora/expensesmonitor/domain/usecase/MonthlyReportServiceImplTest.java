@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import it.andmora.expensesmonitor.domain.ReportDao;
 import it.andmora.expensesmonitor.domain.model.MonthlyReport;
 import it.andmora.expensesmonitor.domain.model.Payment;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
@@ -38,30 +39,38 @@ class MonthlyReportServiceImplTest {
 
   @Test
   void givenNoPaymentsThenReturnsEmptyReport() {
-
     Mockito.when(reportDao.getReport(any(), any())).thenReturn(Flux.empty());
 
     var report = monthlyReportService.getMonthlyReport(1, 2020);
+    var expectedReport = MonthlyReport.builder()
+        .dataMap(new HashMap<>())
+        .startDate(LocalDateTime.of(2020, 1, 1, 0, 0))
+        .endDate(LocalDateTime.of(2020, 2, 1, 0, 0))
+        .build();
 
     StepVerifier
         .create(report)
-        .expectNext(MonthlyReport.builder().build())
+        .expectNext(expectedReport)
         .expectComplete()
         .verify();
   }
 
   @Test
   void givenPaymentsThenReturnsAggregationReport() {
-
     Mockito.when(reportDao.getReport(any(), any())).thenReturn(getPayments());
     Map<String, Integer> reportMap = new HashMap<>();
     reportMap.put("spesa", -600);
 
     var report = monthlyReportService.getMonthlyReport(1, 2020);
+    var expectedReport = MonthlyReport.builder()
+        .dataMap(reportMap)
+        .startDate(LocalDateTime.of(2020, 1, 1, 0, 0))
+        .endDate(LocalDateTime.of(2020, 2, 1, 0, 0))
+        .build();
 
     StepVerifier
         .create(report)
-        .expectNext(MonthlyReport.builder().dataMap(reportMap).build())
+        .expectNext(expectedReport)
         .expectComplete()
         .verify();
   }
