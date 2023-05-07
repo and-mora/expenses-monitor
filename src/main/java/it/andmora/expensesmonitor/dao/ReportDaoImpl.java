@@ -18,7 +18,7 @@ class ReportDaoImpl implements ReportDao {
 
   @Override
   public Flux<Payment> getReport(LocalDateTime startDate, LocalDateTime endDate) {
-    return reportMongoRepository.findByAccountingDateGreaterThanAndAccountingDateLessThan(startDate,
+    return reportMongoRepository.findByAccountingDateBetween(startDate,
         endDate)
         .map(paymentMapper::dbEntityToDomain);
   }
