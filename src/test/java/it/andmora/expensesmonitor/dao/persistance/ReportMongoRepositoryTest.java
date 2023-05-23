@@ -1,6 +1,7 @@
 package it.andmora.expensesmonitor.dao.persistance;
 
 import it.andmora.expensesmonitor.dao.dbmodel.PaymentDbEntity;
+import it.andmora.expensesmonitor.utils.DateUtils;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import org.junit.jupiter.api.AfterEach;
@@ -36,8 +37,8 @@ class ReportMongoRepositoryTest {
 
   @Test
   void whenPaymentAreInSameMonthThenRetrieveThem() {
-    final var startDate = LocalDateTime.of(2020, 1, 1, 0, 0);
-    final var endDate = LocalDateTime.of(2020, 1, 31, 0, 0);
+    final var startDate = DateUtils.getStartOfMonthDate(1, 2020);
+    final var endDate = DateUtils.getEndOfMonthDate(1, 2020);
     PaymentDbEntity entity = PaymentDbEntity.builder()
         .accountingDate(LocalDateTime.of(2020, 1, 10, 0, 0))
         .merchantName("coop")
@@ -57,8 +58,8 @@ class ReportMongoRepositoryTest {
 
   @Test
   void whenPaymentAreNotInSameMonthThenDoNotRetrieveThem() {
-    final var startDate = LocalDateTime.of(2020, 1, 1, 0, 0);
-    final var endDate = LocalDateTime.of(2020, 1, 31, 0, 0);
+    final var startDate = DateUtils.getStartOfMonthDate(1, 2020);
+    final var endDate = DateUtils.getEndOfMonthDate(1, 2020);
     PaymentDbEntity entity = PaymentDbEntity.builder()
         .accountingDate(LocalDateTime.of(2021, 5, 10, 0, 0)).merchantName("coop")
         .description("grocery")
@@ -91,8 +92,8 @@ class ReportMongoRepositoryTest {
 
   @Test
   void whenPaymentAreOnTheExtremeThenRetrieveThem() {
-    final var startDate = LocalDateTime.of(2020, 1, 1, 0, 0);
-    final var endDate = LocalDateTime.of(2020, 1, 31, 0, 0);
+    final var startDate = DateUtils.getStartOfMonthDate(1, 2020);
+    final var endDate = DateUtils.getEndOfMonthDate(1, 2020);
     PaymentDbEntity lowExtremeDateEntity = PaymentDbEntity.builder()
         .accountingDate(LocalDateTime.of(2020, 1, 1, 0, 0))
         .merchantName("despar")
@@ -100,7 +101,7 @@ class ReportMongoRepositoryTest {
         .amount(-400)
         .build();
     PaymentDbEntity highExtremeDateEntity = PaymentDbEntity.builder()
-        .accountingDate(LocalDateTime.of(2020, 1, 31, 0, 0))
+        .accountingDate(LocalDateTime.of(2020, 1, 31, 23, 0))
         .merchantName("coop")
         .description("grocery")
         .amount(-200)

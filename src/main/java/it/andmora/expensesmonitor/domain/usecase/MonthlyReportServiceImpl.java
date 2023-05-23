@@ -3,7 +3,7 @@ package it.andmora.expensesmonitor.domain.usecase;
 
 import it.andmora.expensesmonitor.domain.ReportDao;
 import it.andmora.expensesmonitor.domain.model.MonthlyReport;
-import java.time.LocalDateTime;
+import it.andmora.expensesmonitor.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -16,8 +16,8 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
 
   @Override
   public Mono<MonthlyReport> getMonthlyReport(int month, int year) {
-    final var startDate = LocalDateTime.of(year, month, 1, 0, 0);
-    final var endDate = LocalDateTime.from(startDate).plusMonths(1).minusNanos(1);
+    final var startDate = DateUtils.getStartOfMonthDate(month, year);
+    final var endDate = DateUtils.getEndOfMonthDate(month, year);
 
     // build the report
     var report = MonthlyReport.newInstance(startDate, endDate);
