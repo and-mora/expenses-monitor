@@ -16,6 +16,7 @@ public class ReportControllerImpl implements ReportController {
 
   @Override
   public Mono<MonthlyReport> getMonthlyReport(int month, int year) {
+    log.info("Retrieve monthly report for month {} year {}", month, year);
     return monthlyReportService.getMonthlyReport(month, year);
   }
 }

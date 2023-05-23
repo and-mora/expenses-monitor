@@ -19,6 +19,7 @@ class BalanceControllerImpl implements BalanceController {
 
   @Override
   public Mono<Integer> getOverallBalance() {
+    log.info("Get overall balance...");
     return balanceCalculator.getOverallBalance();
   }
 }
