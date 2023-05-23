@@ -17,7 +17,7 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
   @Override
   public Mono<MonthlyReport> getMonthlyReport(int month, int year) {
     final var startDate = LocalDateTime.of(year, month, 1, 0, 0);
-    final var endDate = LocalDateTime.from(startDate).plusMonths(1).minusDays(1);
+    final var endDate = LocalDateTime.from(startDate).plusMonths(1).minusNanos(1);
 
     // build the report
     var report = MonthlyReport.newInstance(startDate, endDate);
