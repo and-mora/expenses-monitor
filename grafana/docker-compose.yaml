@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  grafana_try_provisioning:
+    image: grafana/grafana-oss:9.5.3
+    container_name: grafana_try_provisioning
+    restart: unless-stopped
+    #environment:
+    # - GF_SERVER_ROOT_URL=http://my.grafana.server/
+    # - GF_INSTALL_PLUGINS=grafana-clock-panel
+    ports:
+     - '3001:3000'
+    volumes:
+     - ./provisioning:/etc/grafana/provisioning
+     - ./dashboards:/var/lib/grafana/dashboards
+
+##TODO config user
