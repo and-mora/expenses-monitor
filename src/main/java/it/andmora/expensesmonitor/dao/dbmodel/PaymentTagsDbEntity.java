@@ -5,7 +5,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Table("paymentTags")
+@Table("payment_tags")
 @Builder
 @Data
 public class PaymentTagsDbEntity {
