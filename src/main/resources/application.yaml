@@ -1,9 +1,9 @@
 spring:
   r2dbc:
-    url: ${DB_CONNECTION_URI:r2dbc:postgresql://localhost:5432/test}
+    url: ${DB_CONNECTION_URI:r2dbc:postgresql://localhost:5432/postgres}
     schema: ${DB_SCHEMA:expenses}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
     pool.initial-size: 100
     pool.max-size: 500
     pool.max-idle-time: 30m
