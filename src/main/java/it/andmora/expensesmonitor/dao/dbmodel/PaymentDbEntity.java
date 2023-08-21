@@ -1,16 +1,12 @@
 package it.andmora.expensesmonitor.dao.dbmodel;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import java.time.LocalDateTime;
 import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
-import org.springframework.format.annotation.DateTimeFormat;
 
 @Table("payments")
 @Builder
@@ -21,10 +17,9 @@ public class PaymentDbEntity {
   private int id;
   private String description;
   private int amount;
+  @Column("merchant_name")
   private String merchantName;
-  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-  @JsonSerialize(using = LocalDateTimeSerializer.class)
-  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+  @Column("accounting_date")
   private LocalDateTime accountingDate;
   private String category;
   private Set<TagDbEntity> tags;
