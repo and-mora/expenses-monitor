@@ -4,7 +4,4 @@ spring:
     schema: ${DB_SCHEMA:expenses}
     username: ${DB_USER:postgres}
     password: ${DB_PASSWORD:postgres}
-    pool.initial-size: 100
-    pool.max-size: 500
-    pool.max-idle-time: 30m
-    pool.validation-query: SELECT
+    pool.validation-query: SELECT 1
