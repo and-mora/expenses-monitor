@@ -155,7 +155,7 @@
             "editorMode": "code",
             "format": "time_series",
             "rawQuery": true,
-            "rawSql": "select * FROM (select DATE_TRUNC('month',date) AS time, sum(cost) as entrate, category\nFROM payments \nWHERE date BETWEEN $__timeFrom() AND $__timeTo() and cost > 0\nGROUP BY DATE_TRUNC('month', date), category\nUNION\nselect DATE_TRUNC('month',date) AS time, sum(cost) as entrate, 'totale'\nFROM payments \nWHERE date BETWEEN $__timeFrom() AND $__timeTo() and cost > 0\nGROUP BY DATE_TRUNC('month', date)) unione\norder by time\n\n",
+            "rawSql": "select * FROM (select DATE_TRUNC('month',accounting_date) AS time, sum(amount) as entrate, category\nFROM payments \nWHERE accounting_date BETWEEN $__timeFrom() AND $__timeTo() and amount > 0\nGROUP BY DATE_TRUNC('month', accounting_date), category\nUNION\nselect DATE_TRUNC('month',accounting_date) AS time, sum(amount) as entrate, 'totale'\nFROM payments \nWHERE accounting_date BETWEEN $__timeFrom() AND $__timeTo() and amount > 0\nGROUP BY DATE_TRUNC('month', accounting_date)) unione\norder by time\n\n",
             "refId": "A",
             "sql": {
               "columns": [
@@ -310,7 +310,7 @@
             "editorMode": "code",
             "format": "time_series",
             "rawQuery": true,
-            "rawSql": "select DATE_TRUNC('month',date) AS time, sum(abs(cost)) as uscite\nFROM payments \nWHERE $__timeFilter(date) and cost < 0\nGROUP BY DATE_TRUNC('month', date)\norder by time\n\n",
+            "rawSql": "select DATE_TRUNC('month',accounting_date) AS time, sum(abs(amount)) as uscite\nFROM payments \nWHERE $__timeFilter(accounting_date) and amount < 0\nGROUP BY DATE_TRUNC('month', accounting_date)\norder by time\n\n",
             "refId": "A",
             "sql": {
               "columns": [
@@ -471,7 +471,7 @@
             "editorMode": "code",
             "format": "time_series",
             "rawQuery": true,
-            "rawSql": "select * FROM (select DATE_TRUNC('month',date) AS time, sum(cost * -1) as uscite_fisse, category\nFROM payments \nWHERE $__timeFilter(date) and category in ('affitto', 'bolletta', 'condominio')\nGROUP BY DATE_TRUNC('month', date), category\nUNION\nselect DATE_TRUNC('month',date) AS time, sum(cost * -1) as entrate, 'totale'\nFROM payments \nWHERE $__timeFilter(date) and category in ('affitto', 'bolletta', 'condominio')\nGROUP BY DATE_TRUNC('month', date)) unione\norder by time\n\n",
+            "rawSql": "select * FROM (select DATE_TRUNC('month',accounting_date) AS time, sum(amount * -1) as uscite_fisse, category\nFROM payments \nWHERE $__timeFilter(accounting_date) and category in ('affitto', 'bolletta', 'condominio')\nGROUP BY DATE_TRUNC('month', accounting_date), category\nUNION\nselect DATE_TRUNC('month',accounting_date) AS time, sum(amount * -1) as entrate, 'totale'\nFROM payments \nWHERE $__timeFilter(accounting_date) and category in ('affitto', 'bolletta', 'condominio')\nGROUP BY DATE_TRUNC('month', accounting_date)) unione\norder by time\n\n",
             "refId": "A",
             "sql": {
               "columns": [
@@ -589,7 +589,7 @@
             "editorMode": "code",
             "format": "time_series",
             "rawQuery": true,
-            "rawSql": "select DATE_TRUNC('month',date) AS time, category, sum(abs(cost)) as spesa\nfrom expenses.payments\nwhere date BETWEEN $__timeFrom() AND $__timeTo() and cost < 0\nGROUP BY DATE_TRUNC('month', date), category\norder by time",
+            "rawSql": "select DATE_TRUNC('month',accounting_date) AS time, category, sum(abs(amount)) as spesa\nfrom expenses.payments\nwhere accounting_date BETWEEN $__timeFrom() AND $__timeTo() and amount < 0\nGROUP BY DATE_TRUNC('month', accounting_date), category\norder by time",
             "refId": "A",
             "sql": {
               "columns": [
@@ -675,7 +675,7 @@
             "editorMode": "code",
             "format": "time_series",
             "rawQuery": true,
-            "rawSql": "select date as time, category, cost * -1 as spesa\nfrom expenses.payments\nwhere date BETWEEN $__timeFrom() AND $__timeTo() and cost < 0\norder by time",
+            "rawSql": "select accounting_date as time, category, amount * -1 as spesa\nfrom expenses.payments\nwhere accounting_date BETWEEN $__timeFrom() AND $__timeTo() and amount < 0\norder by time",
             "refId": "A",
             "sql": {
               "columns": [
@@ -785,7 +785,7 @@
             "editorMode": "code",
             "format": "time_series",
             "rawQuery": true,
-            "rawSql": "select DATE_TRUNC('month',date) AS time, percentile_disc(0.5) within group (order by abs(payments.cost)) as \"p(50)\", avg(abs(cost))\nfrom expenses.payments\nwhere $__timeFilter(date) and cost < 0\nGROUP BY DATE_TRUNC('month', date)\norder by time",
+            "rawSql": "select DATE_TRUNC('month',accounting_date) AS time, percentile_disc(0.5) within group (order by abs(payments.amount)) as \"p(50)\", avg(abs(amount))\nfrom expenses.payments\nwhere $__timeFilter(accounting_date) and amount < 0\nGROUP BY DATE_TRUNC('month', accounting_date)\norder by time",
             "refId": "A",
             "sql": {
               "columns": [
@@ -920,7 +920,7 @@
             "editorMode": "code",
             "format": "time_series",
             "rawQuery": true,
-            "rawSql": "select DATE_TRUNC('month',date) AS time, sum(cost) as bilancio\nfrom expenses.payments\nwhere $__timeFilter(date) \nGROUP BY DATE_TRUNC('month', date)\norder by time",
+            "rawSql": "select DATE_TRUNC('month',accounting_date) AS time, sum(amount) as bilancio\nfrom expenses.payments\nwhere $__timeFilter(accounting_date) \nGROUP BY DATE_TRUNC('month', accounting_date)\norder by time",
             "refId": "A",
             "sql": {
               "columns": [
@@ -1037,7 +1037,7 @@
             "editorMode": "code",
             "format": "time_series",
             "rawQuery": true,
-            "rawSql": "select DATE_TRUNC('month', p1.date) as time, \n  abs(sum(p1.cost))::float * 100 / abs(avg(p2.cost))::float as affitto_stipendio_rate\nFROM payments p1\njoin payments p2 on DATE_TRUNC('month', p1.date) = DATE_TRUNC('month', p2.date)\nwhere p1.category in ('affitto', 'bolletta', 'condominio') and p2.category = 'stipendio' and p1.date BETWEEN $__timeFrom() and $__timeTo() \ngroup by DATE_TRUNC('month', p1.date)\norder by time",
+            "rawSql": "select DATE_TRUNC('month', p1.accounting_date) as time, \n  abs(sum(p1.amount))::float * 100 / abs(avg(p2.amount))::float as affitto_stipendio_rate\nFROM payments p1\njoin payments p2 on DATE_TRUNC('month', p1.accounting_date) = DATE_TRUNC('month', p2.accounting_date)\nwhere p1.category in ('affitto', 'bolletta', 'condominio') and p2.category = 'stipendio' and p1.accounting_date BETWEEN $__timeFrom() and $__timeTo() \ngroup by DATE_TRUNC('month', p1.accounting_date)\norder by time",
             "refId": "A",
             "sql": {
               "columns": [
@@ -1151,7 +1151,7 @@
             "editorMode": "code",
             "format": "time_series",
             "rawQuery": true,
-            "rawSql": "select DATE_TRUNC('month', p1.date) as time, \n  abs(sum(p1.cost))::float * 100 / abs(sum(p2.cost))::float as affitto_stipendio_rate\nFROM payments p1\njoin payments p2 on DATE_TRUNC('month', p1.date) = DATE_TRUNC('month', p2.date)\nwhere p1.category = 'affitto' and p2.category = 'stipendio' and p1.date BETWEEN $__timeFrom() and $__timeTo() \ngroup by DATE_TRUNC('month', p1.date), p1.category\norder by time",
+            "rawSql": "select DATE_TRUNC('month', p1.accounting_date) as time, \n  abs(sum(p1.amount))::float * 100 / abs(sum(p2.amount))::float as affitto_stipendio_rate\nFROM payments p1\njoin payments p2 on DATE_TRUNC('month', p1.accounting_date) = DATE_TRUNC('month', p2.accounting_date)\nwhere p1.category = 'affitto' and p2.category = 'stipendio' and p1.accounting_date BETWEEN $__timeFrom() and $__timeTo() \ngroup by DATE_TRUNC('month', p1.accounting_date), p1.category\norder by time",
             "refId": "A",
             "sql": {
               "columns": [
