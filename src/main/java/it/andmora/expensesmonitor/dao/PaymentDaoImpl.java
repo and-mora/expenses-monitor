@@ -2,7 +2,7 @@ package it.andmora.expensesmonitor.dao;
 
 import it.andmora.expensesmonitor.dao.dbmodel.PaymentDbEntity;
 import it.andmora.expensesmonitor.dao.mapper.PaymentDbMapper;
-import it.andmora.expensesmonitor.dao.persistance.PaymentMongoRepository;
+import it.andmora.expensesmonitor.dao.persistance.PaymentPostgresRepository;
 import it.andmora.expensesmonitor.domain.PaymentDao;
 import it.andmora.expensesmonitor.domain.model.Payment;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 class PaymentDaoImpl implements PaymentDao {
 
-  private final PaymentMongoRepository repository;
+  private final PaymentPostgresRepository repository;
   private final PaymentDbMapper paymentMapper;
 
   @Override
