@@ -1,0 +1,6 @@
+spring:
+  r2dbc:
+    url: ${DB_CONNECTION_URI:r2dbc:h2:mem:///~/db/testdb}
+    schema: ${DB_SCHEMA:expenses}
+    username: sa
+    password:
