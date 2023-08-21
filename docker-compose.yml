@@ -9,4 +9,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      POSTGRES_CONNECTION_URI: "postgres://host.docker.internal"
+      DB_CONNECTION_URI: "r2dbc:postgresql://host.docker.internal/expenses-monitor"
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_SCHEMA: expenses

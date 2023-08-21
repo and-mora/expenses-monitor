@@ -1,5 +1,10 @@
 spring:
-  data:
-    mongodb:
-      uri: ${MONGODB_CONNECTION_URI:mongodb://localhost:27017}
-      database: ${MONGODB_NAME:rtd}
+  r2dbc:
+    url: ${DB_CONNECTION_URI:r2dbc:postgresql://localhost:5432/test}
+    schema: ${DB_SCHEMA:expenses}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    pool.initial-size: 100
+    pool.max-size: 500
+    pool.max-idle-time: 30m
+    pool.validation-query: SELECT
