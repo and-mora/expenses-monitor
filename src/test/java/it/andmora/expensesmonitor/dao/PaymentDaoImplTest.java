@@ -2,7 +2,7 @@ package it.andmora.expensesmonitor.dao;
 
 import it.andmora.expensesmonitor.dao.dbmodel.PaymentDbEntity;
 import it.andmora.expensesmonitor.dao.mapper.PaymentDbMapper;
-import it.andmora.expensesmonitor.dao.persistance.PaymentMongoRepository;
+import it.andmora.expensesmonitor.dao.persistance.PaymentPostgresRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,7 @@ import reactor.test.StepVerifier;
 class PaymentDaoImplTest {
 
   @Mock
-  PaymentMongoRepository repository;
+  PaymentPostgresRepository repository;
   PaymentDaoImpl paymentDao;
   AutoCloseable autoCloseable;
 
@@ -81,23 +81,17 @@ class PaymentDaoImplTest {
   }
 
   Flux<PaymentDbEntity> createOutcomeResponse() {
-    return Flux.just(PaymentDbEntity.builder().id("1").amount(-100).build(),
-        PaymentDbEntity.builder().id("2").amount(-300).build());
+    return Flux.just(PaymentDbEntity.builder().id(1).amount(-100).build(),
+        PaymentDbEntity.builder().id(2).amount(-300).build());
   }
 
   Flux<PaymentDbEntity> createMixedResponse() {
-    return Flux.just(PaymentDbEntity.builder().id("1").amount(100).build(),
-        PaymentDbEntity.builder().id("2").amount(-300).build());
+    return Flux.just(PaymentDbEntity.builder().id(1).amount(100).build(),
+        PaymentDbEntity.builder().id(2).amount(-300).build());
   }
 
   Flux<PaymentDbEntity> createIncomeResponse() {
-    return Flux.just(PaymentDbEntity.builder().id("1").amount(200).build(),
-        PaymentDbEntity.builder().id("2").amount(300).build());
+    return Flux.just(PaymentDbEntity.builder().id(1).amount(200).build(),
+        PaymentDbEntity.builder().id(2).amount(300).build());
   }
-
-//  Flux<PaymentDbEntity> createNegativeResponse() {
-//    return Flux.just(PaymentDbEntity.builder().id("1").paymentType("INCOME").amount(100).build(),
-//        PaymentDbEntity.builder().id("2").paymentType("OUTCOME").amount(300).build());
-//  }
-
 }
