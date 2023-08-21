@@ -9,17 +9,16 @@ import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.format.annotation.DateTimeFormat;
 
-@Document
+@Table("payments")
 @Builder
 @Data
 public class PaymentDbEntity {
 
   @Id
-  private String id;
+  private int id;
   private String description;
   private int amount;
   private String merchantName;
@@ -27,6 +26,5 @@ public class PaymentDbEntity {
   @JsonSerialize(using = LocalDateTimeSerializer.class)
   @JsonDeserialize(using = LocalDateTimeDeserializer.class)
   private LocalDateTime accountingDate;
-  @Indexed
-  private Set<String> tags;
+  private Set<TagDbEntity> tags;
 }

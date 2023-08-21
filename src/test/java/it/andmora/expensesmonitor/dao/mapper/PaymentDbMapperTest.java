@@ -3,10 +3,13 @@ package it.andmora.expensesmonitor.dao.mapper;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import it.andmora.expensesmonitor.dao.dbmodel.PaymentDbEntity;
+import it.andmora.expensesmonitor.dao.dbmodel.TagDbEntity;
 import it.andmora.expensesmonitor.domain.model.Payment;
 import java.time.LocalDateTime;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
+import org.mockito.internal.util.collections.Sets;
 
 class PaymentDbMapperTest {
 
@@ -21,6 +24,9 @@ class PaymentDbMapperTest {
     assertThat(payment).extracting("merchantName").isEqualTo("H&M");
     assertThat(payment).extracting("amount").isEqualTo(1000);
     assertThat(payment).extracting("accountingDate").isEqualTo(dateInjected);
+    assertThat(payment).extracting("tags")
+        .asInstanceOf(InstanceOfAssertFactories.collection(String.class))
+        .containsExactlyInAnyOrder("tag1", "tag2");
   }
 
   @Test
@@ -31,6 +37,10 @@ class PaymentDbMapperTest {
     assertThat(payment).extracting("merchantName").isEqualTo("H&M");
     assertThat(payment).extracting("amount").isEqualTo(1000);
     assertThat(payment).extracting("accountingDate").isEqualTo(dateInjected);
+    assertThat(payment).extracting("tags")
+        .asInstanceOf(InstanceOfAssertFactories.collection(TagDbEntity.class))
+        .containsExactlyInAnyOrder(TagDbEntity.builder().tagName("tag1").build(),
+            TagDbEntity.builder().tagName("tag2").build());
   }
 
   Payment createDefaultPayment() {
@@ -39,6 +49,7 @@ class PaymentDbMapperTest {
         .merchantName("H&M")
         .amount(1000)
         .accountingDate(dateInjected)
+        .tags(Sets.newSet("tag1", "tag2"))
         .build();
   }
 
@@ -48,6 +59,10 @@ class PaymentDbMapperTest {
         .merchantName("H&M")
         .amount(1000)
         .accountingDate(dateInjected)
+        .tags(Sets.newSet(
+            TagDbEntity.builder().id(1).tagName("tag1").build(),
+            TagDbEntity.builder().id(2).tagName("tag2").build()
+        ))
         .build();
   }
 

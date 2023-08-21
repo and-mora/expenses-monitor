@@ -3,7 +3,7 @@ COPY --chown=gradle:gradle . /home/gradle/src
 WORKDIR /home/gradle/src
 RUN gradle build --no-daemon
 
-FROM amazoncorretto:17 as runtime
+FROM amazoncorretto:17 AS runtime
 
 #EXPOSE 8080
 
