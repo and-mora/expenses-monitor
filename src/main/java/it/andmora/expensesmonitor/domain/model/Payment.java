@@ -16,5 +16,6 @@ public class Payment {
   private int amount;
   private String merchantName;
   private LocalDateTime accountingDate;
+  private String category;
   private Set<String> tags;
 }
