@@ -1,15 +1,24 @@
 #!/bin/sh
 
-# TODO parametrize the script
+#### WARNING
+#### this script must be executed only once and on new installation
+
+if [ $# -ne 2 ]; then
+  echo "Illegal number of parameters (2 mandatory, was $#)" >&1
+  echo "usage: sh script.sh user_password admin_password" >&1
+  exit 2
+fi
+
+USER_PASSWORD=$1
+ADMIN_PASSWORD=$2
 
 # 1. create new user
-curl -X POST -H "Content-Type: application/json" -d '{
-  "name":"Andrea",
-  "email":"and.morabito@gmail.com",
-  "login":"andrea",
-  "password":"andrea",
-  "theme":"dark"
-}' http://admin:admin@localhost:3000/api/admin/users
+curl -X POST -H "Content-Type: application/json" -d "{
+  \"name\":\"Andrea\",
+  \"email\":\"and.morabito@gmail.com\",
+  \"login\":\"andrea\",
+  \"password\":\"$USER_PASSWORD\"
+}" http://admin:admin@localhost:3000/api/admin/users
 
 #curl  http://admin:admin@localhost:3000/api/users/2 | jq
 
@@ -26,8 +35,8 @@ curl -X POST -H "Content-Type: application/json" -d '{
 }' http://admin:admin@localhost:3000/api/teams/1/members
 
 # 4. change admin password
-curl -X PUT -H "Content-Type: application/json" -d '{
-  "oldPassword": "admin",
-  "newPassword": "newpass",
-  "confirmNew": "newpass"
-}' http://admin:admin@localhost:3000/api/user/password
+curl -X PUT -H "Content-Type: application/json" -d "{
+  \"oldPassword\": \"admin\",
+  \"newPassword\": \"$ADMIN_PASSWORD\",
+  \"confirmNew\": \"$ADMIN_PASSWORD\"
+}" http://admin:admin@localhost:3000/api/user/password
