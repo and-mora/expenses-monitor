@@ -12,5 +12,3 @@ services:
     volumes:
      - ./provisioning:/etc/grafana/provisioning
      - ./dashboards:/var/lib/grafana/dashboards
-
-##TODO config user
