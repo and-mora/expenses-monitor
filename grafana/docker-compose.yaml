@@ -12,3 +12,10 @@ services:
     volumes:
      - ./provisioning:/etc/grafana/provisioning
      - ./dashboards:/var/lib/grafana/dashboards
+    networks:
+      - expenses-monitor_default
+
+networks:
+  expenses-monitor_default:
+    name: expenses-monitor_default
+    external: true
