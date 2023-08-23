@@ -4,7 +4,7 @@ datasources:
   - name: PostgreSQL
     type: postgres
     uid: c8fbcbf5-8f4f-4640-8d37-887b135a905e
-    url: host.docker.internal:5432
+    url: postgres:5432
     database: postgres
     user: postgres
     jsonData:
