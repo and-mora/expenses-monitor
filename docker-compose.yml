@@ -8,8 +8,10 @@ services:
     build: .
     ports:
       - "8080:8080"
+    depends_on:
+      - postgres
     environment:
-      DB_CONNECTION_URI: "r2dbc:postgresql://host.docker.internal/postgres"
+      DB_CONNECTION_URI: "r2dbc:postgresql://postgres/postgres"
       DB_USER: postgres
       DB_PASSWORD: postgres
       DB_SCHEMA: expenses
