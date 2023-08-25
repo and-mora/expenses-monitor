@@ -12,6 +12,9 @@ services:
     volumes:
      - ./provisioning:/etc/grafana/provisioning
      - ./dashboards:/var/lib/grafana/dashboards
+     - ./grafana.ini:/etc/grafana/grafana.ini
+     - /etc/letsencrypt/live/expmonitor.freeddns.org/privkey.pem:/etc/grafana/grafana.key
+     - /etc/letsencrypt/live/expmonitor.freeddns.org/fullchain.pem:/etc/grafana/grafana.crt
     networks:
       - expenses-monitor_default
 
