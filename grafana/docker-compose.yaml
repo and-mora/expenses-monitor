@@ -15,6 +15,7 @@ services:
      - ./grafana.ini:/etc/grafana/grafana.ini
      - /etc/letsencrypt/live/expmonitor.freeddns.org/privkey.pem:/etc/grafana/grafana.key
      - /etc/letsencrypt/live/expmonitor.freeddns.org/fullchain.pem:/etc/grafana/grafana.crt
+     - grafana_storage:/var/lib/grafana
     networks:
       - expenses-monitor_default
 
