@@ -3,16 +3,16 @@
 #### WARNING
 #### this script must be executed only once and on new installation
 
-if [ $# -ne 1 ]; then
-  echo "Illegal number of parameters (1 mandatory, was $#)" >&1
-  echo "usage: sh script.sh environment_file" >&1
+if [ $# -ne 4 ]; then
+  echo "Illegal number of parameters (4 mandatory, was $#)" >&1
+  echo "usage: sh script.sh viewer_username viewer_email viewer_password admin_password" >&1
   exit 2
 fi
 
-ENV_FILE=$1
-
-# load the env variables
-./"$ENV_FILE"
+VIEWER_NAME=$1
+VIEWER_EMAIL=$2
+VIEWER_PASSWORD=$3
+ADMIN_PASSWORD=$4
 
 # 1. create new user
 curl -X POST -H "Content-Type: application/json" -d "{
