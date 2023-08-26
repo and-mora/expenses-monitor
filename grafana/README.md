@@ -20,3 +20,9 @@ sh init.sh <VIEWER_NAME> <VIEWER_EMAIL> <VIEWER_PASSWORD> <ADMIN_PASSWORD>
 Log in the viewer-only account with the credentials: `VIEWER_EMAIL` - `VIEWER_PASSWORD`.
 
 Log in the admin account with the credentials: `admin` - `ADMIN_PASSWORD`
+
+## Uninstall
+```
+docker compose down
+docker volume rm grafana_storage
+```
