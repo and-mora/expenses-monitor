@@ -19,6 +19,9 @@ services:
     networks:
       - expenses-monitor_default
 
+volumes:
+  grafana_storage: {}
+
 networks:
   expenses-monitor_default:
     name: expenses-monitor_default
