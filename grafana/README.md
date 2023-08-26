@@ -1,12 +1,21 @@
 # Grafana
 Create a grafana-oss (open source version) server.
 
-## Configuration
-The script `init.sh` will create one user with view only permission and change the admin password from the default one.
+## Run with docker
+```
+git clone https://github.com/and-mora/expenses-monitor.git
+cd expenses-monitor/grafana/
+docker compose up -d
+```
 
-- Customize the file `sample_env.sh` to provide the data needed.
-- Give execution permission `chmod +x sample_env.sh`
-- Run the init script with the command sh `init.sh sample_env.sh`
+## Configuration
+The script `init.sh` will create one user with view only permission and change the admin password from the default one. 
+It must be executed only on new installation.
+
+- Run the init script with the command 
+```
+sh init.sh <VIEWER_NAME> <VIEWER_EMAIL> <VIEWER_PASSWORD> <ADMIN_PASSWORD>
+```
 
 Log in the viewer-only account with the credentials: `VIEWER_EMAIL` - `VIEWER_PASSWORD`.
 
