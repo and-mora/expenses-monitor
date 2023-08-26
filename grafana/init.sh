@@ -3,21 +3,23 @@
 #### WARNING
 #### this script must be executed only once and on new installation
 
-if [ $# -ne 2 ]; then
-  echo "Illegal number of parameters (2 mandatory, was $#)" >&1
-  echo "usage: sh script.sh user_password admin_password" >&1
+if [ $# -ne 1 ]; then
+  echo "Illegal number of parameters (1 mandatory, was $#)" >&1
+  echo "usage: sh script.sh environment_file" >&1
   exit 2
 fi
 
-USER_PASSWORD=$1
-ADMIN_PASSWORD=$2
+ENV_FILE=$1
+
+# load the env variables
+./"$ENV_FILE"
 
 # 1. create new user
 curl -X POST -H "Content-Type: application/json" -d "{
-  \"name\":\"Andrea\",
-  \"email\":\"and.morabito@gmail.com\",
-  \"login\":\"andrea\",
-  \"password\":\"$USER_PASSWORD\"
+  \"name\":\"$VIEWER_NAME\",
+  \"email\":\"$VIEWER_EMAIL\",
+  \"login\":\"$VIEWER_NAME\",
+  \"password\":\"$VIEWER_PASSWORD\"
 }" https://admin:admin@expmonitor.freeddns.org:3000/api/admin/users
 
 #curl  https://admin:admin@expmonitor.freeddns.org:3000/api/users/2 | jq
