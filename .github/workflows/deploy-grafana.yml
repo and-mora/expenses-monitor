@@ -5,9 +5,9 @@ name: DeployGrafana
 on:
   pull_request:
     branches: [ master ]
-    paths:
-      include:
-        - grafana/*
+#    paths:
+#      include:
+#        - grafana/*
 
 jobs:
 
