@@ -16,6 +16,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Gradle Version
+        id: gradle-version
+        uses: paulhatch/semantic-version@5f6f89c4e06f9e1a2df00821598c0ac1f9085094 #5.2.1
+        with:
+          change_path: "src"
+          major_pattern: "breaking:"
+          minor_pattern: "feat:"
+
       - name: Grafana Version
         id: grafana-version
         uses: paulhatch/semantic-version@5f6f89c4e06f9e1a2df00821598c0ac1f9085094 #5.2.1
