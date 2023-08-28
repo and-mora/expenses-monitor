@@ -2,11 +2,10 @@ plugins {
 	id 'org.springframework.boot' version '3.1.2'
 	id 'io.spring.dependency-management' version '1.0.13.RELEASE'
 	id 'java'
-	id 'com.github.jmongard.git-semver-plugin' version '0.4.3'
 }
 
 group = 'it.andmora'
-version = semver.version
+version = '0.1.0'
 sourceCompatibility = '17'
 
 configurations {
