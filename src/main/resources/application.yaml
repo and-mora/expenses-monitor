@@ -1,0 +1,7 @@
+spring:
+  r2dbc:
+    url: ${DB_CONNECTION_URI:r2dbc:postgresql://localhost:5432/postgres}
+    schema: ${DB_SCHEMA:expenses}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    pool.validation-query: SELECT 1

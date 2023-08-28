@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:15.3-alpine3.18
+    ports:
+      - "5432:5432"
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      DB_CONNECTION_URI: "r2dbc:postgresql://postgres/postgres"
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_SCHEMA: expenses
