@@ -1,0 +1,27 @@
+### semantic versioning action
+
+name: SemVer
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  SemVer:
+    name: SemanticVersioning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab #v3
+        with:
+          fetch-depth: 0
+
+      - name: Grafana Version
+        id: grafana-version
+        uses: paulhatch/semantic-version@5f6f89c4e06f9e1a2df00821598c0ac1f9085094 #5.2.1
+        with:
+          change_path: "grafana"
+          # Named version, will be used as suffix for name version tag
+          namespace: grafana
+          major_pattern: "breaking:"
+          minor_pattern: "feat:"
