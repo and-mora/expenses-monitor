@@ -8,6 +8,15 @@ on:
       version:
         required: true
         type: string
+    secrets:
+      VM_HOST:
+        required: true
+      VM_USERNAME:
+        required: true
+      VM_PRIVATE_KEY:
+        required: true
+      VM_PORT:
+        required: true
 
 jobs:
 
