@@ -5,9 +5,8 @@
 name: Release and Deploy
 
 on:
-  pull_request:
+  push:
     branches: [ master ]
-
 
 jobs:
   SemanticVersioning:
