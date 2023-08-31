@@ -3,7 +3,7 @@
 name: SemVer
 
 on:
-  push:
+  pull_request:
     branches: [ master ]
 
 jobs:
@@ -17,7 +17,7 @@ jobs:
           fetch-depth: 0
 
       - name: Gradle Version
-        id: gradle-version
+        id: gradle-versioning
         uses: paulhatch/semantic-version@5f6f89c4e06f9e1a2df00821598c0ac1f9085094 #5.2.1
         with:
           change_path: "src"
@@ -25,7 +25,7 @@ jobs:
           minor_pattern: "feat:"
 
       - name: Grafana Version
-        id: grafana-version
+        id: grafana-versioning
         uses: paulhatch/semantic-version@5f6f89c4e06f9e1a2df00821598c0ac1f9085094 #5.2.1
         with:
           change_path: "grafana"
@@ -33,3 +33,19 @@ jobs:
           namespace: grafana
           major_pattern: "breaking:"
           minor_pattern: "feat:"
+
+  Grafana-Deploy:
+    name: Build and Deploy Grafana
+    needs: SemanticVersioning
+    runs-on: ubuntu-latest
+    if: ${{needs.SemanticVersioning.steps.grafana-versioning.changed}}
+    steps:
+      - name: build and push image to ghcr
+        env:
+          CHANGED: ${{needs.SemanticVersioning.steps.grafana-versioning.changed}}
+          VERSION: ${{needs.SemanticVersioning.steps.grafana-versioning.version_tag}}
+        run: |
+          echo "grafana changed: $OUTPUT1, version: $VERSION"
+#          cd grafana
+#          docker build -t ghcr.io/and-mora/expenses-monitor:grafana_latest -t ghcr.io/and-mora/expenses-monitor:<VERSION> .
+#          docker push --all-tags ghcr.io/and-mora/expenses-monitor:grafana_latest
