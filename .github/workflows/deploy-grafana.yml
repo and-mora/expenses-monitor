@@ -37,8 +37,8 @@ jobs:
       - name: 'Build and Push image to ghcr'
         run: |
           cd grafana
-          docker buildx create --use --name mybuild node-amd64
-          docker buildx create --append --name mybuild node-arm64
+          docker buildx create --name mybuilder --bootstrap --use
+          docker buildx ls
           docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/and-mora/expenses-monitor:grafana-latest -t ghcr.io/and-mora/expenses-monitor:${{ inputs.version }} .
           docker push --all-tags ghcr.io/and-mora/expenses-monitor
 
