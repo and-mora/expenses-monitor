@@ -38,7 +38,7 @@ jobs:
     name: Build and Deploy Grafana
     needs: SemVer
     runs-on: ubuntu-latest
-    if: ${{needs.SemanticVersioning.steps.grafana-versioning.changed}}
+    if: always() #${{needs.SemanticVersioning.steps.grafana-versioning.changed}}
     steps:
       - name: build and push image to ghcr
         env:
