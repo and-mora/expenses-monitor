@@ -50,5 +50,5 @@ jobs:
           script: |
             mkdir -p expenses-monitor/grafana
             cd expenses-monitor/grafana
-            wget -O docker-compose.yml https://github.com/and-mora/expenses-monitor/blob/${{ inputs.version }}/grafana/docker-compose.yml
+            wget -O docker-compose.yml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/grafana/docker-compose.yml
             VERSION=${{ inputs.version }} docker compose up -d
