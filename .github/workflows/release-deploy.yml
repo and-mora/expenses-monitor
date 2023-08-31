@@ -5,7 +5,7 @@
 name: Release and Deploy
 
 on:
-  pull_request:
+  push:
     branches: [ master ]
 
 jobs:
@@ -40,38 +40,8 @@ jobs:
           minor_pattern: "feat:"
 
   GrafanaDeploy:
-    name: Build and Deploy Grafana
     needs: SemanticVersioning
-    runs-on: ubuntu-latest
     if: ${{needs.SemanticVersioning.outputs.grafana_changed}}
-    env:
-      VERSION: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab #v3
-
-      - name: 'Login to GitHub Container Registry'
-        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc #v2.2.0
-        with:
-          registry: ghcr.io
-          username: ${{github.actor}}
-          password: ${{secrets.GITHUB_TOKEN}}
-
-      - name: 'Build and Push image to ghcr'
-        run: |
-          cd grafana
-          docker build -t ghcr.io/and-mora/expenses-monitor:grafana-latest -t ghcr.io/and-mora/expenses-monitor:${{ env.VERSION }} .
-          docker push --all-tags ghcr.io/and-mora/expenses-monitor
-
-      - name: 'Deploy grafana on docker in VM'
-        uses: appleboy/ssh-action@55dabf81b49d4120609345970c91507e2d734799
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USERNAME }}
-          key: ${{ secrets.VM_PRIVATE_KEY }}
-          port: ${{ secrets.VM_PORT }}
-          script: |
-            mkdir -p expenses-monitor/grafana
-            cd expenses-monitor/grafana
-            wget -O docker-compose.yml https://github.com/and-mora/expenses-monitor/blob/${{ env.VERSION }}/grafana/docker-compose.yml
-            VERSION=${{ env.VERSION }} docker compose up -d
+    uses: ./.github/workflows/deploy-grafana.yml
+    with:
+      version: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
