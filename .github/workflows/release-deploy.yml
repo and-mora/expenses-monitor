@@ -45,7 +45,4 @@ jobs:
     uses: ./.github/workflows/deploy-grafana.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
-      host: ${{ secrets.VM_HOST }}
-      username: ${{ secrets.VM_USERNAME }}
-      key: ${{ secrets.VM_PRIVATE_KEY }}
-      port: ${{ secrets.VM_PORT }}
+    secrets: inherit
