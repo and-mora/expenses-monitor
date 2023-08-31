@@ -1,36 +1,37 @@
 ### Action to Deploy Grafana on VM
 
-name: DeployGrafana
+name: GrafanaDeploy
 
 on:
-  push:
-    branches: [ master ]
-#  pull_request:
-#    branches: [ master ]
-#    paths:
-#      include:
-#        - grafana/*
-#  workflow_run:
-#    workflows: [SemVer]
-#    types:
-#      - completed
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
 
 jobs:
 
-  deploy:
-    name: Deploy on VM
+  GrafanaDeploy:
+    name: Build and Deploy Grafana
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab #v3
 
-      - name: build and push image to ghcr
+      - name: 'Login to GitHub Container Registry'
+        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc #v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{github.actor}}
+          password: ${{secrets.GITHUB_TOKEN}}
+
+      - name: 'Build and Push image to ghcr'
         run: |
           cd grafana
-#          docker build -t ghcr.io/and-mora/expenses-monitor:grafana_latest -t ghcr.io/and-mora/expenses-monitor:<VERSION> .
+          docker build -t ghcr.io/and-mora/expenses-monitor:grafana-latest -t ghcr.io/and-mora/expenses-monitor:${{ inputs.version }} .
+          docker push --all-tags ghcr.io/and-mora/expenses-monitor
 
-      - name: deploy grafana on docker in VM
+      - name: 'Deploy grafana on docker in VM'
         uses: appleboy/ssh-action@55dabf81b49d4120609345970c91507e2d734799
         with:
           host: ${{ secrets.VM_HOST }}
@@ -38,5 +39,7 @@ jobs:
           key: ${{ secrets.VM_PRIVATE_KEY }}
           port: ${{ secrets.VM_PORT }}
           script: |
-            docker compose build web
-            docker compose up --no-deps -d web
+            mkdir -p expenses-monitor/grafana
+            cd expenses-monitor/grafana
+            wget -O docker-compose.yml https://github.com/and-mora/expenses-monitor/blob/${{ inputs.version }}/grafana/docker-compose.yml
+            VERSION=${{ inputs.version }} docker compose up -d
