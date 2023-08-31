@@ -36,7 +36,7 @@ jobs:
 
   Grafana-Deploy:
     name: Build and Deploy Grafana
-    needs: SemanticVersioning
+    needs: SemVer
     runs-on: ubuntu-latest
     if: ${{needs.SemanticVersioning.steps.grafana-versioning.changed}}
     steps:
