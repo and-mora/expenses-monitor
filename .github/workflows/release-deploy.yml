@@ -1,15 +1,20 @@
-### semantic versioning action
+### Action with 2 functions:
+### - semantic versioning
+### - deploy
 
-name: SemVer
+name: Release and Deploy
 
 on:
   pull_request:
     branches: [ master ]
 
 jobs:
-  SemVer:
+  SemanticVersioning:
     name: SemanticVersioning
     runs-on: ubuntu-latest
+    outputs:
+      grafana_changed: ${{ steps.grafana-versioning.outputs.changed }}
+      grafana_version_tag: ${{ steps.grafana-versioning.outputs.version_tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab #v3
@@ -36,16 +41,15 @@ jobs:
 
   Grafana-Deploy:
     name: Build and Deploy Grafana
-    needs: SemVer
+    needs: SemanticVersioning
     runs-on: ubuntu-latest
-    if: always() #${{needs.SemanticVersioning.steps.grafana-versioning.changed}}
+    if: ${{needs.SemanticVersioning.outputs.grafana_changed}}
     steps:
       - name: build and push image to ghcr
         env:
-          CHANGED: ${{needs.SemanticVersioning.steps.grafana-versioning.changed}}
-          VERSION: ${{needs.SemanticVersioning.steps.grafana-versioning.version_tag}}
+          VERSION: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
         run: |
-          echo "grafana changed: $OUTPUT1, version: $VERSION"
-#          cd grafana
-#          docker build -t ghcr.io/and-mora/expenses-monitor:grafana_latest -t ghcr.io/and-mora/expenses-monitor:<VERSION> .
-#          docker push --all-tags ghcr.io/and-mora/expenses-monitor:grafana_latest
+          echo "new version: $VERSION"
+          cd grafana
+          docker build -t ghcr.io/and-mora/expenses-monitor:$VERSION .
+#          docker push --all-tags ghcr.io/and-mora/expenses-monitor
