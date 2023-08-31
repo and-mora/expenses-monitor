@@ -1,15 +1,20 @@
-### semantic versioning action
+### Action with 2 functions:
+### - semantic versioning
+### - deploy
 
-name: SemVer
+name: Release and Deploy
 
 on:
   push:
     branches: [ master ]
 
 jobs:
-  SemVer:
+  SemanticVersioning:
     name: SemanticVersioning
     runs-on: ubuntu-latest
+    outputs:
+      grafana_changed: ${{ steps.grafana-versioning.outputs.changed }}
+      grafana_version_tag: ${{ steps.grafana-versioning.outputs.version_tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab #v3
@@ -17,7 +22,7 @@ jobs:
           fetch-depth: 0
 
       - name: Gradle Version
-        id: gradle-version
+        id: gradle-versioning
         uses: paulhatch/semantic-version@5f6f89c4e06f9e1a2df00821598c0ac1f9085094 #5.2.1
         with:
           change_path: "src"
@@ -25,7 +30,7 @@ jobs:
           minor_pattern: "feat:"
 
       - name: Grafana Version
-        id: grafana-version
+        id: grafana-versioning
         uses: paulhatch/semantic-version@5f6f89c4e06f9e1a2df00821598c0ac1f9085094 #5.2.1
         with:
           change_path: "grafana"
@@ -33,3 +38,10 @@ jobs:
           namespace: grafana
           major_pattern: "breaking:"
           minor_pattern: "feat:"
+
+  GrafanaDeploy:
+    needs: SemanticVersioning
+    if: ${{needs.SemanticVersioning.outputs.grafana_changed}}
+    uses: ./.github/workflows/deploy-grafana.yml
+    with:
+      version: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}

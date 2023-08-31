@@ -1,18 +1,15 @@
-version: "3.8"
+version: "3.9"
 services:
   grafana_expenses:
-    image: grafana/grafana-oss:10.1.0@sha256:047c1c5aa6fef257b6c2516f95c8fcd9f28707c201c6413dd78328b6cbedff6f
+    image: ghcr.io/and-mora/expenses-monitor:${VERSION}
     container_name: grafana_expenses
-    restart: unless-stopped
+    restart: always
     #environment:
     # - GF_SERVER_ROOT_URL=http://my.grafana.server/
     # - GF_INSTALL_PLUGINS=grafana-clock-panel
     ports:
      - '3000:3000'
     volumes:
-     - ./provisioning:/etc/grafana/provisioning
-     - ./dashboards:/var/lib/grafana/dashboards
-     - ./grafana.ini:/etc/grafana/grafana.ini
      - /etc/letsencrypt/live/expmonitor.freeddns.org/privkey.pem:/etc/grafana/grafana.key
      - /etc/letsencrypt/live/expmonitor.freeddns.org/fullchain.pem:/etc/grafana/grafana.crt
      - storage:/var/lib/grafana
