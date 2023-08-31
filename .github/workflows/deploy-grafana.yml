@@ -51,4 +51,5 @@ jobs:
             mkdir -p expenses-monitor/grafana
             cd expenses-monitor/grafana
             wget -O docker-compose.yml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/grafana/docker-compose.yml
-            VERSION=${{ inputs.version }} sudo docker compose up -d
+            echo VERSION=${{ inputs.version }} > .env
+            sudo docker compose up -d
