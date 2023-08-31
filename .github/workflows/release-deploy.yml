@@ -45,11 +45,20 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{needs.SemanticVersioning.outputs.grafana_changed}}
     steps:
-      - name: build and push image to ghcr
+      - name: Checkout
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab #v3
+
+      - name: 'Login to GitHub Container Registry'
+        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc #v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{github.actor}}
+          password: ${{secrets.GITHUB_TOKEN}}
+
+      - name: 'Build and Push image to ghcr'
         env:
           VERSION: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
         run: |
-          echo "new version: $VERSION"
           cd grafana
-          docker build -t ghcr.io/and-mora/expenses-monitor:$VERSION .
-#          docker push --all-tags ghcr.io/and-mora/expenses-monitor
+          docker build -t ghcr.io/and-mora/expenses-monitor:grafana-latest -t ghcr.io/and-mora/expenses-monitor:$VERSION .
+          docker push --all-tags ghcr.io/and-mora/expenses-monitor
