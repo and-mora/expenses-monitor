@@ -41,8 +41,8 @@ jobs:
 
   GrafanaDeploy:
     needs: SemanticVersioning
-    if: ${{needs.SemanticVersioning.outputs.grafana_changed}}
     uses: ./.github/workflows/deploy-grafana.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.grafana_changed}}
     secrets: inherit
