@@ -5,7 +5,7 @@
 name: Release and Deploy
 
 on:
-  pull_request:
+  push:
     branches: [ master ]
 
 jobs:
@@ -43,7 +43,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: |
+      - name: grafana release inspection
+        run: |
           echo ${{ steps.grafana-versioning.outputs.new_release_published }}
           echo ${{ steps.grafana-versioning.outputs.new_release_version }}
           echo ${{ steps.grafana-versioning.outputs.new_release_major_version }}
@@ -51,20 +52,10 @@ jobs:
           echo ${{ steps.grafana-versioning.outputs.new_release_patch_version }}
           echo ${{ steps.grafana-versioning.outputs.new_release_notes }}
 
-#      - name: Grafana Version
-#        id: grafana-versioning
-#        uses: paulhatch/semantic-version@5f6f89c4e06f9e1a2df00821598c0ac1f9085094 #5.2.1
-#        with:
-#          change_path: "grafana"
-#          # Named version, will be used as suffix for name version tag
-#          namespace: grafana
-#          major_pattern: "breaking:"
-#          minor_pattern: "feat:"
-
-#  GrafanaDeploy:
-#    needs: SemanticVersioning
-#    uses: ./.github/workflows/deploy-grafana.yml
-#    with:
-#      version: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
-#      enabled: ${{needs.SemanticVersioning.outputs.grafana_changed}}
-#    secrets: inherit
+  GrafanaDeploy:
+    needs: SemanticVersioning
+    uses: ./.github/workflows/deploy-grafana.yml
+    with:
+      version: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.grafana_changed}}
+    secrets: inherit
