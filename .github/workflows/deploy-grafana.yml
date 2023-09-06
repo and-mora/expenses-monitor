@@ -25,9 +25,9 @@ on:
 jobs:
 
   GrafanaDeploy:
-    name: Build and Deploy Grafana
+    name: GrafanaDeploy
     runs-on: ubuntu-latest
-    if: inputs.enabled == true
+    if: inputs.enabled == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab #v3

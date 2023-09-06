@@ -1,4 +1,6 @@
-name: Tag and Release
+### Publish a GitHub Release with the input tag. If the tag does not exist create it.
+
+name: Release
 
 on:
   workflow_call:
@@ -12,8 +14,8 @@ on:
         default: false
 
 jobs:
-  tag-and-release:
-    name: Tag and Release
+  release:
+    name: Release
     runs-on: ubuntu-latest
 
     steps:

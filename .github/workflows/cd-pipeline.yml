@@ -1,4 +1,4 @@
-### Action with 2 functions:
+### Pipeline with 3 jobs:
 ### - semantic versioning
 ### - release
 ### - deploy
@@ -40,7 +40,7 @@ jobs:
           major_pattern: "breaking:"
           minor_pattern: "feat:"
 
-  TagAndReleaseGrafana:
+  GrafanaRelease:
     needs: SemanticVersioning
     uses: ./.github/workflows/release.yml
     with:
@@ -48,7 +48,7 @@ jobs:
       enabled: ${{needs.SemanticVersioning.outputs.grafana_changed}}
 
   GrafanaDeploy:
-    needs: TagAndReleaseGrafana
+    needs: [SemanticVersioning, GrafanaRelease]
     uses: ./.github/workflows/deploy-grafana.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
