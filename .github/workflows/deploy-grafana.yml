@@ -43,7 +43,6 @@ jobs:
         run: |
           cd grafana
           docker buildx create --name mybuilder --bootstrap --use
-          docker buildx ls
           docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/and-mora/expenses-monitor:grafana-latest -t ghcr.io/and-mora/expenses-monitor:${{ inputs.version }} --push .
 
       - name: 'Deploy grafana on docker in VM'
