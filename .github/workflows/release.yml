@@ -1,17 +1,27 @@
-name: Publish Release
+name: Tag and Release
 
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+      enabled:
+        required: true
+        type: string
+        default: false
 
 jobs:
-  tagged-release:
-    name: Publish Release
+  tag-and-release:
+    name: Tag and Release
     runs-on: ubuntu-latest
 
     steps:
-      - uses: marvinpinto/action-automatic-releases@latest
+      - name: Create Tag and Publish Release
+        uses: ncipollo/release-action@6c75be85e571768fa31b40abf38de58ba0397db5 #v1.13.0
+        if: inputs.enabled == 'true'
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: false
+          tag: ${{ inputs.tag }}
+          commit: ${{ github.sha }}
+          skipIfReleaseExists: true
+          generateReleaseNotes: true
