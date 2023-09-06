@@ -1,5 +1,6 @@
 ### Action with 2 functions:
 ### - semantic versioning
+### - release
 ### - deploy
 
 name: Release and Deploy
@@ -39,8 +40,15 @@ jobs:
           major_pattern: "breaking:"
           minor_pattern: "feat:"
 
-  GrafanaDeploy:
+  TagAndReleaseGrafana:
     needs: SemanticVersioning
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.grafana_changed}}
+
+  GrafanaDeploy:
+    needs: TagAndReleaseGrafana
     uses: ./.github/workflows/deploy-grafana.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
