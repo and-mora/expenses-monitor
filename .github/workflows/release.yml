@@ -17,11 +17,11 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    if: inputs.enabled == 'true'
 
     steps:
       - name: Create Tag and Publish Release
         uses: ncipollo/release-action@6c75be85e571768fa31b40abf38de58ba0397db5 #v1.13.0
-        if: inputs.enabled == 'true'
         with:
           tag: ${{ inputs.tag }}
           commit: ${{ github.sha }}
