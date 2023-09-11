@@ -17,3 +17,5 @@ services:
       DB_USER: postgres
       DB_PASSWORD: postgres
       DB_SCHEMA: expenses
+    volumes:
+      - /etc/letsencrypt/live/expmonitor.freeddns.org/fullchain.pem:/server.crt

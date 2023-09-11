@@ -5,3 +5,15 @@ spring:
     username: ${DB_USER:postgres}
     password: ${DB_PASSWORD:postgres}
     pool.validation-query: SELECT 1
+
+  ssl:
+    bundle:
+      pem:
+        web-server:
+          truststore:
+            certificate: "classpath:server.crt"
+
+server:
+  ssl:
+    bundle: "web-server"
+    client-auth: NEED
