@@ -6,14 +6,8 @@ spring:
     password: ${DB_PASSWORD:postgres}
     pool.validation-query: SELECT 1
 
-  ssl:
-    bundle:
-      pem:
-        web-server:
-          truststore:
-            certificate: "classpath:server.crt"
-
 server:
+  port: 8443
   ssl:
-    bundle: "web-server"
-    client-auth: NEED
+    certificate: "/cert.pem"
+    certificate-private-key: "/key.pem"
