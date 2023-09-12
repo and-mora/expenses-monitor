@@ -1,6 +1,6 @@
 # Expenses Monitor
 [![Trivy scan](https://github.com/and-mora/expenses-monitor/actions/workflows/trivy.yml/badge.svg?branch=master)](https://github.com/and-mora/expenses-monitor/actions/workflows/trivy.yml)
-[![Release and Deploy](https://github.com/and-mora/expenses-monitor/actions/workflows/release-deploy.yml/badge.svg?branch=master)](https://github.com/and-mora/expenses-monitor/actions/workflows/release-deploy.yml)
+[![Release and Deploy](https://github.com/and-mora/expenses-monitor/actions/workflows/cd-pipeline.yml/badge.svg)](https://github.com/and-mora/expenses-monitor/actions/workflows/cd-pipeline.yml)
 
 The idea is to make an application to monitor the personal finance.
 The project is new and I will work on it on best effort.
