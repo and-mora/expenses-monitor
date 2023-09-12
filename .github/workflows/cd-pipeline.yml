@@ -16,14 +16,16 @@ jobs:
     outputs:
       grafana_changed: ${{ steps.grafana-versioning.outputs.changed }}
       grafana_version_tag: ${{ steps.grafana-versioning.outputs.version_tag }}
+      backend_changed: ${{ steps.backend-versioning.outputs.changed }}
+      backend_version_tag: ${{ steps.backend-versioning.outputs.version_tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 #v3.6.0
         with:
           fetch-depth: 0
 
-      - name: Gradle Version
-        id: gradle-versioning
+      - name: Backend Version
+        id: backend-versioning
         uses: paulhatch/semantic-version@5f6f89c4e06f9e1a2df00821598c0ac1f9085094 #5.2.1
         with:
           change_path: "src"
@@ -46,6 +48,13 @@ jobs:
     with:
       tag: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.grafana_changed}}
+
+  BackendRelease:
+    needs: SemanticVersioning
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{needs.SemanticVersioning.outputs.backend_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.backend_changed}}
 
   GrafanaDeploy:
     needs: [SemanticVersioning, GrafanaRelease]
