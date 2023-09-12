@@ -9,7 +9,7 @@ services:
     build: .
     restart: always
     ports:
-      - "8080:8080"
+      - "8080:8443"
     depends_on:
       - postgres
     environment:
@@ -17,3 +17,6 @@ services:
       DB_USER: postgres
       DB_PASSWORD: postgres
       DB_SCHEMA: expenses
+    volumes:
+      - /etc/letsencrypt/live/expmonitor.freeddns.org/privkey.pem:/key.pem
+      - /etc/letsencrypt/live/expmonitor.freeddns.org/fullchain.pem:/cert.pem
