@@ -1,1 +1,3 @@
 rootProject.name = 'expenses-monitor'
+
+include('backend')

@@ -25,12 +25,13 @@ jobs:
 
       - name: Build an image from Dockerfile
         run: |
-          docker build -t docker.io/andmora/expenses-monitor:${{ github.sha }} .
+          cd backend
+          docker build -t docker.io/andmora/expenses-monitor:backend-${{ github.sha }} .
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'docker.io/andmora/expenses-monitor:${{ github.sha }}'
+          image-ref: 'docker.io/andmora/expenses-monitor:backend-${{ github.sha }}'
           format: 'sarif'
           output: 'trivy-results.sarif'
 
