@@ -8,7 +8,6 @@ import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
 @Service
-public
 class PaymentCreatorImpl implements PaymentCreator {
 
   private final PaymentDao paymentDao;

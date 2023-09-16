@@ -1,9 +1,7 @@
-package it.andmora.expensesmonitor.backend;
+package it.andmora.expensesmonitor.backend.domain.usecase;
 
 import it.andmora.expensesmonitor.backend.domain.PaymentDao;
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
-import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCreator;
-import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCreatorImpl;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
