@@ -5,7 +5,7 @@ COPY . .
 
 RUN ./gradlew bootJar --no-daemon
 
-FROM amazoncorretto:17 AS runtime
+FROM amazoncorretto:17.0.8-alpine3.18@sha256:0c61f12abfb091be48474e836e6802ff3a93e8e038e0460af8c7f447ccbd3901 AS runtime
 
 #EXPOSE 8080
 
