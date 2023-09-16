@@ -1,0 +1,45 @@
+plugins {
+	id 'org.springframework.boot' version '3.1.2'
+	id 'io.spring.dependency-management' version '1.0.13.RELEASE'
+	id 'java'
+}
+
+group = 'it.andmora.expensesmonitor'
+version = '0.2.0'
+sourceCompatibility = '17'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+// prevent the creation of plain.jar file
+tasks.named("jar") {
+	enabled = false
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	implementation 'org.yaml:snakeyaml:2.0'
+	implementation 'org.mapstruct:mapstruct:1.5.3.Final'
+	implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+	implementation group: 'org.postgresql', name: 'r2dbc-postgresql', version: '1.0.2.RELEASE'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.3.Final'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'io.projectreactor:reactor-test'
+	testImplementation 'io.r2dbc:r2dbc-h2'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
