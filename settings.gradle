@@ -1,3 +1,4 @@
 rootProject.name = 'expenses-monitor'
 
 include('backend')
+include('client')

@@ -18,6 +18,8 @@ jobs:
       grafana_version_tag: ${{ steps.grafana-versioning.outputs.version_tag }}
       backend_changed: ${{ steps.backend-versioning.outputs.changed }}
       backend_version_tag: ${{ steps.backend-versioning.outputs.version_tag }}
+      client_changed: ${{ steps.client-versioning.outputs.changed }}
+      client_version_tag: ${{ steps.client-versioning.outputs.version_tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 #v3.6.0
@@ -43,6 +45,16 @@ jobs:
           major_pattern: "breaking:"
           minor_pattern: "feat:"
 
+      - name: Client Version
+        id: client-versioning
+        uses: paulhatch/semantic-version@5f6f89c4e06f9e1a2df00821598c0ac1f9085094 #5.2.1
+        with:
+          change_path: "client"
+          # Named version, will be used as suffix for name version tag
+          namespace: client
+          major_pattern: "breaking:"
+          minor_pattern: "feat:"
+
   GrafanaRelease:
     needs: SemanticVersioning
     uses: ./.github/workflows/release.yml
@@ -56,6 +68,13 @@ jobs:
     with:
       tag: ${{needs.SemanticVersioning.outputs.backend_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.backend_changed}}
+
+  ClientRelease:
+    needs: SemanticVersioning
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{needs.SemanticVersioning.outputs.client_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.client_changed}}
 
   GrafanaDeploy:
     needs: [SemanticVersioning, GrafanaRelease]
