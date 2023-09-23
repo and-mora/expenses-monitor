@@ -1,8 +1,11 @@
 spring:
+  config:
+    import: "optional:configtree:/run/secrets/"
+
   security:
     oauth2:
       client:
         registration:
           github:
-            clientId: <client-id>
-            clientSecret: <client-secret>
+            clientId: ${GITHUB_CLIENT_ID}
+            clientSecret: ${GITHUB_CLIENT_SECRET}
