@@ -1,0 +1,16 @@
+version: "3.9"
+services:
+  app:
+    build: .
+    restart: always
+    ports:
+      - "8080:8080"
+    secrets:
+      - GITHUB_CLIENT_ID
+      - GITHUB_CLIENT_SECRET
+
+secrets:
+  GITHUB_CLIENT_ID:
+    external: true
+  GITHUB_CLIENT_SECRET:
+    external: true
