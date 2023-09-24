@@ -11,3 +11,7 @@ server:
   ssl:
     certificate: "/cert.pem"
     certificate-private-key: "/key.pem"
+
+basic-auth:
+  username: ${BASIC_AUTH_USERNAME:andrea}
+  password: ${BASIC_AUTH_PASSWORD}
