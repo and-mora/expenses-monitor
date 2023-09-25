@@ -16,9 +16,9 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @EnableWebFluxSecurity
 public class WebSecurityConfig {
 
-  @Value("basic-auth.username")
+  @Value("${basic-auth.username}")
   private String userDefault;
-  @Value("basic-auth.password")
+  @Value("${basic-auth.password}")
   private String password;
 
   @Bean
@@ -38,7 +38,7 @@ public class WebSecurityConfig {
             .anyExchange().authenticated()
         )
         .httpBasic(withDefaults())
-//        .formLogin(withDefaults())
+        .formLogin(withDefaults())
         .logout(withDefaults());
 
     return http.build();
