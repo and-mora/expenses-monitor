@@ -2,20 +2,15 @@ package it.andmora.expensesmonitor.backend.web.dto;
 
 import java.time.LocalDateTime;
 import java.util.Set;
-import lombok.Builder;
-import lombok.Data;
 
 /**
  * Pojo used by the controller
  */
-@Builder
-@Data
-public class PaymentDto {
+public record PaymentDto(String description,
+                         int amount,
+                         String merchantName,
+                         LocalDateTime accountingDate,
+                         String category,
+                         Set<String> tags) {
 
-  private String description;
-  private int amount;
-  private String merchantName;
-  private LocalDateTime accountingDate;
-  private String category;
-  private Set<String> tags;
 }
