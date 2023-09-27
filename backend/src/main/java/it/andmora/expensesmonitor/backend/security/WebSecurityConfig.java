@@ -37,7 +37,6 @@ public class WebSecurityConfig {
         .authorizeExchange(exchanges -> exchanges
             .anyExchange().authenticated()
         )
-        .httpBasic(withDefaults())
         .formLogin(withDefaults())
         .logout(withDefaults());
 
