@@ -17,13 +17,13 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 public class WebSecurityConfig {
 
   @Value("${basic-auth.username}")
-  private String userDefault;
+  private String username;
   @Value("${basic-auth.password}")
   private String password;
 
   @Bean
   public MapReactiveUserDetailsService userDetailsService() {
-    UserDetails user = User.withUsername(userDefault)
+    UserDetails user = User.withUsername(this.username)
         .password(password)
         .roles("USER")
         .build();
