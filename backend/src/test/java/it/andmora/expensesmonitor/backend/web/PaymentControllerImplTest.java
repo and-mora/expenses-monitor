@@ -2,6 +2,8 @@ package it.andmora.expensesmonitor.backend.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
+import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
 
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCreator;
@@ -13,11 +15,18 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestPropertySource(properties = {
+    "basic-auth.username=user",
+    "basic-auth.password={bcrypt}$2a$10$lnno9KSTgXgzXPidwsN0nudlqzMhd4Ls/9W122onLGQEgWUeydUmm"
+})
 class PaymentControllerImplTest {
 
   @MockBean
@@ -25,12 +34,20 @@ class PaymentControllerImplTest {
   @Autowired
   PaymentController paymentController;
   LocalDateTime dateInjected = LocalDateTime.now();
-  @Autowired
   WebTestClient webTestClient;
   private static final String PUT_PAYMENT_ENDPOINT = "/payment";
 
+  @Autowired
+  ApplicationContext context;
+
   @BeforeEach
-  void setup() {
+  public void setup() {
+    this.webTestClient = WebTestClient
+        .bindToApplicationContext(this.context)
+        // add Spring Security test Support
+        .apply(springSecurity())
+        .configureClient()
+        .build();
   }
 
   @Test
@@ -49,7 +66,40 @@ class PaymentControllerImplTest {
   }
 
   @Test
-  void whenRestInterfaceIsCalledThen200() {
+  void testRedirectToLoginPage() {
+    webTestClient.get().uri("/").exchange().expectStatus().is3xxRedirection();
+  }
+
+  @Test
+  void testLoginPageAnonymous() {
+    webTestClient.get().uri("/login").exchange().expectStatus().isOk();
+  }
+
+  @Test
+  @WithMockUser
+  void givenTokenAndUserWhenRestInterfaceIsCalledThen200() {
+    Mockito.when(paymentCreator.createPayment(any())).thenReturn(Mono.just(createDefaultPayment()));
+    PaymentDto paymentDto = createPaymentDto();
+
+    webTestClient
+        .mutateWith(csrf())
+        .put()
+        .uri(PUT_PAYMENT_ENDPOINT)
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(paymentDto)
+        .exchange()
+        .expectStatus().isOk()
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody(PaymentDto.class).value(payment -> {
+          assertThat(payment.description()).isEqualTo("shopping");
+          assertThat(payment.merchantName()).isEqualTo("H&M");
+          assertThat(payment.amount()).isEqualTo(1000);
+        });
+  }
+
+  @Test
+  void givenNoCsrfTokenWhenRestInterfaceIsCalledThen403() {
     Mockito.when(paymentCreator.createPayment(any())).thenReturn(Mono.just(createDefaultPayment()));
     PaymentDto paymentDto = createPaymentDto();
 
@@ -60,27 +110,14 @@ class PaymentControllerImplTest {
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(paymentDto)
         .exchange()
-        .expectStatus().isOk()
-        .expectHeader().contentType(MediaType.APPLICATION_JSON)
-//        .expectBody()
-//        .jsonPath("$.description").isEqualTo("shopping")
-//        .jsonPath("$.merchantName").isEqualTo("H&M")
-//        .jsonPath("$.amount").isEqualTo(1000);
-        .expectBody(PaymentDto.class).value(payment -> {
-          assertThat(payment).extracting("description").isEqualTo("shopping");
-          assertThat(payment).extracting("merchantName").isEqualTo("H&M");
-          assertThat(payment).extracting("amount").isEqualTo(1000);
-//          assertThat(payment).extracting("accountingDate").isEqualTo(dateInjected);
-        });
+        .expectStatus().isForbidden();
   }
 
   PaymentDto createPaymentDto() {
-    return PaymentDto.builder()
-        .description("shopping")
-        .merchantName("H&M")
-        .amount(1000)
-        .accountingDate(dateInjected)
-        .build();
+    return new PaymentDto("shopping",
+        1000,
+        "H&M",
+        dateInjected, null, null);
   }
 
   Payment createDefaultPayment() {
