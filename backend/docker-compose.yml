@@ -3,12 +3,12 @@ services:
   postgres:
     image: postgres:15.3-alpine3.18
     restart: always
-    secrets:
-      - POSTGRES_PASSWORD
+    environment:
+      POSTGRES_PASSWORD: useless
     ports:
       - "5432:5432"
   app:
-    image: ghcr.io/and-mora/expenses-monitor:${BACKEND_VERSION}
+    image: ghcr.io/and-mora/expenses-monitor:${tag}
     restart: always
     ports:
       - "8443:8443"
@@ -35,5 +35,5 @@ secrets:
     external: true
   DB_BACKEND_PASSWORD:
     external: true
-  POSTGRES_PASSWORD:
-    external: true
+#  POSTGRES_PASSWORD:
+#    external: true
