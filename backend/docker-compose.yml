@@ -3,10 +3,12 @@ services:
   postgres:
     image: postgres:15.3-alpine3.18
     restart: always
+    secrets:
+      - POSTGRES_PASSWORD
     ports:
       - "5432:5432"
   app:
-    build: .
+    image: ghcr.io/and-mora/expenses-monitor:${BACKEND_VERSION}
     restart: always
     ports:
       - "8443:8443"
@@ -14,8 +16,6 @@ services:
       - postgres
     environment:
       DB_CONNECTION_URI: "r2dbc:postgresql://postgres/postgres"
-      DB_USER: postgres
-      DB_PASSWORD: postgres
       DB_SCHEMA: expenses
     volumes:
       - /etc/letsencrypt/live/expmonitor.freeddns.org/privkey.pem:/key.pem
@@ -23,9 +23,17 @@ services:
     secrets:
       - BASIC_AUTH_USERNAME
       - BASIC_AUTH_PASSWORD
+      - DB_BACKEND_USER
+      - DB_BACKEND_PASSWORD
 
 secrets:
   BASIC_AUTH_USERNAME:
     external: true
   BASIC_AUTH_PASSWORD:
+    external: true
+  DB_BACKEND_USER:
+    external: true
+  DB_BACKEND_PASSWORD:
+    external: true
+  POSTGRES_PASSWORD:
     external: true
