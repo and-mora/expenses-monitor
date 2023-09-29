@@ -83,3 +83,12 @@ jobs:
       version: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.grafana_changed}}
     secrets: inherit
+
+  BackendDeploy:
+    needs: [ SemanticVersioning, BackendRelease ]
+    uses: ./.github/workflows/deploy.yml
+    with:
+      version: ${{needs.SemanticVersioning.outputs.backend_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.backend_changed}}
+      folder: backend
+    secrets: inherit
