@@ -34,11 +34,10 @@ public class WebSecurityConfig {
   @Bean
   public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
     http
+        .httpBasic(withDefaults())
         .authorizeExchange(exchanges -> exchanges
             .anyExchange().authenticated()
-        )
-        .formLogin(withDefaults())
-        .logout(withDefaults());
+        );
 
     return http.build();
   }
