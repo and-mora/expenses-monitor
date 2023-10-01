@@ -78,10 +78,11 @@ jobs:
 
   GrafanaDeploy:
     needs: [SemanticVersioning, GrafanaRelease]
-    uses: ./.github/workflows/deploy-grafana.yml
+    uses: ./.github/workflows/deploy.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.grafana_changed}}
+      folder: grafana
     secrets: inherit
 
   BackendDeploy:
