@@ -93,3 +93,12 @@ jobs:
       enabled: ${{needs.SemanticVersioning.outputs.backend_changed}}
       folder: backend
     secrets: inherit
+
+    ClientDeploy:
+      needs: [ SemanticVersioning, ClientRelease ]
+      uses: ./.github/workflows/deploy.yml
+      with:
+        version: ${{needs.SemanticVersioning.outputs.client_version_tag}}
+        enabled: ${{needs.SemanticVersioning.outputs.client_changed}}
+        folder: client
+      secrets: inherit
