@@ -15,6 +15,7 @@ public class RestConnectorConfig {
     return JettyReactiveFeign
         .<BackendApi>builder()
         .target(BackendApi.class, "http://localhost:8443");
+    // todo parametrize url
   }
 
 }
