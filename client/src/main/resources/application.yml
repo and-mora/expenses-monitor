@@ -9,3 +9,7 @@ spring:
           github:
             clientId: ${GITHUB_CLIENT_ID}
             clientSecret: ${GITHUB_CLIENT_SECRET}
+
+feign:
+  url: ${BACKEND_URL:http://localhost:8443}
+
