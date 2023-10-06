@@ -2,6 +2,5 @@ version: "3.9"
 services:
   app:
     image: ghcr.io/and-mora/expenses-monitor:${tag}
-    restart: always
     ports:
       - "8080:8080"
