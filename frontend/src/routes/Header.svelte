@@ -1,14 +1,33 @@
 <script>
 	import { page } from '$app/stores';
-	import logo from '$lib/images/svelte-logo.svg';
+	// import logo from '$lib/images/svelte-logo.svg';
 	import github from '$lib/images/github.svg';
+	import { user } from '../store';
+
+	// /** @type {import('./$types').LayoutData} */
+	// export let data;
+
+	let _user = "";
+	user.subscribe((value) => (_user = value));
+
+	function logout() {
+		console.log('click');
+
+		const response = fetch('http://localhost:8443/logout', {
+			method: 'POST'
+		});
+		user.set("");
+
+		// todo delete cookie
+		// todo redirect to login
+	}
 </script>
 
 <header>
 	<div class="corner">
-		<a href="https://kit.svelte.dev">
-			<img src={logo} alt="SvelteKit" /> 
-		</a> 
+		<a href="https://github.com/and-mora/expenses-monitor">
+			<img src={github} alt="GitHub" />
+		</a>
 	</div>
 
 	<nav>
@@ -17,14 +36,8 @@
 		</svg>
 		<ul>
 			<li aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
-				<a href="/">Home</a>
+				<a href="/">Home {_user}</a>
 			</li>
-			<!-- <li aria-current={$page.url.pathname === '/about' ? 'page' : undefined}>
-				<a href="/about">About</a>
-			</li>
-			<li aria-current={$page.url.pathname.startsWith('/sverdle') ? 'page' : undefined}>
-				<a href="/sverdle">Sverdle</a>
-			</li> -->
 		</ul>
 		<svg viewBox="0 0 2 3" aria-hidden="true">
 			<path d="M0,0 L0,3 C0.5,3 0.5,3 1,2 L2,0 Z" />
@@ -32,9 +45,8 @@
 	</nav>
 
 	<div class="corner">
-		<a href="https://github.com/and-mora/expenses-monitor">
-			<img src={github} alt="GitHub" />
-		</a>
+		<!-- <a href="/logout">Logout</a> -->
+		<button on:click={logout}> logout </button>
 	</div>
 </header>
 
