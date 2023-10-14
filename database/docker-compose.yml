@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:15.3-alpine3.18
+    ports:
+      - "5432:5432"
+    volumes:
+      - database:/var/lib/postgresql/data
+    secrets:
+      - POSTGRES_PASSWORD
+
+volumes:
+  database: {}
+
+secrets:
+  POSTGRES_PASSWORD:
+    external: true
