@@ -1,0 +1,45 @@
+### Simplified workflow of Deploy on VM, dedicated mainly to database which do not required to build a dedicated image
+
+name: Deploy DB
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      enabled:
+        required: true
+        type: string
+        default: false
+      folder:
+        required: true
+        type: string
+    secrets:
+      VM_HOST:
+        required: true
+      VM_USERNAME:
+        required: true
+      VM_PRIVATE_KEY:
+        required: true
+      VM_PORT:
+        required: true
+
+jobs:
+  Deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    if: inputs.enabled == 'true'
+    steps:
+      - name: 'Deploy on docker in VM'
+        uses: appleboy/ssh-action@55dabf81b49d4120609345970c91507e2d734799
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME }}
+          key: ${{ secrets.VM_PRIVATE_KEY }}
+          port: ${{ secrets.VM_PORT }}
+          script: |
+            mkdir -p expenses-monitor/${{ inputs.folder }}
+            cd expenses-monitor/${{ inputs.folder }}
+            wget -O docker-compose.yml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/${{ inputs.folder }}/docker-compose.yml
+            sudo docker stack deploy --compose-file docker-compose.yml ${{ inputs.folder }}
