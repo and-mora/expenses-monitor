@@ -17,6 +17,7 @@ services:
     environment:
       DB_CONNECTION_URI: "r2dbc:postgresql://postgres/postgres"
       DB_SCHEMA: expenses
+      FRONTEND_ORIGIN_URL: "https://localhost:5173"
     volumes:
       - /etc/letsencrypt/live/expmonitor.freeddns.org/privkey.pem:/key.pem
       - /etc/letsencrypt/live/expmonitor.freeddns.org/fullchain.pem:/cert.pem
