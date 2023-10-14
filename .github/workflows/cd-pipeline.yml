@@ -22,6 +22,8 @@ jobs:
       client_version_tag: ${{ steps.client-versioning.outputs.version_tag }}
       frontend_changed: ${{ steps.frontend-versioning.outputs.changed }}
       frontend_version_tag: ${{ steps.frontend-versioning.outputs.version_tag }}
+      database_changed: ${{ steps.database-versioning.outputs.changed }}
+      database_version_tag: ${{ steps.database-versioning.outputs.version_tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 #v3.6.0
@@ -66,6 +68,15 @@ jobs:
           major_pattern: "breaking:"
           minor_pattern: "feat:"
 
+      - name: Database Version
+        id: database-versioning
+        uses: paulhatch/semantic-version@5f6f89c4e06f9e1a2df00821598c0ac1f9085094 #5.2.1
+        with:
+          change_path: "database"
+          namespace: database
+          major_pattern: "breaking:"
+          minor_pattern: "feat:"
+
   GrafanaRelease:
     needs: SemanticVersioning
     uses: ./.github/workflows/release.yml
@@ -88,6 +99,13 @@ jobs:
       enabled: ${{needs.SemanticVersioning.outputs.client_changed}}
 
   FrontendRelease:
+    needs: SemanticVersioning
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{needs.SemanticVersioning.outputs.frontend_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.frontend_changed}}
+
+  DatabaseRelease:
     needs: SemanticVersioning
     uses: ./.github/workflows/release.yml
     with:
@@ -119,4 +137,13 @@ jobs:
       version: ${{needs.SemanticVersioning.outputs.client_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.client_changed}}
       folder: client
+    secrets: inherit
+
+  DatabaseDeploy:
+    needs: [ SemanticVersioning, DatabaseRelease ]
+    uses: ./.github/workflows/deploy_database.yml
+    with:
+      version: ${{needs.SemanticVersioning.outputs.database_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.database_changed}}
+      folder: database
     secrets: inherit
