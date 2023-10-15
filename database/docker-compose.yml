@@ -4,6 +4,8 @@ services:
     image: postgres:15.3-alpine3.18
     ports:
       - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/POSTGRES_PASSWORD
     volumes:
       - database:/var/lib/postgresql/data
     secrets:
