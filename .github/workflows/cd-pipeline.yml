@@ -109,8 +109,8 @@ jobs:
     needs: SemanticVersioning
     uses: ./.github/workflows/release.yml
     with:
-      tag: ${{needs.SemanticVersioning.outputs.frontend_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.frontend_changed}}
+      tag: ${{needs.SemanticVersioning.outputs.database_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.database_changed}}
 
   GrafanaDeploy:
     needs: [SemanticVersioning, GrafanaRelease]
