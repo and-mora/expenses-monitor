@@ -8,11 +8,17 @@ services:
       POSTGRES_PASSWORD_FILE: /run/secrets/POSTGRES_PASSWORD
     volumes:
       - database:/var/lib/postgresql/data
+    networks:
+      - expenses_monitor
     secrets:
       - POSTGRES_PASSWORD
 
 volumes:
   database: {}
+
+networks:
+  expenses_monitor:
+    external: true
 
 secrets:
   POSTGRES_PASSWORD:
