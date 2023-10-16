@@ -6,6 +6,9 @@ spring:
     password: ${DB_BACKEND_PASSWORD:postgres}
     pool.validation-query: SELECT 1
 
+  config:
+    import: "optional:configtree:/run/secrets/"
+
 server:
   port: 8443
   ssl:
