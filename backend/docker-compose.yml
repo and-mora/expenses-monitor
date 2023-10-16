@@ -14,10 +14,16 @@ services:
     volumes:
       - /etc/letsencrypt/live/expmonitor.freeddns.org/privkey.pem:/key.pem
       - /etc/letsencrypt/live/expmonitor.freeddns.org/fullchain.pem:/cert.pem
+    networks:
+      - expenses_monitor
     secrets:
       - BASIC_AUTH_USERNAME
       - BASIC_AUTH_PASSWORD
       - DB_BACKEND_PASSWORD
+
+networks:
+  expenses_monitor:
+    external: true
 
 secrets:
   BASIC_AUTH_USERNAME:
