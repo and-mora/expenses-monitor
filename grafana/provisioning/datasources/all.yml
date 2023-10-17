@@ -5,10 +5,10 @@ datasources:
     type: postgres
     uid: c8fbcbf5-8f4f-4640-8d37-887b135a905e
     url: postgres:5432
-    database: postgres
-    user: postgres
+    database: $DATABASE
+    user: $DB_GRAFANA_USERNAME
     jsonData:
       sslmode: disable
     secureJsonData:
-      password: postgres
+      password: $DB_GRAFANA_PASSWORD
     readOnly: true

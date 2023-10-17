@@ -3,10 +3,10 @@ services:
   grafana_expenses:
     image: ghcr.io/and-mora/expenses-monitor:${VERSION}
     container_name: grafana_expenses
-    restart: always
-    #environment:
-    # - GF_SERVER_ROOT_URL=http://my.grafana.server/
-    # - GF_INSTALL_PLUGINS=grafana-clock-panel
+    environment:
+      DATABASE: postgres
+      DB_GRAFANA_USERNAME: grafana_user
+      DB_GRAFANA_PASSWORD_FILE: /run/secrets/DB_GRAFANA_PASSWORD
     ports:
      - '3000:3000'
     volumes:
@@ -14,12 +14,17 @@ services:
      - /etc/letsencrypt/live/expmonitor.freeddns.org/fullchain.pem:/etc/grafana/grafana.crt
      - storage:/var/lib/grafana
     networks:
-      - expenses-monitor_default
+      - expenses_monitor
+    secrets:
+      - DB_GRAFANA_PASSWORD
+
+secrets:
+  DB_GRAFANA_PASSWORD:
+    external: true
 
 volumes:
   storage: {}
 
 networks:
-  expenses-monitor_default:
-    name: expenses-monitor_default
+  expenses_monitor:
     external: true

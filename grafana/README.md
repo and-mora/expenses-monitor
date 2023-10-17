@@ -1,11 +1,11 @@
 # Grafana
 Create a grafana-oss (open source version) server.
 
-## Local deployment with docker
+## Local deployment with Docker Swarm
 ```
 git clone https://github.com/and-mora/expenses-monitor.git
 cd expenses-monitor/grafana/
-docker compose up -d
+docker stack deploy --compose-file docker-compose.yml grafana
 ```
 
 ## Remote deployment on Virtual Machine
@@ -31,6 +31,12 @@ Log in the admin account with the credentials: `admin` - `ADMIN_PASSWORD`.
 
 ## Uninstall
 ```
-docker compose down
+docker stack rm grafana
 docker volume rm grafana_storage
+```
+
+### Alternative commands for Docker (non Swarm)
+```
+docker compose up -d
+docker compose down
 ```
