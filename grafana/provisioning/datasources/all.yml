@@ -9,6 +9,7 @@ datasources:
     user: $DB_GRAFANA_USERNAME
     jsonData:
       sslmode: disable
+      postgresVersion: 15
     secureJsonData:
-      password: $DB_GRAFANA_PASSWORD
+      password: /run/secrets/DB_GRAFANA_PASSWORD
     readOnly: true
