@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   grafana_expenses:
-    image: ghcr.io/and-mora/expenses-monitor:${VERSION}
+    image: ghcr.io/and-mora/expenses-monitor:${tag}
     container_name: grafana_expenses
     environment:
       DATABASE: postgres
