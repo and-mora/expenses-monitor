@@ -51,3 +51,5 @@ CREATE TABLE expenses.payment_tags (
 	payment int4 NOT NULL,
 	CONSTRAINT paymenttag_fk_1 FOREIGN KEY (tag) REFERENCES expenses.tags(id)
 );
+
+alter database postgres set search_path = expenses;
