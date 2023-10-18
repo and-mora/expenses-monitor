@@ -5,13 +5,13 @@ services:
     environment:
       DATABASE: postgres
       DB_GRAFANA_USERNAME: grafana_user
-      DB_GRAFANA_PASSWORD_FILE: /run/secrets/DB_GRAFANA_PASSWORD
+    entrypoint: [ '/bin/sh', '-c', 'export DB_GRAFANA_PASSWORD=$$(cat /run/secrets/DB_GRAFANA_PASSWORD); /run.sh' ]
     ports:
-     - '3000:3000'
+      - '3000:3000'
     volumes:
-     - /etc/letsencrypt/live/expmonitor.freeddns.org/privkey.pem:/etc/grafana/grafana.key
-     - /etc/letsencrypt/live/expmonitor.freeddns.org/fullchain.pem:/etc/grafana/grafana.crt
-     - storage:/var/lib/grafana
+      - /etc/letsencrypt/live/expmonitor.freeddns.org/privkey.pem:/etc/grafana/grafana.key
+      - /etc/letsencrypt/live/expmonitor.freeddns.org/fullchain.pem:/etc/grafana/grafana.crt
+      - storage:/var/lib/grafana
     networks:
       - expenses_monitor
     secrets:
@@ -22,7 +22,7 @@ secrets:
     external: true
 
 volumes:
-  storage: {}
+  storage: { }
 
 networks:
   expenses_monitor:
