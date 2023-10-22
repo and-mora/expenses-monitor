@@ -1,0 +1,42 @@
+### Scheduled database backup
+
+name: Backup Database
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '00 07 * * SUN'
+
+jobs:
+  backup:
+    name: Backup database
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+      - name: 'Generate backup filename'
+        id: gen_filename
+        run: echo "backup_filename=dump_$(date +"%Y-%m-%d_%H_%M_%S").sql.gz.enc" >> $GITHUB_OUTPUT
+
+      - name: 'Run backup command'
+        uses: appleboy/ssh-action@55dabf81b49d4120609345970c91507e2d734799
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME }}
+          key: ${{ secrets.VM_PRIVATE_KEY }}
+          port: ${{ secrets.VM_PORT }}
+          script: |
+            mkdir -p expenses-monitor/db_backup
+            cd expenses-monitor/db_backup
+            sudo docker exec -t $(sudo docker ps -f name=postgres -q) pg_dumpall -c -U postgres |  gzip | openssl enc -aes-256-cbc -pbkdf2 -k ${{ secrets.DB_BACKUP_PASSWORD }} -out ${{ steps.gen_filename.outputs.backup_filename }}
+
+      - name: 'Download file backup from server'
+        id: download_backup
+        run: scp -i ${{ secrets.VM_PRIVATE_KEY }} ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }}:expenses-monitor/db_backup/${{ steps.gen_filename.outputs.backup_filename }} ./
+
+      - name: 'Upload to gdrive'
+        uses: adityak74/google-drive-upload-git-action@647044c840245273838cdd1ce80e6f10f8906350 #v0.3
+        with:
+          credentials: ${{ secrets.GDRIVE_CREDENTIALS }}
+          filename: ${{ steps.gen_filename.outputs.backup_filename }}
+          folderId: ${{ secrets.GDRIVE_FOLDERID }}
