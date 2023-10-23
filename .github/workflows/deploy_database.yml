@@ -3,6 +3,7 @@
 name: Deploy DB
 
 on:
+  workflow_dispatch:
   workflow_call:
     inputs:
       version:
@@ -30,6 +31,7 @@ jobs:
     name: Deploy
     runs-on: ubuntu-latest
     if: inputs.enabled == 'true'
+    environment: prod
     steps:
       - name: 'Deploy on docker in VM'
         uses: appleboy/ssh-action@55dabf81b49d4120609345970c91507e2d734799

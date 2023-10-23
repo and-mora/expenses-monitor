@@ -3,6 +3,10 @@
 name: Deploy
 
 on:
+  workflow_dispatch:
+    folder:
+      required: true
+      type: string
   workflow_call:
     inputs:
       version:
@@ -30,6 +34,7 @@ jobs:
   Deploy:
     name: Deploy
     runs-on: ubuntu-latest
+    environment: prod
     if: inputs.enabled == 'true'
     steps:
       - name: Checkout

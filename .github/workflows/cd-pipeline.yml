@@ -13,6 +13,7 @@ jobs:
   SemanticVersioning:
     name: SemanticVersioning
     runs-on: ubuntu-latest
+    environment: prod
     outputs:
       grafana_changed: ${{ steps.grafana-versioning.outputs.changed }}
       grafana_version_tag: ${{ steps.grafana-versioning.outputs.version_tag }}
