@@ -10,6 +10,16 @@ on:
         type: string
         default: true
       folder:
+        description: 'Component'
+        required: true
+        default: 'backend'
+        type: choice
+        options:
+          - grafana
+          - backend
+          - frontend
+      version:
+        description: 'Tag'
         required: true
         type: string
   workflow_call:
