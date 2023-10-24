@@ -146,5 +146,4 @@ jobs:
     with:
       version: ${{needs.SemanticVersioning.outputs.database_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.database_changed}}
-      folder: database
     secrets: inherit

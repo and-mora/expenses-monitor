@@ -4,6 +4,11 @@ name: Deploy DB
 
 on:
   workflow_dispatch:
+    inputs:
+      enabled:
+        required: false
+        type: string
+        default: true
   workflow_call:
     inputs:
       version:
@@ -13,9 +18,6 @@ on:
         required: true
         type: string
         default: false
-      folder:
-        required: true
-        type: string
     secrets:
       VM_HOST:
         required: true
@@ -42,7 +44,7 @@ jobs:
           port: ${{ secrets.VM_PORT }}
           fingerprint: ${{ secrets.HOST_FINGERPRINT }}
           script: |
-            mkdir -p expenses-monitor/${{ inputs.folder }}
-            cd expenses-monitor/${{ inputs.folder }}
-            wget -O docker-compose.yml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/${{ inputs.folder }}/docker-compose.yml
-            sudo docker stack deploy --compose-file docker-compose.yml ${{ inputs.folder }}
+            mkdir -p expenses-monitor/database
+            cd expenses-monitor/database
+            wget -O docker-compose.yml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/database/docker-compose.yml
+            sudo docker stack deploy --compose-file docker-compose.yml database

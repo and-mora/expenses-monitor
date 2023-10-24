@@ -4,9 +4,14 @@ name: Deploy
 
 on:
   workflow_dispatch:
-    folder:
-      required: true
-      type: string
+    inputs:
+      enabled:
+        required: false
+        type: string
+        default: true
+      folder:
+        required: true
+        type: string
   workflow_call:
     inputs:
       version:
