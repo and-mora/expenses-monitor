@@ -37,12 +37,24 @@ Form login with session token.
 #### Future improvements
 - OAuth2.0
 
-## Local deployment (with docker)
-From the project root directory run:
-```
-docker compose -f backend/docker-compose.yml up -d && docker compose -f grafana/docker-compose.yaml up -d
-```
-3 containers will be created: the postgresql database, the grafana server and the app itself.
+## Local deployment (with Docker Swarm)
 
-> **Warning**
-the database script initialization is work in progress
+### Prerequisites
+1. Init the swarm if you haven't already:
+    ```
+    docker swarm init
+    ```
+2. Create the docker network used by every service:
+    ```
+    docker network create -d overlay expenses_monitor
+    ```
+3. Get a TLS certificate, follow [here](docs/tls_certificate.md) if you don't have one.
+
+### Deploy
+- the database, see [here](database/README.md)
+- grafana server, see [here](grafana/README.md)
+- backend, see [here](backend/README.md)
+
+> **Work In Progress**
+
+
