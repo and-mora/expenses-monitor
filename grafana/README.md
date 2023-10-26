@@ -9,12 +9,37 @@ docker stack deploy --compose-file docker-compose.yml grafana
 ```
 
 ## Remote deployment on Virtual Machine
+### Prerequisites
+
 The `.github/workflows/deploy-grafana.yml` action provides to deploy the grafana server on your VM.
-It's required to set the following secrets on the repository:
+It's required to set the following secrets on the **repository**:
 - `VM_HOST`
 - `VM_PORT`
 - `VM_USERNAME`
 - `VM_PRIVATE_KEY`
+
+#### Database credentials
+Add the docker secret relative to database password:
+
+- default username (see [here](https://github.com/and-mora/expenses-monitor/blob/ad0cbe5ec477d3ba24bc06722fe659d0a32b47e2/database/init-system-users.sql#L24)): `grafana_user`
+- add password secret to docker swarm
+    ```
+    read -sp 'Enter password: ' PASS
+    echo $PASS | docker secret create DB_GRAFANA_PASSWORD -
+    ```
+
+#### TLS certificate
+Grafana expects to have certificate and private key in `/etc/letsencrypt/live/*` directory. 
+
+Customize the [docker-compose](docker-compose.yml) if you have it in another directory.
+
+Official grafana documentation [here](https://grafana.com/docs/grafana/latest/setup-grafana/set-up-https/)
+
+**Important!** Ensure the correct permission on the files to be used by Grafana. In case of docker you can use the 472 user id (it's the one used by grafana) to grant the correct permission.
+```
+sudo chown 472:472 /etc/letsencrypt/*
+sudo chmod -R g+rx /etc/letsencrypt/*
+```
 
 ## Configuration
 The script `init.sh` will create one user with view only permission and change the admin password from the default one. 
