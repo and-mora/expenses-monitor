@@ -25,23 +25,18 @@ jobs:
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.VM_PRIVATE_KEY }}
           port: ${{ secrets.VM_PORT }}
-#          fingerprint: ${{ secrets.HOST_FINGERPRINT }}
+          fingerprint: ${{ secrets.HOST_FINGERPRINT }}
           script: |
             mkdir -p expenses-monitor/db_backup
             cd expenses-monitor/db_backup
             sudo docker exec -t $(sudo docker ps -f name=postgres -q) pg_dumpall -c -U postgres |  gzip | openssl enc -aes-256-cbc -pbkdf2 -k ${{ secrets.DB_BACKUP_PASSWORD }} -out ${{ steps.gen_filename.outputs.backup_filename }}
 
       - name: 'Download backup file via SSH'
-        uses: nicklasfrahm/scp-action@ff9723c16c864e37adf7ef4111362b86905bfb04 #v1.0.1
-        with:
-          direction: download
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USERNAME }}
-          key: ${{ secrets.VM_PRIVATE_KEY }}
-          port: ${{ secrets.VM_PORT }}
-          fingerprint: ${{ secrets.HOST_FINGERPRINT }}
-          source: expenses-monitor/db_backup/${{ steps.gen_filename.outputs.backup_filename }}
-          target: ./
+        run: |
+          mkdir -p .ssh
+          echo ${{ secrets.VM_PRIVATE_KEY }} > .ssh/private.key
+          sudo chmod 600 .ssh/private.key
+          scp -i .ssh/private.key -p ${{ secrets.VM_PORT }} ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }}:expenses-monitor/db_backup/${{ steps.gen_filename.outputs.backup_filename }} ./
 
       - name: 'Upload to gdrive'
         uses: adityak74/google-drive-upload-git-action@647044c840245273838cdd1ce80e6f10f8906350 #v0.3
