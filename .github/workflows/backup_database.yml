@@ -39,7 +39,7 @@ jobs:
           mkdir -p .ssh
           pwd
           echo ${{ secrets.VM_PRIVATE_KEY }} > .ssh/private.key
-          ls -al .ssh 
+          ls -al 
           sudo chmod 600 .ssh/private.key
           scp -i .ssh/private.key -P ${{ secrets.VM_PORT }} ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }}:~/expenses-monitor/db_backup/${{ steps.gen_filename.outputs.backup_filename }} ./
 
