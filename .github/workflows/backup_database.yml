@@ -36,12 +36,14 @@ jobs:
 
       - name: 'Download backup file via SSH'
         run: |
+          echo "p1"
+          eval `ssh-agent -t 2m`
+          echo "p2"
+          echo "${{ secrets.VM_PRIVATE_KEY }}" | ssh-add -
           echo "p3"
-          echo "${{ secrets.VM_PRIVATE_KEY }}" > private.key
-          echo "p5"
-          sudo chmod 600 private.key
-          echo "p6"
-          scp -i private.key -P ${{ secrets.VM_PORT }} ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }}:~/expenses-monitor/db_backup/${{ steps.gen_filename.outputs.backup_filename }} ./
+          scp -P ${{ secrets.VM_PORT }} ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }}:~/expenses-monitor/db_backup/${{ steps.gen_filename.outputs.backup_filename }} ./
+          echo "p4"
+          eval `ssh-agent -k`
 
       - name: 'Upload to gdrive'
         uses: adityak74/google-drive-upload-git-action@647044c840245273838cdd1ce80e6f10f8906350 #v0.3
