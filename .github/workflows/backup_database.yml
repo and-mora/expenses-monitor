@@ -40,6 +40,8 @@ jobs:
           ls -al
           echo "p2"
           pwd
+          echo "p2.5"
+          touch private.key
           echo "p3"
           echo ${{ secrets.VM_PRIVATE_KEY }} > private.key
           echo "p4"
