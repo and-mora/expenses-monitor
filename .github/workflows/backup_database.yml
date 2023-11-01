@@ -36,7 +36,7 @@ jobs:
 
       - name: 'Download backup file via SSH'
         run: |
-          echo "${{ secrets.KNOWN_HOSTS }} >> ~/.ssh/known_hosts
+          echo "${{ secrets.KNOWN_HOSTS }} > ~/.ssh/known_hosts
           echo "p1"
           eval `ssh-agent -t 2m`
           echo "p2"
