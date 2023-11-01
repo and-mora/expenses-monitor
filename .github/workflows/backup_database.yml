@@ -37,15 +37,17 @@ jobs:
       - name: 'Download backup file via SSH'
         run: |
           echo "p1"
-          mkdir -p .ssh
+          ls -al
+          echo "p1,5"
+          mkdir -p ssh
           echo "p2"
           pwd
           echo "p3"
-          echo ${{ secrets.VM_PRIVATE_KEY }} > .ssh/private.key
+          echo ${{ secrets.VM_PRIVATE_KEY }} > ssh/private.key
           echo "p4"
           ls -al 
-          sudo chmod 600 .ssh/private.key
-          scp -i .ssh/private.key -P ${{ secrets.VM_PORT }} ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }}:~/expenses-monitor/db_backup/${{ steps.gen_filename.outputs.backup_filename }} ./
+          sudo chmod 600 ssh/private.key
+          scp -i ssh/private.key -P ${{ secrets.VM_PORT }} ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }}:~/expenses-monitor/db_backup/${{ steps.gen_filename.outputs.backup_filename }} ./
 
       - name: 'Upload to gdrive'
         uses: adityak74/google-drive-upload-git-action@647044c840245273838cdd1ce80e6f10f8906350 #v0.3
