@@ -43,7 +43,7 @@ jobs:
           echo "p2.5"
           touch private.key
           echo "p3"
-          echo ${{ secrets.VM_PRIVATE_KEY }} > private.key
+          echo "${{ secrets.VM_PRIVATE_KEY }}" > private.key
           echo "p4"
           ls -al 
           echo "p5"
