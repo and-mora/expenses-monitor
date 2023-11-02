@@ -84,7 +84,7 @@
         "showThresholdLabels": true,
         "showThresholdMarkers": true
       },
-      "pluginVersion": "10.1.0",
+      "pluginVersion": "9.5.3",
       "targets": [
         {
           "datasource": {
@@ -169,7 +169,7 @@
         "showThresholdLabels": true,
         "showThresholdMarkers": true
       },
-      "pluginVersion": "10.1.0",
+      "pluginVersion": "9.5.3",
       "targets": [
         {
           "datasource": {
@@ -262,7 +262,7 @@
         "showThresholdLabels": true,
         "showThresholdMarkers": true
       },
-      "pluginVersion": "10.1.0",
+      "pluginVersion": "9.5.3",
       "targets": [
         {
           "datasource": {
