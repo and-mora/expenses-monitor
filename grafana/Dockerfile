@@ -57,5 +57,5 @@ RUN if [ ! -z "${GF_INSTALL_PLUGINS}" ]; then \
     fi
 
 COPY ./provisioning /etc/grafana/provisioning
-COPY ./dashboards /var/lib/grafana/dashboards
+COPY ./dashboards /etc/grafana/dashboards
 COPY ./grafana.ini /etc/grafana/grafana.ini
