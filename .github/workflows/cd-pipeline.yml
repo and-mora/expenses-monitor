@@ -115,7 +115,7 @@ jobs:
 
   GrafanaDeploy:
     needs: [SemanticVersioning, GrafanaRelease]
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/deploy_workflow.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.grafana_changed}}
@@ -124,7 +124,7 @@ jobs:
 
   BackendDeploy:
     needs: [ SemanticVersioning, BackendRelease ]
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/deploy_workflow.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.backend_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.backend_changed}}
@@ -133,7 +133,7 @@ jobs:
 
   ClientDeploy:
     needs: [ SemanticVersioning, ClientRelease ]
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/deploy_workflow.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.client_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.client_changed}}
