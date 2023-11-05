@@ -459,22 +459,12 @@
             "mode": "thresholds"
           },
           "mappings": [],
-          "max": 250,
-          "min": -250,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "#EAB839",
-                "value": -50
-              },
-              {
                 "color": "green",
-                "value": 50
+                "value": null
               }
             ]
           },
@@ -483,12 +473,92 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 7,
-        "w": 5,
+        "h": 6,
+        "w": 4,
         "x": 0,
         "y": 22
       },
       "id": 7,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "text": {}
+      },
+      "pluginVersion": "10.1.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'welfare' and amount > 0\ngroup by category",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "entrata complessiva",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-RdYlGr"
+          },
+          "mappings": [],
+          "max": 180,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 4,
+        "y": 22
+      },
+      "id": 10,
       "options": {
         "orientation": "auto",
         "reduceOptions": {
@@ -512,7 +582,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'welfare'\ngroup by category",
+          "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'welfare' and merchant_name = 'Tezenis'\ngroup by category",
           "refId": "A",
           "sql": {
             "columns": [
@@ -533,7 +603,7 @@
           }
         }
       ],
-      "title": "bilancio complessivo",
+      "title": "saldo Tezenis",
       "type": "gauge"
     },
     {
@@ -546,27 +616,170 @@
           "color": {
             "mode": "continuous-RdYlGr"
           },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "fillOpacity": 80,
-            "gradientMode": "scheme",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 1,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "thresholdsStyle": {
-              "mode": "dashed"
-            }
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 8,
+        "y": 22
+      },
+      "id": 11,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "10.1.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'welfare' and merchant_name = 'H&M'\ngroup by category",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "saldo H&M",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-RdYlGr"
           },
           "mappings": [],
+          "max": 1320,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 12,
+        "y": 22
+      },
+      "id": 12,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "10.1.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'welfare' and merchant_name not in('Tezenis', 'H&M')\ngroup by category",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "saldo buoni edenred",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-RdYlGr"
+          },
+          "custom": {},
+          "mappings": [],
+          "max": 1600,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -581,37 +794,25 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 10,
-        "w": 12,
-        "x": 5,
+        "h": 6,
+        "w": 4,
+        "x": 16,
         "y": 22
       },
       "id": 8,
       "options": {
-        "barRadius": 0,
-        "barWidth": 0.97,
-        "colorByField": "bilancio",
-        "fullHighlight": false,
-        "groupWidth": 0.7,
-        "legend": {
-          "calcs": [
-            "mean"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
         "orientation": "auto",
-        "showValue": "auto",
-        "stacking": "none",
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
         },
-        "xTickLabelMaxLength": 0,
-        "xTickLabelRotation": 0,
-        "xTickLabelSpacing": -100
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true
       },
+      "pluginVersion": "10.1.0",
       "targets": [
         {
           "datasource": {
@@ -619,9 +820,9 @@
             "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
           },
           "editorMode": "code",
-          "format": "time_series",
+          "format": "table",
           "rawQuery": true,
-          "rawSql": "select DATE_TRUNC('month',accounting_date) AS time, sum(amount)/100 as bilancio\nfrom expenses.payments\nwhere $__timeFilter(accounting_date) and category = 'welfare'\nGROUP BY DATE_TRUNC('month', accounting_date)\norder by time",
+          "rawSql": "select sum(amount)/100 as bilancio\nfrom expenses.payments\nwhere $__timeFilter(accounting_date) and category = 'welfare'",
           "refId": "A",
           "sql": {
             "columns": [
@@ -642,8 +843,8 @@
           }
         }
       ],
-      "title": "bilancio mensile welfare",
-      "type": "barchart"
+      "title": "saldo totale",
+      "type": "gauge"
     },
     {
       "datasource": {
@@ -668,17 +869,17 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 13,
-        "w": 5,
+        "h": 10,
+        "w": 10,
         "x": 0,
-        "y": 29
+        "y": 28
       },
       "id": 9,
       "options": {
         "displayLabels": [],
         "legend": {
           "displayMode": "table",
-          "placement": "bottom",
+          "placement": "right",
           "showLegend": true,
           "values": [
             "percent",
@@ -730,123 +931,6 @@
       ],
       "title": "spese welfare per merchant",
       "type": "piechart"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-RdYlGr",
-            "seriesBy": "min"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 57,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "currencyEUR"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 12,
-        "x": 5,
-        "y": 32
-      },
-      "id": 10,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-          },
-          "editorMode": "code",
-          "format": "time_series",
-          "rawQuery": true,
-          "rawSql": "select DATE_TRUNC('month',accounting_date) as time, 'entrate', sum(amount)/100 as welfare\nfrom payments \nwhere category = 'welfare' and $__timeFilter(accounting_date) and amount > 0\ngroup by category, DATE_TRUNC('month',accounting_date)\nUNION\nselect DATE_TRUNC('month',accounting_date) as time, 'uscite', sum(amount)/100 as entrate\nfrom payments \nwhere category = 'welfare' and $__timeFilter(accounting_date) and amount < 0\ngroup by category, DATE_TRUNC('month',accounting_date)\norder by time",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "split entrate/uscite welfare",
-      "type": "timeseries"
     }
   ],
   "refresh": "",
