@@ -46,18 +46,13 @@
             "mode": "thresholds"
           },
           "mappings": [],
-          "max": 250,
-          "min": -250,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "red",
                 "value": null
-              },
-              {
-                "color": "#EAB839",
-                "value": -50
               },
               {
                 "color": "green",
@@ -948,6 +943,6 @@
   "timezone": "",
   "title": "Ticket & welfare",
   "uid": "dc691aa8-bf4e-4b81-9e05-ad2a47959615",
-  "version": 13,
+  "version": 14,
   "weekStart": ""
 }
