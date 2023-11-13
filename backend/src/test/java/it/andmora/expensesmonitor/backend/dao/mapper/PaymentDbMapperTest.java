@@ -17,7 +17,7 @@ class PaymentDbMapperTest {
   PaymentDbMapper mapper = Mappers.getMapper(PaymentDbMapper.class);
 
   @Test
-  void whenMapFromDomainToDbEntityThenOk() {
+  void whenMapFromDbEntityToDomainThenOk() {
     Payment payment = mapper.dbEntityToDomain(createDefaultEntity());
 
     assertThat(payment).extracting(Payment::getDescription).isEqualTo("shopping");
@@ -30,7 +30,7 @@ class PaymentDbMapperTest {
   }
 
   @Test
-  void givenNullTagsWhenMapFromDomainToDbEntityThenOk() {
+  void givenNullTagsWhenMapFromDbEntityToDomainThenOk() {
     var dbEntity = createDefaultEntity();
     dbEntity.setTags(null);
 
@@ -47,7 +47,7 @@ class PaymentDbMapperTest {
   }
 
   @Test
-  void whenMapFromDbEntityToDomainThenOk() {
+  void whenMapFromDomainToDbEntityThenOk() {
     PaymentDbEntity payment = mapper.domainToDbEntity(createDefaultPayment());
 
     assertThat(payment).extracting(PaymentDbEntity::getDescription).isEqualTo("shopping");
@@ -58,6 +58,24 @@ class PaymentDbMapperTest {
         .asInstanceOf(InstanceOfAssertFactories.collection(TagDbEntity.class))
         .containsExactlyInAnyOrder(TagDbEntity.builder().tagName("tag1").build(),
             TagDbEntity.builder().tagName("tag2").build());
+  }
+
+  @Test
+  void givenNullTagsWhenMapFromDomainToDbEntityThenOk() {
+    var defaultPayment = createDefaultPayment();
+    defaultPayment.setTags(null);
+
+    PaymentDbEntity payment = mapper.domainToDbEntity(defaultPayment);
+
+    assertThat(payment).extracting(PaymentDbEntity::getDescription).isEqualTo("shopping");
+    assertThat(payment).extracting(PaymentDbEntity::getMerchantName).isEqualTo("H&M");
+    assertThat(payment).extracting(PaymentDbEntity::getAmount).isEqualTo(1000);
+    assertThat(payment).extracting(PaymentDbEntity::getAccountingDate).isEqualTo(dateInjected);
+    assertThat(payment).extracting(PaymentDbEntity::getTags)
+        .asInstanceOf(InstanceOfAssertFactories.collection(TagDbEntity.class))
+        // workaround to assert on a Set
+        .asInstanceOf(InstanceOfAssertFactories.collection(String.class))
+        .isEmpty();
   }
 
   Payment createDefaultPayment() {
