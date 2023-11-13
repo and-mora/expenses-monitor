@@ -1,8 +1,13 @@
 package it.andmora.expensesmonitor.backend.dao;
 
+import static org.mockito.ArgumentMatchers.any;
+
 import it.andmora.expensesmonitor.backend.dao.dbmodel.PaymentDbEntity;
 import it.andmora.expensesmonitor.backend.dao.mapper.PaymentDbMapper;
 import it.andmora.expensesmonitor.backend.dao.persistance.PaymentPostgresRepository;
+import it.andmora.expensesmonitor.backend.domain.model.Payment;
+import java.time.LocalDateTime;
+import java.util.HashSet;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +25,8 @@ class PaymentDaoImplTest {
   PaymentPostgresRepository repository;
   PaymentDaoImpl paymentDao;
   AutoCloseable autoCloseable;
+  LocalDateTime dateInjected = LocalDateTime.now();
+
 
   @BeforeEach
   void setup() {
@@ -80,6 +87,20 @@ class PaymentDaoImplTest {
         .verify();
   }
 
+  @Test
+  void givenAPaymentWhenSaveItThenGoesOk() {
+    var payment = createDefaultPayment();
+    Mockito.when(repository.save(any())).thenReturn(getSavedEntity());
+
+    var paymentSaved = paymentDao.savePayment(payment);
+
+    StepVerifier
+        .create(paymentSaved)
+        .expectNext(payment)
+        .expectComplete()
+        .verify();
+  }
+
   Flux<PaymentDbEntity> createOutcomeResponse() {
     return Flux.just(PaymentDbEntity.builder().id(1).amount(-100).build(),
         PaymentDbEntity.builder().id(2).amount(-300).build());
@@ -93,5 +114,25 @@ class PaymentDaoImplTest {
   Flux<PaymentDbEntity> createIncomeResponse() {
     return Flux.just(PaymentDbEntity.builder().id(1).amount(200).build(),
         PaymentDbEntity.builder().id(2).amount(300).build());
+  }
+
+  Mono<PaymentDbEntity> getSavedEntity() {
+    return Mono.just(PaymentDbEntity.builder()
+        .description("shopping")
+        .merchantName("H&M")
+        .amount(1000)
+        .accountingDate(dateInjected)
+        .tags(null)
+        .build());
+  }
+
+  Payment createDefaultPayment() {
+    return Payment.builder()
+        .description("shopping")
+        .merchantName("H&M")
+        .amount(1000)
+        .accountingDate(dateInjected)
+        .tags(new HashSet<>())
+        .build();
   }
 }
