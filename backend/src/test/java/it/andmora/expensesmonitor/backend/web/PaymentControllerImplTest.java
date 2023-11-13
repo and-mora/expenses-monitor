@@ -58,10 +58,10 @@ class PaymentControllerImplTest {
     Mono<PaymentDto> paymentResponse = paymentController.createPayment(paymentDto);
 
     paymentResponse.subscribe(payment -> {
-      assertThat(payment).extracting("description").isEqualTo("shopping");
-      assertThat(payment).extracting("merchantName").isEqualTo("H&M");
-      assertThat(payment).extracting("amount").isEqualTo(1000);
-      assertThat(payment).extracting("accountingDate").isEqualTo(dateInjected);
+      assertThat(payment).extracting(PaymentDto::description).isEqualTo("shopping");
+      assertThat(payment).extracting(PaymentDto::merchantName).isEqualTo("H&M");
+      assertThat(payment).extracting(PaymentDto::amount).isEqualTo(1000);
+      assertThat(payment).extracting(PaymentDto::accountingDate).isEqualTo(dateInjected);
     });
   }
 
