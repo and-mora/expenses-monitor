@@ -20,24 +20,41 @@ class PaymentDbMapperTest {
   void whenMapFromDomainToDbEntityThenOk() {
     Payment payment = mapper.dbEntityToDomain(createDefaultEntity());
 
-    assertThat(payment).extracting("description").isEqualTo("shopping");
-    assertThat(payment).extracting("merchantName").isEqualTo("H&M");
-    assertThat(payment).extracting("amount").isEqualTo(1000);
-    assertThat(payment).extracting("accountingDate").isEqualTo(dateInjected);
-    assertThat(payment).extracting("tags")
+    assertThat(payment).extracting(Payment::getDescription).isEqualTo("shopping");
+    assertThat(payment).extracting(Payment::getMerchantName).isEqualTo("H&M");
+    assertThat(payment).extracting(Payment::getAmount).isEqualTo(1000);
+    assertThat(payment).extracting(Payment::getAccountingDate).isEqualTo(dateInjected);
+    assertThat(payment).extracting(Payment::getTags)
         .asInstanceOf(InstanceOfAssertFactories.collection(String.class))
         .containsExactlyInAnyOrder("tag1", "tag2");
+  }
+
+  @Test
+  void givenNullTagsWhenMapFromDomainToDbEntityThenOk() {
+    var dbEntity = createDefaultEntity();
+    dbEntity.setTags(null);
+
+    Payment payment = mapper.dbEntityToDomain(dbEntity);
+
+    assertThat(payment).extracting(Payment::getDescription).isEqualTo("shopping");
+    assertThat(payment).extracting(Payment::getMerchantName).isEqualTo("H&M");
+    assertThat(payment).extracting(Payment::getAmount).isEqualTo(1000);
+    assertThat(payment).extracting(Payment::getAccountingDate).isEqualTo(dateInjected);
+    assertThat(payment).extracting(Payment::getTags)
+        // workaround to assert on a Set
+        .asInstanceOf(InstanceOfAssertFactories.collection(String.class))
+        .isEmpty();
   }
 
   @Test
   void whenMapFromDbEntityToDomainThenOk() {
     PaymentDbEntity payment = mapper.domainToDbEntity(createDefaultPayment());
 
-    assertThat(payment).extracting("description").isEqualTo("shopping");
-    assertThat(payment).extracting("merchantName").isEqualTo("H&M");
-    assertThat(payment).extracting("amount").isEqualTo(1000);
-    assertThat(payment).extracting("accountingDate").isEqualTo(dateInjected);
-    assertThat(payment).extracting("tags")
+    assertThat(payment).extracting(PaymentDbEntity::getDescription).isEqualTo("shopping");
+    assertThat(payment).extracting(PaymentDbEntity::getMerchantName).isEqualTo("H&M");
+    assertThat(payment).extracting(PaymentDbEntity::getAmount).isEqualTo(1000);
+    assertThat(payment).extracting(PaymentDbEntity::getAccountingDate).isEqualTo(dateInjected);
+    assertThat(payment).extracting(PaymentDbEntity::getTags)
         .asInstanceOf(InstanceOfAssertFactories.collection(TagDbEntity.class))
         .containsExactlyInAnyOrder(TagDbEntity.builder().tagName("tag1").build(),
             TagDbEntity.builder().tagName("tag2").build());
