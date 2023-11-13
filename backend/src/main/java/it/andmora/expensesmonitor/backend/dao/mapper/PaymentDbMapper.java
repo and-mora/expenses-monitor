@@ -19,7 +19,8 @@ public interface PaymentDbMapper {
   Payment dbEntityToDomain(PaymentDbEntity paymentDbEntity);
 
   default Set<TagDbEntity> mapStringToTags(Set<String> value) {
-    return value.stream()
+    return Optional.ofNullable(value).stream()
+        .flatMap(Collection::stream)
         .map(val -> TagDbEntity.builder().tagName(val).build())
         .collect(Collectors.toSet());
   }
