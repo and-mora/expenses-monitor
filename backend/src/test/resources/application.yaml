@@ -4,3 +4,10 @@ spring:
     schema: ${DB_SCHEMA:expenses}
     username: sa
     password:
+
+basic-auth:
+  username: ${BASIC_AUTH_USERNAME:user}
+  password: ${BASIC_AUTH_PASSWORD:{bcrypt}$2a$10$lnno9KSTgXgzXPidwsN0nudlqzMhd4Ls/9W122onLGQEgWUeydUmm # "pwd" as default
+
+frontend:
+  origin: ${FRONTEND_ORIGIN_URL:http://localhost:5173}
