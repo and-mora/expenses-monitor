@@ -1,6 +1,6 @@
 ### Action to build and run the unit tests of backend
 
-name: Release and Deploy
+name: Build backend
 
 on:
   pull_request:
