@@ -22,11 +22,6 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@TestPropertySource(properties = {
-    "basic-auth.username=user",
-    "basic-auth.password={bcrypt}$2a$10$lnno9KSTgXgzXPidwsN0nudlqzMhd4Ls/9W122onLGQEgWUeydUmm",
-    "frontend.origin=localhost:8080"
-})
 class PaymentControllerImplTest {
 
   @MockBean
