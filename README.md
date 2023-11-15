@@ -5,6 +5,7 @@
 ![Release](https://img.shields.io/github/v/release/and-mora/expenses-monitor?label=frontend-release&sort=semver&filter=*-frontend&color=red)
 
 [![Trivy scan](https://github.com/and-mora/expenses-monitor/actions/workflows/trivy.yml/badge.svg?branch=master)](https://github.com/and-mora/expenses-monitor/actions/workflows/trivy.yml)
+[![Build backend](https://github.com/and-mora/expenses-monitor/actions/workflows/build-be.yml/badge.svg)](https://github.com/and-mora/expenses-monitor/actions/workflows/build-be.yml)
 [![Release and Deploy](https://github.com/and-mora/expenses-monitor/actions/workflows/cd-pipeline.yml/badge.svg)](https://github.com/and-mora/expenses-monitor/actions/workflows/cd-pipeline.yml)
 
 ### Goal

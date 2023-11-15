@@ -1,0 +1,36 @@
+### Action to build and run the unit tests of backend
+
+name: Build backend
+
+on:
+  pull_request:
+    branches:
+      - master
+      - develop
+    paths:
+      - backend
+
+jobs:
+  Build:
+    name: GradleBuild
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+        with:
+          fetch-depth: 0
+
+      - name: Setup java
+        uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0 #3.13.0
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Execute Gradle build
+        run: |
+          cd backend
+          ./gradlew build
