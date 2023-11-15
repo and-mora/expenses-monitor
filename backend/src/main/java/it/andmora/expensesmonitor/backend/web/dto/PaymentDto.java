@@ -10,7 +10,6 @@ public record PaymentDto(String description,
                          int amount,
                          String merchantName,
                          LocalDateTime accountingDate,
-                         String category,
-                         Set<String> tags) {
+                         String category) {
 
 }

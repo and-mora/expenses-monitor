@@ -1,7 +1,6 @@
 package it.andmora.expensesmonitor.backend.dao.dbmodel;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -22,5 +21,4 @@ public class PaymentDbEntity {
   @Column("accounting_date")
   private LocalDateTime accountingDate;
   private String category;
-  private Set<TagDbEntity> tags;
 }
