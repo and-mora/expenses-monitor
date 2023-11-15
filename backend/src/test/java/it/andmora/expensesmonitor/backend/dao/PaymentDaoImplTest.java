@@ -122,7 +122,6 @@ class PaymentDaoImplTest {
         .merchantName("H&M")
         .amount(1000)
         .accountingDate(dateInjected)
-        .tags(null)
         .build());
   }
 
@@ -132,7 +131,6 @@ class PaymentDaoImplTest {
         .merchantName("H&M")
         .amount(1000)
         .accountingDate(dateInjected)
-        .tags(new HashSet<>())
         .build();
   }
 }

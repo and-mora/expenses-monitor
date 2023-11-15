@@ -2,11 +2,6 @@ package it.andmora.expensesmonitor.backend.dao.mapper;
 
 import it.andmora.expensesmonitor.backend.dao.dbmodel.PaymentDbEntity;
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
-import it.andmora.expensesmonitor.backend.dao.dbmodel.TagDbEntity;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -18,17 +13,4 @@ public interface PaymentDbMapper {
 
   Payment dbEntityToDomain(PaymentDbEntity paymentDbEntity);
 
-  default Set<TagDbEntity> mapStringToTags(Set<String> value) {
-    return Optional.ofNullable(value).stream()
-        .flatMap(Collection::stream)
-        .map(val -> TagDbEntity.builder().tagName(val).build())
-        .collect(Collectors.toSet());
-  }
-
-  default Set<String> mapTagsToString(Set<TagDbEntity> value) {
-    return Optional.ofNullable(value).stream()
-        .flatMap(Collection::stream)
-        .map(TagDbEntity::getTagName)
-        .collect(Collectors.toSet());
-  }
 }

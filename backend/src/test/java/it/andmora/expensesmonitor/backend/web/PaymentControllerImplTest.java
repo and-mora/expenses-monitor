@@ -2,7 +2,6 @@ package it.andmora.expensesmonitor.backend.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
 
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
@@ -25,7 +24,8 @@ import reactor.core.publisher.Mono;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {
     "basic-auth.username=user",
-    "basic-auth.password={bcrypt}$2a$10$lnno9KSTgXgzXPidwsN0nudlqzMhd4Ls/9W122onLGQEgWUeydUmm"
+    "basic-auth.password={bcrypt}$2a$10$lnno9KSTgXgzXPidwsN0nudlqzMhd4Ls/9W122onLGQEgWUeydUmm",
+    "frontend.origin=localhost:8080"
 })
 class PaymentControllerImplTest {
 
@@ -66,23 +66,13 @@ class PaymentControllerImplTest {
   }
 
   @Test
-  void testRedirectToLoginPage() {
-    webTestClient.get().uri("/").exchange().expectStatus().is3xxRedirection();
-  }
-
-  @Test
-  void testLoginPageAnonymous() {
-    webTestClient.get().uri("/login").exchange().expectStatus().isOk();
-  }
-
-  @Test
   @WithMockUser
-  void givenTokenAndUserWhenRestInterfaceIsCalledThen200() {
+  void givenAuthWhenRestInterfaceIsCalledThen200() {
     Mockito.when(paymentCreator.createPayment(any())).thenReturn(Mono.just(createDefaultPayment()));
     PaymentDto paymentDto = createPaymentDto();
 
     webTestClient
-        .mutateWith(csrf())
+        .mutate().build()
         .put()
         .uri(PUT_PAYMENT_ENDPOINT)
         .accept(MediaType.APPLICATION_JSON)
@@ -99,7 +89,7 @@ class PaymentControllerImplTest {
   }
 
   @Test
-  void givenNoCsrfTokenWhenRestInterfaceIsCalledThen403() {
+  void givenNoAuthWhenRestInterfaceIsCalledThen401() {
     Mockito.when(paymentCreator.createPayment(any())).thenReturn(Mono.just(createDefaultPayment()));
     PaymentDto paymentDto = createPaymentDto();
 
@@ -110,14 +100,14 @@ class PaymentControllerImplTest {
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(paymentDto)
         .exchange()
-        .expectStatus().isForbidden();
+        .expectStatus().isUnauthorized();
   }
 
   PaymentDto createPaymentDto() {
     return new PaymentDto("shopping",
         1000,
         "H&M",
-        dateInjected, null, null);
+        dateInjected, null);
   }
 
   Payment createDefaultPayment() {
