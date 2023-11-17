@@ -1,12 +1,43 @@
 {
 	"info": {
-		"_postman_id": "acfa5a5b-5b78-4c0d-ac94-cdc6b8b00389",
+		"_postman_id": "50fc874a-e5f9-429e-a172-2e3deff552f3",
 		"name": "Local expenses-monitor integration test",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29890959"
 	},
 	"item": [
 		{
-			"name": "01. Initial balance is 0",
+			"name": "00a. Unauthorized access",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('00a. Unauthorized access', () => {",
+							"    pm.response.to.have.status(401);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host_name}}/balance",
+					"host": [
+						"{{host_name}}"
+					],
+					"path": [
+						"balance"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "00b. Login successfully",
 			"event": [
 				{
 					"listen": "test",
@@ -21,73 +52,44 @@
 				}
 			],
 			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/balance",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"balance"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "02. Put payment income",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test('02. Put payment income', () => {",
-							"    pm.response.to.have.status(200);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "PUT",
+				"method": "POST",
 				"header": [],
 				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"description\": \"stipendio\",\n    \"amount\": 3000,\n    \"merchantName\": \"PagoPA\",\n    \"accountingDate\": \"2022-10-30T13:10:42.000\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "username",
+							"value": "{{api_username}}",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "{{api_password}}",
+							"type": "text"
 						}
-					}
+					]
 				},
 				"url": {
-					"raw": "http://localhost:8080/payment",
-					"protocol": "http",
+					"raw": "{{host_name}}/login",
 					"host": [
-						"localhost"
+						"{{host_name}}"
 					],
-					"port": "8080",
 					"path": [
-						"payment"
+						"login"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "03. Balance is 3000",
+			"name": "01. Get balance",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test('03. Balance is 3000', () => {",
+							"pm.test('01. Get balance', () => {",
 							"    pm.response.to.have.status(200);",
-							"    pm.response.to.have.body('3000');",
 							"});"
 						],
 						"type": "text/javascript"
@@ -98,92 +100,36 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/balance",
-					"protocol": "http",
+					"raw": "{{host_name}}/balance",
 					"host": [
-						"localhost"
+						"{{host_name}}"
 					],
-					"port": "8080",
 					"path": [
 						"balance"
 					]
 				}
 			},
 			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
 		},
 		{
-			"name": "04. Put payment outcome",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test('02. Put payment outcome', () => {",
-							"    pm.response.to.have.status(200);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"description\": \"spesa\",\n    \"amount\": -2500,\n    \"merchantName\": \"Coop\",\n    \"accountingDate\": \"2022-10-30T13:10:42.000\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:8080/payment",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"payment"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "05. Balance is 500",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test('05. Balance is 500', () => {",
-							"    pm.response.to.have.status(200);",
-							"    pm.response.to.have.body('500');",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/balance",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"balance"
-					]
-				}
-			},
-			"response": []
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
 		}
 	]
 }
