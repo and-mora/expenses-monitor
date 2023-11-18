@@ -59,12 +59,12 @@
 					"urlencoded": [
 						{
 							"key": "username",
-							"value": "{{api_username}}",
+							"value": "{{API_USERNAME}}",
 							"type": "text"
 						},
 						{
 							"key": "password",
-							"value": "{{api_password}}",
+							"value": "{{API_PASSWORD}}",
 							"type": "text"
 						}
 					]
