@@ -43,7 +43,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test('01. Initial balance is 0', () => {",
+							"pm.test('00b. Login successfully', () => {",
 							"    pm.response.to.have.status(200);",
 							"});"
 						],
