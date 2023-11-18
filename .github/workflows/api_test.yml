@@ -29,4 +29,4 @@ jobs:
 
       - run: npm install -g newman
 
-      - run: newman run postman/expenses-monitor_api_test.postman_collection.json -e postman/expenses-monitor.postman_environment.json
+      - run: newman run postman/expenses-monitor_api_test.postman_collection.json -e postman/expenses-monitor.postman_environment.json --env-var "API_USERNAME=${{ secrets.API_USERNAME }}" --env-var "API_PASSWORD=${{ secrets.API_PASSWORD }}"
