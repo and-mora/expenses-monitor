@@ -1,0 +1,32 @@
+### Workflow to run the api test against the backend
+
+name: Run API test
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - master
+    paths:
+      - backend
+
+jobs:
+  ApiTest:
+    name: API Test
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 #4.0.0
+        with:
+          node-version: 18
+
+      - run: npm install -g newman
+
+      - run: newman run postman/expenses-monitor_api_test.postman_collection.json -e postman/expenses-monitor.postman_environment.json --env-var "API_USERNAME=${{ secrets.API_USERNAME }}" --env-var "API_PASSWORD=${{ secrets.API_PASSWORD }}"
