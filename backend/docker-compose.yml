@@ -12,6 +12,12 @@ services:
         max_attempts: 3
       update_config:
         failure_action: rollback
+    healthcheck:
+      test: [ "CMD", "wget", "--tries=1", "https://localhost:8443/actuator/health", "--no-check-certificate" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     depends_on:
       - postgres
     environment:
