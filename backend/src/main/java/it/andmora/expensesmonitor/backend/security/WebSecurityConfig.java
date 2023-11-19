@@ -63,6 +63,7 @@ public class WebSecurityConfig {
             .authenticationFailureHandler(unauthorizedOnFailure())
         )
         .authorizeExchange(exchanges -> exchanges
+            .pathMatchers("/actuator/health").permitAll()
             .anyExchange().authenticated()
         )
         .logout(logoutSpec -> logoutSpec.logoutSuccessHandler(
