@@ -13,7 +13,7 @@ services:
       update_config:
         failure_action: rollback
     healthcheck:
-      test: [ "CMD", "wget", "--tries=1", "https://localhost:8443/actuator/health", "--no-check-certificate" ]
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "https://localhost:8443/actuator/health", "--no-check-certificate" ]
       interval: 30s
       timeout: 10s
       retries: 3
