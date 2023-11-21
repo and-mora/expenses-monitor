@@ -25,7 +25,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{host_name}}/balance",
+					"raw": "{{host_name}}/api/balance",
 					"host": [
 						"{{host_name}}"
 					],
@@ -100,7 +100,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{host_name}}/balance",
+					"raw": "{{host_name}}/api/balance",
 					"host": [
 						"{{host_name}}"
 					],
