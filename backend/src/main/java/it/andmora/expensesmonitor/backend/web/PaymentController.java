@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import reactor.core.publisher.Mono;
 
-@RequestMapping("payment")
+@RequestMapping("api/payment")
 public interface PaymentController {
 
   @PutMapping("")

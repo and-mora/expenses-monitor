@@ -30,7 +30,7 @@ class PaymentControllerImplTest {
   PaymentController paymentController;
   LocalDateTime dateInjected = LocalDateTime.now();
   WebTestClient webTestClient;
-  private static final String PUT_PAYMENT_ENDPOINT = "/payment";
+  private static final String PUT_PAYMENT_ENDPOINT = "/api/payment";
 
   @Autowired
   ApplicationContext context;
