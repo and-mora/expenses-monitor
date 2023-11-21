@@ -8,4 +8,6 @@ public interface PaymentDao {
   Mono<Payment> savePayment(Payment payment);
 
   Mono<Integer> getOverallBalance();
+
+  Mono<Void> deletePayment(Integer id);
 }
