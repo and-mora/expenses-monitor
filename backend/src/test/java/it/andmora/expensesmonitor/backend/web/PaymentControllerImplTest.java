@@ -6,6 +6,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCreator;
+import it.andmora.expensesmonitor.backend.domain.usecase.PaymentDeleter;
 import it.andmora.expensesmonitor.backend.web.dto.PaymentDto;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,12 +21,15 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class PaymentControllerImplTest {
 
   @MockBean
   PaymentCreator paymentCreator;
+  @MockBean
+  PaymentDeleter paymentDeleter;
   @Autowired
   PaymentController paymentController;
   LocalDateTime dateInjected = LocalDateTime.now();
@@ -58,6 +62,19 @@ class PaymentControllerImplTest {
       assertThat(payment).extracting(PaymentDto::amount).isEqualTo(1000);
       assertThat(payment).extracting(PaymentDto::accountingDate).isEqualTo(dateInjected);
     });
+  }
+
+  @Test
+  void whenDeletePaymentThenReturnsOk() {
+    Mockito.when(paymentDeleter.deletePayment(any())).thenReturn(Mono.empty());
+
+    Mono<Void> paymentResponse = paymentController.deletePayment(0);
+
+    Mockito.verify(paymentDeleter).deletePayment(any());
+    StepVerifier
+        .create(paymentResponse)
+        .expectComplete()
+        .verify();
   }
 
   @Test
@@ -99,7 +116,8 @@ class PaymentControllerImplTest {
   }
 
   PaymentDto createPaymentDto() {
-    return new PaymentDto("shopping",
+    return new PaymentDto(0,
+        "shopping",
         1000,
         "H&M",
         dateInjected, null);

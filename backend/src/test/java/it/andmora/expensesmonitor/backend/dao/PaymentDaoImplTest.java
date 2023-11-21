@@ -101,6 +101,18 @@ class PaymentDaoImplTest {
         .verify();
   }
 
+  @Test
+  void givenAPaymentWhenDeleteItThenGoesOk() {
+    Mockito.when(repository.deleteById(any(Integer.class))).thenReturn(Mono.empty());
+
+    var paymentDeleted = paymentDao.deletePayment(0);
+
+    StepVerifier
+        .create(paymentDeleted)
+        .expectComplete()
+        .verify();
+  }
+
   Flux<PaymentDbEntity> createOutcomeResponse() {
     return Flux.just(PaymentDbEntity.builder().id(1).amount(-100).build(),
         PaymentDbEntity.builder().id(2).amount(-300).build());
