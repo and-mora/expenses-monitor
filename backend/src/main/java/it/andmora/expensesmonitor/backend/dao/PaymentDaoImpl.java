@@ -34,4 +34,9 @@ class PaymentDaoImpl implements PaymentDao {
         .reduce(0, Integer::sum);
   }
 
+  @Override
+  public Mono<Void> deletePayment(Integer id) {
+    return repository.deleteById(id);
+  }
+
 }
