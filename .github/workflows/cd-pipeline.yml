@@ -78,49 +78,12 @@ jobs:
           major_pattern: "breaking:"
           minor_pattern: "feat:"
 
-  GrafanaRelease:
-    needs: SemanticVersioning
-    uses: ./.github/workflows/release.yml
-    with:
-      tag: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.grafana_changed}}
-
   BackendRelease:
     needs: SemanticVersioning
     uses: ./.github/workflows/release.yml
     with:
       tag: ${{needs.SemanticVersioning.outputs.backend_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.backend_changed}}
-
-  ClientRelease:
-    needs: SemanticVersioning
-    uses: ./.github/workflows/release.yml
-    with:
-      tag: ${{needs.SemanticVersioning.outputs.client_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.client_changed}}
-
-  FrontendRelease:
-    needs: SemanticVersioning
-    uses: ./.github/workflows/release.yml
-    with:
-      tag: ${{needs.SemanticVersioning.outputs.frontend_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.frontend_changed}}
-
-  DatabaseRelease:
-    needs: SemanticVersioning
-    uses: ./.github/workflows/release.yml
-    with:
-      tag: ${{needs.SemanticVersioning.outputs.database_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.database_changed}}
-
-  GrafanaDeploy:
-    needs: [SemanticVersioning, GrafanaRelease]
-    uses: ./.github/workflows/deploy_workflow.yml
-    with:
-      version: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.grafana_changed}}
-      folder: grafana
-    secrets: inherit
 
   BackendDeploy:
     needs: [ SemanticVersioning, BackendRelease ]
@@ -131,14 +94,16 @@ jobs:
       folder: backend
     secrets: inherit
 
-  ClientDeploy:
-    needs: [ SemanticVersioning, ClientRelease ]
-    uses: ./.github/workflows/deploy_workflow.yml
+  BackendApiTest:
+    needs: [ BackendDeploy ]
+    uses: ./.github/workflows/api_test.yml
+
+  DatabaseRelease:
+    needs: SemanticVersioning
+    uses: ./.github/workflows/release.yml
     with:
-      version: ${{needs.SemanticVersioning.outputs.client_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.client_changed}}
-      folder: client
-    secrets: inherit
+      tag: ${{needs.SemanticVersioning.outputs.database_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.database_changed}}
 
   DatabaseDeploy:
     needs: [ SemanticVersioning, DatabaseRelease ]
@@ -147,3 +112,26 @@ jobs:
       version: ${{needs.SemanticVersioning.outputs.database_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.database_changed}}
     secrets: inherit
+
+  GrafanaRelease:
+    needs: SemanticVersioning
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.grafana_changed}}
+
+  GrafanaDeploy:
+    needs: [SemanticVersioning, GrafanaRelease]
+    uses: ./.github/workflows/deploy_workflow.yml
+    with:
+      version: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.grafana_changed}}
+      folder: grafana
+    secrets: inherit
+
+  FrontendRelease:
+    needs: SemanticVersioning
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{needs.SemanticVersioning.outputs.frontend_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.frontend_changed}}
