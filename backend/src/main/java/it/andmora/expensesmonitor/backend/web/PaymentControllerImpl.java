@@ -1,6 +1,7 @@
 package it.andmora.expensesmonitor.backend.web;
 
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCreator;
+import it.andmora.expensesmonitor.backend.domain.usecase.PaymentDeleter;
 import it.andmora.expensesmonitor.backend.web.dto.PaymentDto;
 import it.andmora.expensesmonitor.backend.web.mapper.PaymentControllerMapper;
 import lombok.RequiredArgsConstructor;
@@ -19,11 +20,18 @@ class PaymentControllerImpl implements PaymentController {
 
   private final PaymentCreator paymentCreator;
   private final PaymentControllerMapper paymentMapper;
+  private final PaymentDeleter paymentDeleter;
 
   @Override
   public Mono<PaymentDto> createPayment(PaymentDto paymentDto) {
     log.info("Creation of a new payment...");
     return paymentCreator.createPayment(paymentMapper.dtoToEntity(paymentDto))
         .map(paymentMapper::entityToDto);
+  }
+
+  @Override
+  public Mono<Void> deletePayment(Integer id) {
+    log.info("Deletion of payment with id: {}", id);
+    return paymentDeleter.deletePayment(id);
   }
 }
