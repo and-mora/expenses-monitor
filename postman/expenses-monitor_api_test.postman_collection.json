@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "50fc874a-e5f9-429e-a172-2e3deff552f3",
+		"_postman_id": "0ee02d7a-fa43-476e-bcae-292c6e24b5ba",
 		"name": "Local expenses-monitor integration test",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "29890959"
@@ -30,6 +30,7 @@
 						"{{host_name}}"
 					],
 					"path": [
+						"api",
 						"balance"
 					]
 				}
@@ -105,6 +106,43 @@
 						"{{host_name}}"
 					],
 					"path": [
+						"api",
+						"balance"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "02. Add a payment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var paymentId;",
+							"pm.test('02. Add a payment', () => {",
+							"    pm.response.to.have.status(200);",
+							"    // retrieve payment id",
+							"    paymentId = pm.response.json().id;",
+							"});",
+							"",
+							"_.deletePayment(pm, paymentId);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host_name}}/api/balance",
+					"host": [
+						"{{host_name}}"
+					],
+					"path": [
+						"api",
 						"balance"
 					]
 				}
@@ -118,7 +156,12 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
-					""
+					"Object.prototype.deletePayment = (that, paymentId) => {",
+					"    return that.sendRequest({",
+					"        url: `${pm.environment.get('host_name')}/api/payment/${paymentId}`,",
+					"        method: 'DELETE'",
+					"    });",
+					"};"
 				]
 			}
 		},
