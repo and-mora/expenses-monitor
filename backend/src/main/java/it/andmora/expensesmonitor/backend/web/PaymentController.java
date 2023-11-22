@@ -3,7 +3,7 @@ package it.andmora.expensesmonitor.backend.web;
 import it.andmora.expensesmonitor.backend.web.dto.PaymentDto;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import reactor.core.publisher.Mono;
@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 @RequestMapping("api/payment")
 public interface PaymentController {
 
-  @PutMapping("")
+  @PostMapping("")
   Mono<PaymentDto> createPayment(@RequestBody PaymentDto paymentDto);
 
   @DeleteMapping("/{id}")
