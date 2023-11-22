@@ -107,6 +107,7 @@ class PaymentDaoImplTest {
 
     var paymentDeleted = paymentDao.deletePayment(0);
 
+    Mockito.verify(repository).deleteById(any(Integer.class));
     StepVerifier
         .create(paymentDeleted)
         .expectComplete()
