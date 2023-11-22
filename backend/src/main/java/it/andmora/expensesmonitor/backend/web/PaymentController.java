@@ -14,6 +14,6 @@ public interface PaymentController {
   @PutMapping("")
   Mono<PaymentDto> createPayment(@RequestBody PaymentDto paymentDto);
 
-  @DeleteMapping("")
+  @DeleteMapping("/{id}")
   Mono<Void> deletePayment(@PathVariable(name = "id") Integer id);
 }
