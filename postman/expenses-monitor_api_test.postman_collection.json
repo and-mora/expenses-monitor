@@ -137,13 +137,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{host_name}}/api/balance",
+					"raw": "{{host_name}}/api/payment",
 					"host": [
 						"{{host_name}}"
 					],
 					"path": [
 						"api",
-						"balance"
+						"payment"
 					]
 				}
 			},
