@@ -18,7 +18,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -35,6 +34,7 @@ class PaymentControllerImplTest {
   LocalDateTime dateInjected = LocalDateTime.now();
   WebTestClient webTestClient;
   private static final String PUT_PAYMENT_ENDPOINT = "/api/payment";
+  private static final String DELETE_PAYMENT_ENDPOINT = "/api/payment/{id}";
 
   @Autowired
   ApplicationContext context;
@@ -98,6 +98,23 @@ class PaymentControllerImplTest {
           assertThat(payment.merchantName()).isEqualTo("H&M");
           assertThat(payment.amount()).isEqualTo(1000);
         });
+  }
+
+  @Test
+  @WithMockUser
+  void givenAuthWhenDeleteEndpointIsCalledThen200() {
+    Mockito.when(paymentDeleter.deletePayment(any())).thenReturn(Mono.empty());
+
+    webTestClient
+        .mutate().build()
+        .delete()
+        .uri(uriBuilder -> uriBuilder
+            .path(DELETE_PAYMENT_ENDPOINT)
+            .build(0))
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isOk();
+    Mockito.verify(paymentDeleter).deletePayment(0);
   }
 
   @Test
