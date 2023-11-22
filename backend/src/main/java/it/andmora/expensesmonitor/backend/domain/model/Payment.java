@@ -12,6 +12,7 @@ import lombok.Data;
 @Data
 public class Payment {
 
+  private int id;
   private String description;
   private int amount;
   private String merchantName;

@@ -6,6 +6,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCreator;
+import it.andmora.expensesmonitor.backend.domain.usecase.PaymentDeleter;
 import it.andmora.expensesmonitor.backend.web.dto.PaymentDto;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,20 +18,23 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class PaymentControllerImplTest {
 
   @MockBean
   PaymentCreator paymentCreator;
+  @MockBean
+  PaymentDeleter paymentDeleter;
   @Autowired
   PaymentController paymentController;
   LocalDateTime dateInjected = LocalDateTime.now();
   WebTestClient webTestClient;
   private static final String PUT_PAYMENT_ENDPOINT = "/api/payment";
+  private static final String DELETE_PAYMENT_ENDPOINT = "/api/payment/{id}";
 
   @Autowired
   ApplicationContext context;
@@ -61,6 +65,19 @@ class PaymentControllerImplTest {
   }
 
   @Test
+  void whenDeletePaymentThenReturnsOk() {
+    Mockito.when(paymentDeleter.deletePayment(any())).thenReturn(Mono.empty());
+
+    Mono<Void> paymentResponse = paymentController.deletePayment(0);
+
+    Mockito.verify(paymentDeleter).deletePayment(any());
+    StepVerifier
+        .create(paymentResponse)
+        .expectComplete()
+        .verify();
+  }
+
+  @Test
   @WithMockUser
   void givenAuthWhenRestInterfaceIsCalledThen200() {
     Mockito.when(paymentCreator.createPayment(any())).thenReturn(Mono.just(createDefaultPayment()));
@@ -84,6 +101,23 @@ class PaymentControllerImplTest {
   }
 
   @Test
+  @WithMockUser
+  void givenAuthWhenDeleteEndpointIsCalledThen200() {
+    Mockito.when(paymentDeleter.deletePayment(any())).thenReturn(Mono.empty());
+
+    webTestClient
+        .mutate().build()
+        .delete()
+        .uri(uriBuilder -> uriBuilder
+            .path(DELETE_PAYMENT_ENDPOINT)
+            .build(0))
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isOk();
+    Mockito.verify(paymentDeleter).deletePayment(0);
+  }
+
+  @Test
   void givenNoAuthWhenRestInterfaceIsCalledThen401() {
     Mockito.when(paymentCreator.createPayment(any())).thenReturn(Mono.just(createDefaultPayment()));
     PaymentDto paymentDto = createPaymentDto();
@@ -99,7 +133,8 @@ class PaymentControllerImplTest {
   }
 
   PaymentDto createPaymentDto() {
-    return new PaymentDto("shopping",
+    return new PaymentDto(0,
+        "shopping",
         1000,
         "H&M",
         dateInjected, null);
