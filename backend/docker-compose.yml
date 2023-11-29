@@ -12,6 +12,7 @@ services:
         max_attempts: 3
       update_config:
         failure_action: rollback
+        order: start-first
     healthcheck:
       test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "https://localhost:8443/actuator/health", "--no-check-certificate" ]
       interval: 30s
