@@ -134,7 +134,7 @@
 				}
 			],
 			"request": {
-				"method": "GET",
+				"method": "POST",
 				"header": [],
 				"url": {
 					"raw": "{{host_name}}/api/payment",
