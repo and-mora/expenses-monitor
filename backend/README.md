@@ -7,8 +7,10 @@ The following docker secrets must be present:
 - `BASIC_AUTH_PASSWORD`
 - `DB_BACKEND_PASSWORD`
 
-### Login API
+### API
+Openapi page is accessible [here](https://expmonitor.freeddns.org/swagger-ui.html)
 
+#### Login
 To login run:
 ```
 curl --location 'https://expmonitor.freeddns.org:8443/login' \

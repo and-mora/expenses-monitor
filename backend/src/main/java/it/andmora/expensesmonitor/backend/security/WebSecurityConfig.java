@@ -63,7 +63,7 @@ public class WebSecurityConfig {
             .authenticationFailureHandler(unauthorizedOnFailure())
         )
         .authorizeExchange(exchanges -> exchanges
-            .pathMatchers("/actuator/health", "/*/swagger-ui/*", "/v3/api-docs/*", "/v3/api-docs")
+            .pathMatchers("/actuator/health", "/*/swagger-ui/*", "/swagger-ui*", "/v3/api-docs/*", "/v3/api-docs")
             .permitAll()
             .anyExchange().authenticated()
         )
