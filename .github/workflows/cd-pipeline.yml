@@ -97,6 +97,7 @@ jobs:
   BackendApiTest:
     needs: [ BackendDeploy ]
     uses: ./.github/workflows/api_test.yml
+    secrets: inherit
 
   DatabaseRelease:
     needs: SemanticVersioning
