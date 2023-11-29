@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'it.andmora.expensesmonitor'
-version = '0.6.2'
+version = '0.7.0'
 sourceCompatibility = '17'
 
 configurations {
@@ -31,6 +31,7 @@ dependencies {
 	implementation group: 'org.postgresql', name: 'r2dbc-postgresql', version: '1.0.2.RELEASE'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webflux-ui', version: '2.2.0'
 
 	testImplementation 'org.springframework.security:spring-security-test'
 	compileOnly 'org.projectlombok:lombok'
