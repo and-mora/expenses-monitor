@@ -26,6 +26,8 @@ It's a monorepo containing all the components involved in the application:
 - Frontend in Svelte
 - Postgresql database
 
+![expenses-monitor-schema.png](docs/img/expenses-monitor-schema.png)
+
 ### Devops
 The main pipeline is located in `.github/workflows/cd-pipeline.yml` and does the following:
 - identify which module (by directory) has changes and find the new version tag according to semantic versioning (each module has a different suffix)
