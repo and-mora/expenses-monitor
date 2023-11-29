@@ -136,6 +136,15 @@
 			"request": {
 				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"description\": \"spesa\",\n    \"amount\": -63,\n    \"merchantName\": \"Poli\",\n    \"accountingDate\": \"2023-11-13T00:00:00.000\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
 					"raw": "{{host_name}}/api/payment",
 					"host": [
