@@ -5,6 +5,11 @@ name: Run API test
 on:
   workflow_dispatch:
   workflow_call:
+    secrets:
+      API_USERNAME:
+        required: true
+      API_PASSWORD:
+        required: true
 
 jobs:
   ApiTest:
