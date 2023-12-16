@@ -18,7 +18,6 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 5,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -497,7 +496,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'welfare' and amount > 0\ngroup by category",
+          "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'welfare' and amount > 0 and $__timeFilter(accounting_date)\ngroup by category",
           "refId": "A",
           "sql": {
             "columns": [
@@ -577,7 +576,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'welfare' and merchant_name = 'Tezenis'\ngroup by category",
+          "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'welfare' and merchant_name = 'Tezenis' and $__timeFilter(accounting_date)\ngroup by category",
           "refId": "A",
           "sql": {
             "columns": [
@@ -657,7 +656,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'welfare' and merchant_name = 'H&M'\ngroup by category",
+          "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'welfare' and merchant_name = 'H&M' and $__timeFilter(accounting_date)\ngroup by category",
           "refId": "A",
           "sql": {
             "columns": [
@@ -737,7 +736,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'welfare' and merchant_name not in('Tezenis', 'H&M')\ngroup by category",
+          "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'welfare' and merchant_name not in('Tezenis', 'H&M') and $__timeFilter(accounting_date)\ngroup by category",
           "refId": "A",
           "sql": {
             "columns": [
@@ -771,7 +770,6 @@
           "color": {
             "mode": "continuous-RdYlGr"
           },
-          "custom": {},
           "mappings": [],
           "max": 1600,
           "min": 0,
@@ -928,7 +926,7 @@
       "type": "piechart"
     }
   ],
-  "refresh": "",
+  "refresh": false,
   "schemaVersion": 38,
   "style": "dark",
   "tags": [],
@@ -937,12 +935,12 @@
   },
   "time": {
     "from": "2022-09-30T22:00:00.000Z",
-    "to": "now"
+    "to": "2023-12-01T22:59:59.000Z"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Ticket & welfare",
   "uid": "dc691aa8-bf4e-4b81-9e05-ad2a47959615",
-  "version": 14,
+  "version": 15,
   "weekStart": ""
 }
