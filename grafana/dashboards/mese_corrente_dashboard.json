@@ -37,6 +37,7 @@
             "cellOptions": {
               "type": "auto"
             },
+            "filterable": true,
             "inspect": false
           },
           "mappings": [],
@@ -44,8 +45,12 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "red",
                 "value": null
+              },
+              {
+                "color": "green",
+                "value": 0
               }
             ]
           }
@@ -74,11 +79,31 @@
                 "value": 52
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "amount"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              }
+            ]
           }
         ]
       },
       "gridPos": {
-        "h": 13,
+        "h": 14,
         "w": 11,
         "x": 0,
         "y": 0
@@ -88,6 +113,7 @@
         "cellHeight": "sm",
         "footer": {
           "countRows": false,
+          "enablePagination": true,
           "fields": "",
           "reducer": [
             "sum"
@@ -147,6 +173,7 @@
             "cellOptions": {
               "type": "auto"
             },
+            "filterable": true,
             "inspect": false
           },
           "mappings": [],
@@ -154,8 +181,12 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "red",
                 "value": null
+              },
+              {
+                "color": "green",
+                "value": 0
               }
             ]
           }
@@ -184,11 +215,31 @@
                 "value": 52
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "amount"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              }
+            ]
           }
         ]
       },
       "gridPos": {
-        "h": 13,
+        "h": 14,
         "w": 11,
         "x": 11,
         "y": 0
@@ -198,6 +249,7 @@
         "cellHeight": "sm",
         "footer": {
           "countRows": false,
+          "enablePagination": true,
           "fields": "",
           "reducer": [
             "sum"
@@ -205,7 +257,12 @@
           "show": false
         },
         "showHeader": true,
-        "sortBy": []
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "id"
+          }
+        ]
       },
       "pluginVersion": "10.1.0",
       "targets": [
@@ -247,7 +304,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 13
+        "y": 14
       },
       "id": 8,
       "panels": [],
@@ -289,7 +346,7 @@
         "h": 7,
         "w": 3,
         "x": 0,
-        "y": 14
+        "y": 15
       },
       "id": 5,
       "options": {
@@ -374,7 +431,7 @@
         "h": 7,
         "w": 3,
         "x": 3,
-        "y": 14
+        "y": 15
       },
       "id": 4,
       "options": {
@@ -467,7 +524,7 @@
         "h": 7,
         "w": 3,
         "x": 6,
-        "y": 14
+        "y": 15
       },
       "id": 6,
       "options": {
@@ -523,7 +580,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 22
       },
       "id": 7,
       "panels": [],
@@ -597,7 +654,7 @@
         "h": 8,
         "w": 5,
         "x": 0,
-        "y": 22
+        "y": 23
       },
       "id": 3,
       "options": {
@@ -713,7 +770,7 @@
         "h": 8,
         "w": 5,
         "x": 5,
-        "y": 22
+        "y": 23
       },
       "id": 2,
       "options": {
@@ -813,7 +870,7 @@
         "h": 8,
         "w": 12,
         "x": 10,
-        "y": 22
+        "y": 23
       },
       "id": 9,
       "options": {
@@ -961,7 +1018,7 @@
         "h": 10,
         "w": 10,
         "x": 0,
-        "y": 30
+        "y": 31
       },
       "id": 1,
       "options": {
