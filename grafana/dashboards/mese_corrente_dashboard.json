@@ -65,6 +65,10 @@
               {
                 "id": "unit",
                 "value": "currencyEUR"
+              },
+              {
+                "id": "decimals",
+                "value": 2
               }
             ]
           },
@@ -133,7 +137,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select id, accounting_date, merchant_name, amount/ 100.0 as amount, category, description\r\nfrom payments\r\nORDER BY accounting_date desc\r\nlimit 20",
+          "rawSql": "select id, accounting_date, merchant_name, amount /100.0 as amount, category, description\r\nfrom payments\r\nORDER BY accounting_date desc\r\nlimit 20",
           "refId": "A",
           "sql": {
             "columns": [
@@ -201,6 +205,10 @@
               {
                 "id": "unit",
                 "value": "currencyEUR"
+              },
+              {
+                "id": "decimals",
+                "value": 2
               }
             ]
           },
@@ -257,12 +265,7 @@
           "show": false
         },
         "showHeader": true,
-        "sortBy": [
-          {
-            "desc": true,
-            "displayName": "id"
-          }
-        ]
+        "sortBy": []
       },
       "pluginVersion": "10.1.0",
       "targets": [
@@ -274,7 +277,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select id, accounting_date, merchant_name, amount/ 100.0 as amount, category, description\r\nfrom payments\r\nORDER BY id desc\r\nlimit 20",
+          "rawSql": "select id, accounting_date, merchant_name, amount /100.0 as amount, category, description\r\nfrom payments\r\nORDER BY id desc\r\nlimit 20",
           "refId": "A",
           "sql": {
             "columns": [
