@@ -358,6 +358,7 @@
             }
           },
           "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1356,6 +1357,6 @@
   "timezone": "",
   "title": "Ticket & welfare",
   "uid": "dc691aa8-bf4e-4b81-9e05-ad2a47959615",
-  "version": 17,
+  "version": 18,
   "weekStart": ""
 }
