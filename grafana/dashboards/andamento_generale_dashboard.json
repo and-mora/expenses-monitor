@@ -1051,7 +1051,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "select time, sum(spese) * 100 / sum(entrate) as spese_stipendio_rate from (\nselect DATE_TRUNC('month', accounting_date) as time, abs(sum(amount)/100)::float as spese, NULL as entrate\nFROM payments\nwhere category in ('affitto', 'bolletta', 'condominio') and $__timeFilter(accounting_date)\ngroup by DATE_TRUNC('month', accounting_date)\nunion\nselect DATE_TRUNC('month', accounting_date) as time, NULL as spese, abs(sum(amount)/100)::float as entrate\nFROM payments\nwhere category in ('stipendio') and $__timeFilter(accounting_date)\ngroup by DATE_TRUNC('month', accounting_date)\n) p\ngroup by time\n",
+          "rawSql": "select time, sum(spese) * 100 / sum(entrate) as spese_fisse_stipendio from (\nselect DATE_TRUNC('month', accounting_date) as time, abs(sum(amount)/100)::float as spese, NULL as entrate\nFROM payments\nwhere category in ('affitto', 'bolletta', 'condominio') and $__timeFilter(accounting_date)\ngroup by DATE_TRUNC('month', accounting_date)\nunion\nselect DATE_TRUNC('month', accounting_date) as time, NULL as spese, abs(sum(amount)/100)::float as entrate\nFROM payments\nwhere category in ('stipendio') and $__timeFilter(accounting_date)\ngroup by DATE_TRUNC('month', accounting_date)\n) p\ngroup by time\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1167,7 +1167,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "select DATE_TRUNC('month', p1.accounting_date) as time, \n  abs(sum(p1.amount)/100)::float * 100 / abs(sum(p2.amount)/100)::float as affitto_stipendio_rate\nFROM payments p1\njoin payments p2 on DATE_TRUNC('month', p1.accounting_date) = DATE_TRUNC('month', p2.accounting_date)\nwhere p1.category = 'affitto' and p2.category = 'stipendio' and $__timeFilter(p1.accounting_date) \ngroup by DATE_TRUNC('month', p1.accounting_date), p1.category\norder by time",
+          "rawSql": "select time, sum(spese) * 100 / sum(entrate) as affitto_stipendio_rate from (\nselect DATE_TRUNC('month', accounting_date) as time, abs(sum(amount)/100)::float as spese, NULL as entrate\nFROM payments\nwhere category = 'affitto' and $__timeFilter(accounting_date)\ngroup by DATE_TRUNC('month', accounting_date)\nunion\nselect DATE_TRUNC('month', accounting_date) as time, NULL as spese, abs(sum(amount)/100)::float as entrate\nFROM payments\nwhere category = 'stipendio' and $__timeFilter(accounting_date)\ngroup by DATE_TRUNC('month', accounting_date)\n) p\ngroup by time\n",
           "refId": "A",
           "sql": {
             "columns": [
