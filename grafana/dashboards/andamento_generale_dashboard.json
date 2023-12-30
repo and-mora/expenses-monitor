@@ -1200,7 +1200,7 @@
     "list": []
   },
   "time": {
-    "from": "2022-09-30T22:00:00.000Z",
+    "from": "now-1y",
     "to": "now"
   },
   "timepicker": {},
