@@ -25,6 +25,8 @@ jobs:
       frontend_version_tag: ${{ steps.frontend-versioning.outputs.version_tag }}
       database_changed: ${{ steps.database-versioning.outputs.changed }}
       database_version_tag: ${{ steps.database-versioning.outputs.version_tag }}
+      prometheus_changed: ${{ steps.prometheus-versioning.outputs.changed }}
+      prometheus_version_tag: ${{ steps.prometheus-versioning.outputs.version_tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
@@ -75,6 +77,15 @@ jobs:
         with:
           change_path: "database"
           namespace: database
+          major_pattern: "breaking:"
+          minor_pattern: "feat:"
+
+      - name: Prometheus Version
+        id: prometheus-versioning
+        uses: paulhatch/semantic-version@5f6f89c4e06f9e1a2df00821598c0ac1f9085094 #5.2.1
+        with:
+          change_path: "prometheus"
+          namespace: prometheus
           major_pattern: "breaking:"
           minor_pattern: "feat:"
 
@@ -136,3 +147,19 @@ jobs:
     with:
       tag: ${{needs.SemanticVersioning.outputs.frontend_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.frontend_changed}}
+
+  PrometheusRelease:
+    needs: SemanticVersioning
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{needs.SemanticVersioning.outputs.prometheus_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.prometheus_changed}}
+
+  PrometheusDeploy:
+    needs: [ SemanticVersioning, PrometheusRelease ]
+    uses: ./.github/workflows/deploy_workflow.yml
+    with:
+      version: ${{needs.SemanticVersioning.outputs.prometheus_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.prometheus_changed}}
+      folder: prometheus
+    secrets: inherit
