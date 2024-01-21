@@ -15,7 +15,7 @@
       }
     ]
   },
-  "description": "monitoring of all docker's containers",
+  "description": "monitoring of all docker containers",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 2,
