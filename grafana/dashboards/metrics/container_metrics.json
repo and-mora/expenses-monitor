@@ -19,7 +19,6 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 2,
-  "id": 6,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -767,8 +766,12 @@
         "allValue": ".*",
         "current": {
           "selected": false,
-          "text": "All",
-          "value": "$__all"
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
         },
         "datasource": {
           "type": "prometheus",
@@ -786,7 +789,7 @@
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
-        "regex": "/(.*_.*\\.[0-9])/",
+        "regex": "",
         "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
@@ -811,6 +814,6 @@
   "timezone": "",
   "title": "Container metrics",
   "uid": "ca43e6df-e3d7-49db-a08c-0b0f237dc08a",
-  "version": 17,
+  "version": 18,
   "weekStart": ""
 }
