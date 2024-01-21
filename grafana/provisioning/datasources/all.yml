@@ -13,3 +13,9 @@ datasources:
     secureJsonData:
       password: $DB_GRAFANA_PASSWORD
     readOnly: true
+
+  - name: Prometheus
+    type: prometheus
+    uid: e6a44035-5b16-4ce8-972f-88e7c53bdeb4
+    url: http://prometheus:9090
+    readOnly: true
