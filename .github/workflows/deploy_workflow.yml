@@ -92,7 +92,7 @@ jobs:
             mkdir -p expenses-monitor/${{ inputs.folder }}
             cd expenses-monitor/${{ inputs.folder }}
             wget -O docker-compose.yml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/${{ inputs.folder }}/docker-compose.yml
-            sudo tag=${{ inputs.version }} docker stack deploy --compose-file docker-compose.yml ${{ inputs.folder }}
+            tag=${{ inputs.version }} docker stack deploy --compose-file docker-compose.yml ${{ inputs.folder }}
 
       - name: 'Docker stack wait till healthy'
         uses: appleboy/ssh-action@55dabf81b49d4120609345970c91507e2d734799
@@ -103,4 +103,4 @@ jobs:
           port: ${{ secrets.VM_PORT }}
           fingerprint: ${{ secrets.HOST_FINGERPRINT }}
           script: |
-            sudo sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock sudobmitch/docker-stack-wait@sha256:cb4d86cbf40eea6183db29dc341a7aae9e8196acf9315b863f939540b911d3bb ${{ inputs.folder }}
+            docker run --rm -v /var/run/docker.sock:/var/run/docker.sock sudobmitch/docker-stack-wait@sha256:cb4d86cbf40eea6183db29dc341a7aae9e8196acf9315b863f939540b911d3bb ${{ inputs.folder }}
