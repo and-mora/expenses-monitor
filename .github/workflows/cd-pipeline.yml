@@ -39,8 +39,8 @@ jobs:
         with:
           change_path: "backend"
           namespace: backend
-          major_pattern: "breaking:"
-          minor_pattern: "feat:"
+          major_pattern: "breaking"
+          minor_pattern: "feat"
 
       - name: Grafana Version
         id: grafana-versioning
@@ -49,8 +49,8 @@ jobs:
           change_path: "grafana"
           # Named version, will be used as suffix for name version tag
           namespace: grafana
-          major_pattern: "breaking:"
-          minor_pattern: "feat:"
+          major_pattern: "breaking"
+          minor_pattern: "feat"
 
       - name: Client Version
         id: client-versioning
@@ -59,8 +59,8 @@ jobs:
           change_path: "client"
           # Named version, will be used as suffix for name version tag
           namespace: client
-          major_pattern: "breaking:"
-          minor_pattern: "feat:"
+          major_pattern: "breaking"
+          minor_pattern: "feat"
 
       - name: Frontend Version
         id: frontend-versioning
@@ -68,8 +68,8 @@ jobs:
         with:
           change_path: "frontend"
           namespace: frontend
-          major_pattern: "breaking:"
-          minor_pattern: "feat:"
+          major_pattern: "breaking"
+          minor_pattern: "feat"
 
       - name: Database Version
         id: database-versioning
@@ -77,8 +77,8 @@ jobs:
         with:
           change_path: "database"
           namespace: database
-          major_pattern: "breaking:"
-          minor_pattern: "feat:"
+          major_pattern: "breaking"
+          minor_pattern: "feat"
 
       - name: Prometheus Version
         id: prometheus-versioning
@@ -86,8 +86,8 @@ jobs:
         with:
           change_path: "prometheus"
           namespace: prometheus
-          major_pattern: "breaking:"
-          minor_pattern: "feat:"
+          major_pattern: "breaking"
+          minor_pattern: "feat"
 
   BackendRelease:
     needs: SemanticVersioning
