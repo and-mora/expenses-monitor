@@ -41,6 +41,13 @@ sudo chown 472:472 /etc/letsencrypt/*
 sudo chmod -R g+rx /etc/letsencrypt/*
 ```
 
+#### Notification settings
+
+To configure a Gmail account as SMTP server read the following: https://community.grafana.com/t/setup-smtp-with-gmail/85815 and https://support.google.com/accounts/answer/185833?hl=en
+
+You need to add the app password in the following **secret** in docker environment:
+- `GMAIL_PASSWORD`
+
 ## Configuration
 The script `init.sh` will create one user with view only permission and change the admin password from the default one. 
 It must be executed only on new installation.
