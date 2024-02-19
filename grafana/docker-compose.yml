@@ -19,7 +19,7 @@ services:
     environment:
       DATABASE: postgres
       DB_GRAFANA_USERNAME: grafana_user
-    entrypoint: [ '/bin/sh', '-c', 'export DB_GRAFANA_PASSWORD=$$(cat /run/secrets/DB_GRAFANA_PASSWORD); /run.sh' ]
+    entrypoint: [ '/bin/sh', '-c', 'export DB_GRAFANA_PASSWORD=$$(cat /run/secrets/DB_GRAFANA_PASSWORD); export GF_SMTP_PASSWORD=$$(cat /run/secrets/GMAIL_PASSWORD); /run.sh' ]
     ports:
       - '3000:3000'
     volumes:
@@ -30,9 +30,12 @@ services:
       - expenses_monitor
     secrets:
       - DB_GRAFANA_PASSWORD
+      - GMAIL_PASSWORD
 
 secrets:
   DB_GRAFANA_PASSWORD:
+    external: true
+  GMAIL_PASSWORD:
     external: true
 
 volumes:
