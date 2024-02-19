@@ -1,0 +1,11 @@
+apiVersion: 1
+contactPoints:
+  - orgId: 1
+    name: Andrea Morabito
+    receivers:
+      - uid: de989dcd-a9cc-4b42-a813-e2cd200d4495
+        type: email
+        settings:
+          addresses: and.morabito@gmail.com
+          singleEmail: false
+        disableResolveMessage: false
