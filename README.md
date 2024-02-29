@@ -14,17 +14,18 @@ I will work on it on best effort.
 
 ### Stack
 ![Grafana](https://img.shields.io/badge/grafana-%23F46800.svg?style=for-the-badge&logo=grafana&logoColor=white)
-![Svelte](https://img.shields.io/badge/Svelte-4A4A55?style=for-the-badge&logo=svelte&logoColor=FF3E00)
+![Angular](https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white)
 ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white)
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
 
 I will experiment Gradle, Spring Webflux.
 
 It's a monorepo containing all the components involved in the application:
-- Grafana server for dashboarding
+- Grafana server for dashboards and alerting
 - Backend server in Spring Boot
-- Frontend in Svelte
+- Frontend in Angular (overkill of course, but the most known and with materialUI)
 - Postgresql database
+- Prometheus for monitoring backend
 
 ![expenses-monitor-schema.png](docs/img/expenses-monitor-schema.png)
 
