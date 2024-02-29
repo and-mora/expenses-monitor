@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '../../auth.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -15,12 +15,15 @@ export class LoginComponent {
   constructor(private authService: AuthService, private router: Router) { }
 
   login(): void {
-    if (this.authService.login(this.username, this.password)) {
-      // Redirect to home page or dashboard upon successful login
-      this.router.navigate(['/']);
-      console.log('Login successful');
-    } else {
-      this.errorMessage = 'Invalid username or password';
-    }
+    this.authService.login(this.username, this.password).then(
+      onSuccess => {
+        this.router.navigate(['/']);
+        console.log('Login successful');
+      },
+      onError => {
+        // todo granular error management
+        this.errorMessage = 'Invalid username or password';
+      }
+    );
   }
 }
