@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, catchError, firstValueFrom, map, throwError } from 'rxjs';
+import { Injectable, OnInit } from '@angular/core';
+import { BehaviorSubject, Observable, catchError, first, firstValueFrom, map, of, throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -12,16 +12,21 @@ export class AuthService {
   private baseUrl = 'http://localhost:8443/';
   private loginUrl = 'login';
 
-  constructor(private http: HttpClient) { }
+  private checkUrl = 'greet';
 
-  async login(username: string, password: string): Promise<boolean> {
+  constructor(private http: HttpClient) {
+    // add session storage check
+    
+  }
+
+  login(username: string, password: string): Observable<boolean> {
     // compose urlencoded request body
     var formBody: string[] = [];
     formBody.push(encodeURIComponent('username') + "=" + encodeURIComponent(username));
     formBody.push(encodeURIComponent('password') + "=" + encodeURIComponent(password));
     const body = formBody.join("&");
 
-    const login$ = this.http.post(this.baseUrl + this.loginUrl, body, {
+    return this.http.post(this.baseUrl + this.loginUrl, body, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
@@ -36,7 +41,6 @@ export class AuthService {
           return throwError(() => new Error(err));
         })
       );
-    return firstValueFrom(login$);
   }
 
   logout(): void {
@@ -44,7 +48,30 @@ export class AuthService {
     this.isLoggedIn.next(false);
   }
 
+  // isAuthenticated(): Promise<boolean> {
+  //   if (!this.isLoggedIn.value) {
+  //     // additional check on new page and refresh
+  //     console.log("not authenticated... checking better");
+  //     // api call to get account info ?
+  //     // const login$ = this.http.get(this.baseUrl + this.checkUrl)
+  //     //   .pipe(
+  //     //     map(_ => {
+  //     //       console.log("checking auth");
+  //     //       this.isLoggedIn.next(true);
+  //     //       return true;
+  //     //     })
+  //     //   );
+
+  //     // return firstValueFrom(login$);
+  //     return new Promise(() => false);
+  //   }
+
+  //   return new Promise(() => true);
+  // }
+
   isAuthenticated(): boolean {
+    // check for the presence of session storage
     return this.isLoggedIn.value;
   }
+
 }

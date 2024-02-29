@@ -9,7 +9,6 @@ export const authGuard: CanActivateFn = (route, state) => {
   }
 
   console.log("Guard: ko");
-  // todo additional check for new page or on refresh
   // navigate to login page as user is not authenticated
   inject(Router).navigate(['/login']);
   return false;

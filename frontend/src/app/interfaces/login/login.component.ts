@@ -15,15 +15,15 @@ export class LoginComponent {
   constructor(private authService: AuthService, private router: Router) { }
 
   login(): void {
-    this.authService.login(this.username, this.password).then(
-      onSuccess => {
+    this.authService.login(this.username, this.password).subscribe({
+      next: onSuccess => {
         this.router.navigate(['/']);
         console.log('Login successful');
       },
-      onError => {
+      error: onError => {
         // todo granular error management
         this.errorMessage = 'Invalid username or password';
       }
-    );
+    });
   }
 }
