@@ -8,9 +8,15 @@
     </a>
   </div>
   <div>
-    <a href="/">homepage</a>
+    <a routerLink="/">homepage</a>
   </div>
   <div class="header-right">
+    <div *ngIf="isLoggedIn$ | async; else notLoggedIn">
+      <button mat-button  (click)="logout()" class="login-button">Logout</button>
+    </div>
+    <ng-template #notLoggedIn>
       <button mat-button routerLink="login" class="login-button">Login</button>
+    </ng-template>
+    <!-- alternate login and logout button -->
   </div>
 </header>
