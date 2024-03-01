@@ -71,9 +71,4 @@ export class AuthService {
 
     return of(true);
   }
-
-  // isAuthenticated(): boolean {
-  //   return this.isLoggedIn.value;
-  // }
-
 }
