@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, OnInit } from '@angular/core';
-import { BehaviorSubject, Observable, catchError, first, firstValueFrom, map, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, map, of, throwError } from 'rxjs';
+import { ApiService } from './api.service';
 
 @Injectable({
   providedIn: 'root'
@@ -9,32 +10,29 @@ export class AuthService {
   private isLoggedIn = new BehaviorSubject<boolean>(false);
   public isLoggedIn$ = this.isLoggedIn.asObservable();
 
-  private baseUrl = 'http://localhost:8443/';
-  private loginUrl = 'login';
+  constructor(private http: HttpClient, private apiService: ApiService) {
+    // session cookie check on refresh or new page
+    this.checkSessionAlive();
+  }
 
-  private checkUrl = 'greet';
-
-  constructor(private http: HttpClient) {
-    // add session storage check
-    
+  checkSessionAlive() {
+    this.apiService.checkSessionAlive()
+      .subscribe({
+        next: () => {
+          this.isLoggedIn.next(true);
+        },
+        error: () => {
+          this.isLoggedIn.next(false);
+        }
+      });
   }
 
   login(username: string, password: string): Observable<boolean> {
-    // compose urlencoded request body
-    var formBody: string[] = [];
-    formBody.push(encodeURIComponent('username') + "=" + encodeURIComponent(username));
-    formBody.push(encodeURIComponent('password') + "=" + encodeURIComponent(password));
-    const body = formBody.join("&");
-
-    return this.http.post(this.baseUrl + this.loginUrl, body, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    })
+    return this.apiService.login(username, password)
       .pipe(
         map(_ => {
           this.isLoggedIn.next(true);
-          return true
+          return true;
         }),
         catchError(err => {
           this.isLoggedIn.next(false);
@@ -43,35 +41,34 @@ export class AuthService {
       );
   }
 
-  logout(): void {
-    // todo remove session cookie?
-    this.isLoggedIn.next(false);
+  logout(): Observable<boolean> {
+    return this.apiService.logout()
+      .pipe(
+        map(_ => {
+          this.isLoggedIn.next(false);
+          return false;
+        }),
+        catchError(err => {
+          return throwError(() => new Error(err));
+        })
+      );
   }
 
-  // isAuthenticated(): Promise<boolean> {
-  //   if (!this.isLoggedIn.value) {
-  //     // additional check on new page and refresh
-  //     console.log("not authenticated... checking better");
-  //     // api call to get account info ?
-  //     // const login$ = this.http.get(this.baseUrl + this.checkUrl)
-  //     //   .pipe(
-  //     //     map(_ => {
-  //     //       console.log("checking auth");
-  //     //       this.isLoggedIn.next(true);
-  //     //       return true;
-  //     //     })
-  //     //   );
+  isAuthenticated(): Observable<boolean> {
+    if (!this.isLoggedIn.value) {
+      // additional runtime check on new page and refresh (can be removed if cause problems!)
+      console.log("not authenticated... checking better");
 
-  //     // return firstValueFrom(login$);
-  //     return new Promise(() => false);
-  //   }
+      return this.apiService.checkSessionAlive()
+        .pipe(
+          map(() => {
+            console.log("checking auth");
+            this.isLoggedIn.next(true);
+            return true;
+          })
+        );
+    }
 
-  //   return new Promise(() => true);
-  // }
-
-  isAuthenticated(): boolean {
-    // check for the presence of session storage
-    return this.isLoggedIn.value;
+    return of(true);
   }
-
 }
