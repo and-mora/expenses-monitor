@@ -148,6 +148,15 @@ jobs:
       tag: ${{needs.SemanticVersioning.outputs.frontend_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.frontend_changed}}
 
+  FrontendDeploy:
+    needs: [ SemanticVersioning, FrontendRelease ]
+    uses: ./.github/workflows/deploy_workflow.yml
+    with:
+      version: ${{needs.SemanticVersioning.outputs.frontend_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.frontend_changed}}
+      folder: frontend
+    secrets: inherit
+
   PrometheusRelease:
     needs: SemanticVersioning
     uses: ./.github/workflows/release.yml
