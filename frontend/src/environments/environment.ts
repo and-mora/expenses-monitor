@@ -1,4 +1,4 @@
 export const environment = {
     production: true,
-    apiUrl: 'http://app:8443'
+    apiUrl: 'https://expmonitor.freeddns.org:8443/'
 };
