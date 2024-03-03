@@ -8,4 +8,4 @@ RUN npx ng build frontend
 FROM nginx:mainline-alpine3.18@sha256:6a2f8b28e45c4adea04ec207a251fd4a2df03ddc930f782af51e315ebc76e9a9 AS runtime
 EXPOSE 80
 COPY --from=builder /app/dist/frontend/browser /usr/share/nginx/html
-COPY --from=builder ./deploy-config/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/deploy-config/nginx.conf /etc/nginx/conf.d/default.conf
