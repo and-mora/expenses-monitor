@@ -23,7 +23,7 @@ services:
     environment:
       DB_CONNECTION_URI: "r2dbc:postgresql://postgres/postgres"
       DB_SCHEMA: expenses
-      FRONTEND_ORIGIN_URL: "https://localhost:4200"
+      FRONTEND_ORIGIN_URL: "https://expmonitor.freeddns.org:443"
       DB_BACKEND_USER: backend_user
     volumes:
       - /etc/letsencrypt/live/expmonitor.freeddns.org/privkey.pem:/key.pem
