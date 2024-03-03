@@ -8,7 +8,8 @@ on:
       enabled:
         required: false
         type: string
-        default: true
+        description: 'Flag to enable the deploy'
+        default: 'true'
       folder:
         description: 'Component'
         required: true
