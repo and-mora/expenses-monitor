@@ -4,7 +4,8 @@ import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'app-homepage',
   templateUrl: './homepage.component.html',
-  styleUrl: './homepage.component.css'
+  styleUrl: './homepage.component.css',
+  standalone: true
 })
 export class HomepageComponent {
 
