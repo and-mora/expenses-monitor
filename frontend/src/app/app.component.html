@@ -257,6 +257,24 @@
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
 <!-- * * * * * * * * * * End of Placeholder  * * * * * * * * * * * * -->
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<app-header></app-header>
 
-<router-outlet />
+<div class="example-container">
+  <app-header [inputSideNav]="sideNav"></app-header>
+  <mat-sidenav-container class="example-sidenav-container">
+    <mat-sidenav #sideNav [mode]="'over'" fixedTopGap="0">
+      <mat-nav-list>
+        <mat-list-item>
+          <mat-icon matListItemIcon>add</mat-icon>
+          <span>Inserisci</span>
+        </mat-list-item>
+        <!-- <a mat-list-item>nav1</a>
+        <a mat-list-item>nav2</a>
+        <a mat-list-item>nav3</a> -->
+      </mat-nav-list>
+    </mat-sidenav>
+
+    <mat-sidenav-content>
+      <router-outlet />
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>
