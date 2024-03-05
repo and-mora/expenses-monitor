@@ -1,0 +1,10 @@
+.form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 2%;
+}
+
+.right-align {
+    text-align: right;
+}

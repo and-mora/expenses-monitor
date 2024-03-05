@@ -19,6 +19,7 @@ export class AuthService {
     this.apiService.checkSessionAlive()
       .subscribe({
         next: () => {
+          console.log("check OK!")
           this.isLoggedIn.next(true);
         },
         error: () => {

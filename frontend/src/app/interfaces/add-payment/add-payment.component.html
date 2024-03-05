@@ -1,0 +1,31 @@
+<div class="form">
+    <h2>Inserisci un nuovo pagamento</h2>
+    <form [formGroup]="addPaymentForm" class="form" (ngSubmit)="onSubmit()">
+
+        <mat-form-field appearance="outline">
+            <mat-label>Esercente</mat-label>
+            <input matInput formControlName="merchant">
+        </mat-form-field>
+        <mat-form-field appearance="outline" floatLabel="always">
+            <mat-label>Importo</mat-label>
+            <input matInput type="number" class="right-align" placeholder="0,00" formControlName="amount">
+            <span matTextPrefix>€&nbsp;</span>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+            <mat-label>Categoria</mat-label>
+            <input matInput formControlName="category">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+            <mat-label>Data esecuzione</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="accountingDate">
+            <mat-hint>DD/MM/YYYY</mat-hint>
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+            <mat-label>Descrizione</mat-label>
+            <textarea matInput formControlName="description"></textarea>
+        </mat-form-field>
+        <button mat-raised-button color="primary" type="submit" [disabled]="!addPaymentForm.valid">Aggiungi</button>
+    </form>
+</div>

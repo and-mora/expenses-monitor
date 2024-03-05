@@ -257,6 +257,21 @@
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
 <!-- * * * * * * * * * * End of Placeholder  * * * * * * * * * * * * -->
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<app-header></app-header>
 
-<router-outlet />
+<div class="example-container">
+  <app-header [inputSideNav]="sideNav"></app-header>
+  <mat-sidenav-container class="example-sidenav-container">
+    <mat-sidenav #sideNav [mode]="'over'" fixedTopGap="0">
+      <mat-nav-list>
+          <a mat-list-item routerLink="add-payment" (click)="sideNav.toggle()">
+            <mat-icon matListItemIcon>add</mat-icon>
+            <span>Inserisci un pagamento</span>
+          </a>
+      </mat-nav-list>
+    </mat-sidenav>
+
+    <mat-sidenav-content>
+      <router-outlet />
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>
