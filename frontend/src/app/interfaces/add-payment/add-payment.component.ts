@@ -5,6 +5,8 @@ import { provideNativeDateAdapter } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { PaymentDto } from '../../model/payment';
+import { ApiService } from '../../services/api.service';
 
 
 @Component({
@@ -16,10 +18,10 @@ import { MatInputModule } from '@angular/material/input';
   imports: [ReactiveFormsModule, MatFormFieldModule, MatButtonModule, MatDatepickerModule, MatInputModule]
 })
 export class AddPaymentComponent {
-  constructor(private formBuilder: FormBuilder) { }
+  constructor(private formBuilder: FormBuilder, private apiService: ApiService) { }
 
   addPaymentForm = this.formBuilder.group({
-    merchant: [''],
+    merchantName: [''],
     amount: [''],
     category: [''],
     accountingDate: [''],
@@ -27,6 +29,28 @@ export class AddPaymentComponent {
   });
 
   onSubmit() {
-    console.log("add payment form submitted!")
+    console.log("add payment form submitted!", this.addPaymentForm.value as PaymentDto);
+    // convert euro in cents as required by backend api
+    const paymentDto = this.formToPaymentDto();
+    console.log('paymentDto', paymentDto);
+    // this.apiService.addPayment(paymentDto).subscribe({
+    //   next: response => {
+    //     console.log("pagamento correttamente inserito", response);
+    //     this.addPaymentForm.reset();
+    //   },
+    //   error: () => {
+    //     console.log("errore nell'inserimento di un pagamento");
+    //   }
+    // });
+  }
+
+  formToPaymentDto(): PaymentDto {
+    return {
+      merchantName: this.addPaymentForm.get('merchantName')?.getRawValue(),
+      amountInCents: this.addPaymentForm.get('amount')?.getRawValue() * 100,
+      category: this.addPaymentForm.get('category')?.getRawValue(),
+      accountingDate: this.addPaymentForm.get('accountingDate')?.getRawValue(),
+      description: this.addPaymentForm.get('description')?.getRawValue()
+    };
   }
 }
