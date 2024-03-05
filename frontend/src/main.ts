@@ -7,6 +7,7 @@ import { PreloadAllModules, provideRouter, withPreloading } from '@angular/route
 import { ROUTES } from './app/app-routing';
 import { AppComponent } from './app/app.component';
 import { authInterceptor } from './app/interceptor/auth.interceptor';
+import { MAT_DATE_LOCALE } from '@angular/material/core';
 
 
 bootstrapApplication(AppComponent, {
@@ -15,7 +16,8 @@ bootstrapApplication(AppComponent, {
         provideAnimationsAsync(),
         provideHttpClient(withInterceptors([authInterceptor])),
         provideHttpClient(withInterceptorsFromDi()),
-        provideRouter(ROUTES, withPreloading(PreloadAllModules))
+        provideRouter(ROUTES, withPreloading(PreloadAllModules)),
+        {provide: MAT_DATE_LOCALE, useValue: 'it-IT'}
     ]
 })
     .catch(err => console.error(err));
