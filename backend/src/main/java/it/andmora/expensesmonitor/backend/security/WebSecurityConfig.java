@@ -1,6 +1,5 @@
 package it.andmora.expensesmonitor.backend.security;
 
-import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -46,8 +45,9 @@ public class WebSecurityConfig {
   CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowedOrigins(List.of(frontendOrigin));
-    configuration.setAllowedMethods(Arrays.asList("GET", "POST"));
+    configuration.setAllowedMethods(List.of("GET", "POST"));
     configuration.setAllowCredentials(true);
+    configuration.setAllowedHeaders(List.of("Cache-Control", "Content-Type"));
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
     return source;
@@ -64,7 +64,8 @@ public class WebSecurityConfig {
             .authenticationFailureHandler(unauthorizedOnFailure())
         )
         .authorizeExchange(exchanges -> exchanges
-            .pathMatchers("/actuator/health", "/*/swagger-ui/*", "/swagger-ui*", "/v3/api-docs/*", "/v3/api-docs")
+            .pathMatchers("/actuator/health", "/*/swagger-ui/*", "/swagger-ui*", "/v3/api-docs/*",
+                "/v3/api-docs")
             .permitAll()
             .anyExchange().authenticated()
         )
