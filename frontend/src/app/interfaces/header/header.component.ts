@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 
@@ -13,7 +13,7 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './header.component.html',
   styleUrl: './header.component.css',
   standalone: true,
-  imports: [AsyncPipe, NgIf, MatToolbarModule, MatButtonModule, MatIconModule, MatSidenavModule]
+  imports: [RouterLink, AsyncPipe, NgIf, MatToolbarModule, MatButtonModule, MatIconModule, MatSidenavModule]
 })
 export class HeaderComponent {
   @Input() inputSideNav!: MatSidenav;
