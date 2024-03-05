@@ -263,10 +263,10 @@
   <mat-sidenav-container class="example-sidenav-container">
     <mat-sidenav #sideNav [mode]="'over'" fixedTopGap="0">
       <mat-nav-list>
-        <mat-list-item>
-          <mat-icon matListItemIcon>add</mat-icon>
-          <span>Inserisci un pagamento</span>
-        </mat-list-item>
+          <a mat-list-item routerLink="add-payment" (click)="sideNav.toggle()">
+            <mat-icon matListItemIcon>add</mat-icon>
+            <span>Inserisci un pagamento</span>
+          </a>
       </mat-nav-list>
     </mat-sidenav>
 
