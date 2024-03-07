@@ -25,7 +25,6 @@ class PaymentControllerImpl implements PaymentController {
   @Override
   public Mono<PaymentDto> createPayment(PaymentDto paymentDto) {
     log.info("Creation of a new payment...");
-    log.info("date: {}", paymentDto.accountingDate().toString());
     return paymentCreator.createPayment(paymentMapper.dtoToEntity(paymentDto))
         .map(paymentMapper::entityToDto);
   }
