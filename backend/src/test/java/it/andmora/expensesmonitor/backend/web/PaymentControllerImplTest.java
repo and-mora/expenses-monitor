@@ -33,7 +33,7 @@ class PaymentControllerImplTest {
   PaymentController paymentController;
   LocalDateTime dateInjected = LocalDateTime.now();
   WebTestClient webTestClient;
-  private static final String PUT_PAYMENT_ENDPOINT = "/api/payment";
+  private static final String POST_PAYMENT_ENDPOINT = "/api/payment";
   private static final String DELETE_PAYMENT_ENDPOINT = "/api/payment/{id}";
 
   @Autowired
@@ -85,8 +85,8 @@ class PaymentControllerImplTest {
 
     webTestClient
         .mutate().build()
-        .put()
-        .uri(PUT_PAYMENT_ENDPOINT)
+        .post()
+        .uri(POST_PAYMENT_ENDPOINT)
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(paymentDto)
@@ -124,7 +124,7 @@ class PaymentControllerImplTest {
 
     webTestClient
         .put()
-        .uri(PUT_PAYMENT_ENDPOINT)
+        .uri(POST_PAYMENT_ENDPOINT)
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(paymentDto)
