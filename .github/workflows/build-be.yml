@@ -8,7 +8,7 @@ on:
       - master
       - develop
     paths:
-      - backend
+      - 'backend/**'
 
 jobs:
   Build:
