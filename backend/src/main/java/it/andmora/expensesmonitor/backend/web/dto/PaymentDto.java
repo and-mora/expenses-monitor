@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
  */
 public record PaymentDto(int id,
                          String description,
-                         int amount,
+                         int amountInCents,
                          String merchantName,
                          LocalDateTime accountingDate,
                          String category) {

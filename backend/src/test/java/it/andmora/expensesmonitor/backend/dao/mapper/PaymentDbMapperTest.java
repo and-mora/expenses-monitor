@@ -19,7 +19,7 @@ class PaymentDbMapperTest {
 
     assertThat(payment).extracting(Payment::getDescription).isEqualTo("shopping");
     assertThat(payment).extracting(Payment::getMerchantName).isEqualTo("H&M");
-    assertThat(payment).extracting(Payment::getAmount).isEqualTo(1000);
+    assertThat(payment).extracting(Payment::getAmountInCents).isEqualTo(1000);
     assertThat(payment).extracting(Payment::getAccountingDate).isEqualTo(dateInjected);
   }
 
@@ -29,7 +29,7 @@ class PaymentDbMapperTest {
 
     assertThat(payment).extracting(PaymentDbEntity::getDescription).isEqualTo("shopping");
     assertThat(payment).extracting(PaymentDbEntity::getMerchantName).isEqualTo("H&M");
-    assertThat(payment).extracting(PaymentDbEntity::getAmount).isEqualTo(1000);
+    assertThat(payment).extracting(PaymentDbEntity::getAmountInCents).isEqualTo(1000);
     assertThat(payment).extracting(PaymentDbEntity::getAccountingDate).isEqualTo(dateInjected);
   }
 
@@ -37,7 +37,7 @@ class PaymentDbMapperTest {
     return Payment.builder()
         .description("shopping")
         .merchantName("H&M")
-        .amount(1000)
+        .amountInCents(1000)
         .accountingDate(dateInjected)
         .build();
   }
@@ -46,7 +46,7 @@ class PaymentDbMapperTest {
     return PaymentDbEntity.builder()
         .description("shopping")
         .merchantName("H&M")
-        .amount(1000)
+        .amountInCents(1000)
         .accountingDate(dateInjected)
         .build();
   }

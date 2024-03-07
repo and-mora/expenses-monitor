@@ -33,7 +33,7 @@ class PaymentControllerImplTest {
   PaymentController paymentController;
   LocalDateTime dateInjected = LocalDateTime.now();
   WebTestClient webTestClient;
-  private static final String PUT_PAYMENT_ENDPOINT = "/api/payment";
+  private static final String POST_PAYMENT_ENDPOINT = "/api/payment";
   private static final String DELETE_PAYMENT_ENDPOINT = "/api/payment/{id}";
 
   @Autowired
@@ -59,7 +59,7 @@ class PaymentControllerImplTest {
     paymentResponse.subscribe(payment -> {
       assertThat(payment).extracting(PaymentDto::description).isEqualTo("shopping");
       assertThat(payment).extracting(PaymentDto::merchantName).isEqualTo("H&M");
-      assertThat(payment).extracting(PaymentDto::amount).isEqualTo(1000);
+      assertThat(payment).extracting(PaymentDto::amountInCents).isEqualTo(1000);
       assertThat(payment).extracting(PaymentDto::accountingDate).isEqualTo(dateInjected);
     });
   }
@@ -85,8 +85,8 @@ class PaymentControllerImplTest {
 
     webTestClient
         .mutate().build()
-        .put()
-        .uri(PUT_PAYMENT_ENDPOINT)
+        .post()
+        .uri(POST_PAYMENT_ENDPOINT)
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(paymentDto)
@@ -96,7 +96,7 @@ class PaymentControllerImplTest {
         .expectBody(PaymentDto.class).value(payment -> {
           assertThat(payment.description()).isEqualTo("shopping");
           assertThat(payment.merchantName()).isEqualTo("H&M");
-          assertThat(payment.amount()).isEqualTo(1000);
+          assertThat(payment.amountInCents()).isEqualTo(1000);
         });
   }
 
@@ -124,7 +124,7 @@ class PaymentControllerImplTest {
 
     webTestClient
         .put()
-        .uri(PUT_PAYMENT_ENDPOINT)
+        .uri(POST_PAYMENT_ENDPOINT)
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(paymentDto)
@@ -144,7 +144,7 @@ class PaymentControllerImplTest {
     return Payment.builder()
         .description("shopping")
         .merchantName("H&M")
-        .amount(1000)
+        .amountInCents(1000)
         .accountingDate(dateInjected)
         .build();
   }
