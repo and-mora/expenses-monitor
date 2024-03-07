@@ -16,8 +16,7 @@ bootstrapApplication(AppComponent, {
         provideAnimationsAsync(),
         provideHttpClient(withInterceptors([authInterceptor])),
         provideHttpClient(withInterceptorsFromDi()),
-        provideRouter(ROUTES, withPreloading(PreloadAllModules)),
-        {provide: MAT_DATE_LOCALE, useValue: 'it-IT'}
+        provideRouter(ROUTES, withPreloading(PreloadAllModules))
     ]
 })
     .catch(err => console.error(err));

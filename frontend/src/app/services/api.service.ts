@@ -2,6 +2,7 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
+import { PaymentDto } from '../model/payment';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,7 @@ export class ApiService {
   private loginUrl = 'login';
   private logoutUrl = 'logout';
   private checkUrl = 'greet';
+  private paymentUrl = 'api/payment';
 
   constructor(private http: HttpClient) { }
 
@@ -39,5 +41,13 @@ export class ApiService {
         responseType: 'text'
       }
     );
+  }
+
+  addPayment(payment: PaymentDto): Observable<Object> {
+    return this.http.post(this.baseUrl + this.paymentUrl, JSON.stringify(payment), {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
   }
 }
