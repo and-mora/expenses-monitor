@@ -144,7 +144,7 @@ class PaymentControllerImplTest {
     return Payment.builder()
         .description("shopping")
         .merchantName("H&M")
-        .amount(1000)
+        .amountInCents(1000)
         .accountingDate(dateInjected)
         .build();
   }

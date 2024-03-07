@@ -7,7 +7,6 @@ import it.andmora.expensesmonitor.backend.dao.mapper.PaymentDbMapper;
 import it.andmora.expensesmonitor.backend.dao.persistance.PaymentPostgresRepository;
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -115,25 +114,25 @@ class PaymentDaoImplTest {
   }
 
   Flux<PaymentDbEntity> createOutcomeResponse() {
-    return Flux.just(PaymentDbEntity.builder().id(1).amount(-100).build(),
-        PaymentDbEntity.builder().id(2).amount(-300).build());
+    return Flux.just(PaymentDbEntity.builder().id(1).amountInCents(-100).build(),
+        PaymentDbEntity.builder().id(2).amountInCents(-300).build());
   }
 
   Flux<PaymentDbEntity> createMixedResponse() {
-    return Flux.just(PaymentDbEntity.builder().id(1).amount(100).build(),
-        PaymentDbEntity.builder().id(2).amount(-300).build());
+    return Flux.just(PaymentDbEntity.builder().id(1).amountInCents(100).build(),
+        PaymentDbEntity.builder().id(2).amountInCents(-300).build());
   }
 
   Flux<PaymentDbEntity> createIncomeResponse() {
-    return Flux.just(PaymentDbEntity.builder().id(1).amount(200).build(),
-        PaymentDbEntity.builder().id(2).amount(300).build());
+    return Flux.just(PaymentDbEntity.builder().id(1).amountInCents(200).build(),
+        PaymentDbEntity.builder().id(2).amountInCents(300).build());
   }
 
   Mono<PaymentDbEntity> getSavedEntity() {
     return Mono.just(PaymentDbEntity.builder()
         .description("shopping")
         .merchantName("H&M")
-        .amount(1000)
+        .amountInCents(1000)
         .accountingDate(dateInjected)
         .build());
   }
@@ -142,7 +141,7 @@ class PaymentDaoImplTest {
     return Payment.builder()
         .description("shopping")
         .merchantName("H&M")
-        .amount(1000)
+        .amountInCents(1000)
         .accountingDate(dateInjected)
         .build();
   }

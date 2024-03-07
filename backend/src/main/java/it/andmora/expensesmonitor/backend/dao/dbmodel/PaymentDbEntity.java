@@ -15,7 +15,8 @@ public class PaymentDbEntity {
   @Id
   private int id;
   private String description;
-  private int amount;
+  @Column("amount")
+  private int amountInCents;
   @Column("merchant_name")
   private String merchantName;
   @Column("accounting_date")

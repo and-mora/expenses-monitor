@@ -30,7 +30,7 @@ class PaymentDaoImpl implements PaymentDao {
   @Override
   public Mono<Integer> getOverallBalance() {
     return repository.findAll()
-        .map(PaymentDbEntity::getAmount)
+        .map(PaymentDbEntity::getAmountInCents)
         .reduce(0, Integer::sum);
   }
 
