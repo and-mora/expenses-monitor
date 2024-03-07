@@ -59,7 +59,7 @@ class PaymentControllerImplTest {
     paymentResponse.subscribe(payment -> {
       assertThat(payment).extracting(PaymentDto::description).isEqualTo("shopping");
       assertThat(payment).extracting(PaymentDto::merchantName).isEqualTo("H&M");
-      assertThat(payment).extracting(PaymentDto::amount).isEqualTo(1000);
+      assertThat(payment).extracting(PaymentDto::amountInCents).isEqualTo(1000);
       assertThat(payment).extracting(PaymentDto::accountingDate).isEqualTo(dateInjected);
     });
   }
@@ -96,7 +96,7 @@ class PaymentControllerImplTest {
         .expectBody(PaymentDto.class).value(payment -> {
           assertThat(payment.description()).isEqualTo("shopping");
           assertThat(payment.merchantName()).isEqualTo("H&M");
-          assertThat(payment.amount()).isEqualTo(1000);
+          assertThat(payment.amountInCents()).isEqualTo(1000);
         });
   }
 
