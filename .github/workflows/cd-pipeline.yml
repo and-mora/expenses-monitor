@@ -35,7 +35,7 @@ jobs:
 
       - name: Backend Version
         id: backend-versioning
-        uses: paulhatch/semantic-version@5f6f89c4e06f9e1a2df00821598c0ac1f9085094 #5.2.1
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
         with:
           change_path: "backend"
           namespace: backend
@@ -44,7 +44,7 @@ jobs:
 
       - name: Grafana Version
         id: grafana-versioning
-        uses: paulhatch/semantic-version@5f6f89c4e06f9e1a2df00821598c0ac1f9085094 #5.2.1
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
         with:
           change_path: "grafana"
           # Named version, will be used as suffix for name version tag
@@ -54,7 +54,7 @@ jobs:
 
       - name: Client Version
         id: client-versioning
-        uses: paulhatch/semantic-version@5f6f89c4e06f9e1a2df00821598c0ac1f9085094 #5.2.1
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
         with:
           change_path: "client"
           # Named version, will be used as suffix for name version tag
@@ -64,7 +64,7 @@ jobs:
 
       - name: Frontend Version
         id: frontend-versioning
-        uses: paulhatch/semantic-version@5f6f89c4e06f9e1a2df00821598c0ac1f9085094 #5.2.1
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
         with:
           change_path: "frontend"
           namespace: frontend
@@ -73,7 +73,7 @@ jobs:
 
       - name: Database Version
         id: database-versioning
-        uses: paulhatch/semantic-version@5f6f89c4e06f9e1a2df00821598c0ac1f9085094 #5.2.1
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
         with:
           change_path: "database"
           namespace: database
@@ -82,7 +82,7 @@ jobs:
 
       - name: Prometheus Version
         id: prometheus-versioning
-        uses: paulhatch/semantic-version@5f6f89c4e06f9e1a2df00821598c0ac1f9085094 #5.2.1
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
         with:
           change_path: "prometheus"
           namespace: prometheus
