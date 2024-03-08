@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, OnInit } from '@angular/core';
 import { BehaviorSubject, Observable, catchError, map, of, throwError } from 'rxjs';
 import { ApiService } from './api.service';
+import { LoginDto } from '../model/login';
 
 @Injectable({
   providedIn: 'root'
@@ -28,8 +29,8 @@ export class AuthService {
       });
   }
 
-  login(username: string, password: string): Observable<boolean> {
-    return this.apiService.login(username, password)
+  login(loginData: LoginDto): Observable<boolean> {
+    return this.apiService.login(loginData.username, loginData.password)
       .pipe(
         map(_ => {
           this.isLoggedIn.next(true);
