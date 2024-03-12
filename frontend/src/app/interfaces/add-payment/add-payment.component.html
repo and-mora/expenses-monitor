@@ -1,31 +1,54 @@
-<div class="form">
-    <h2>Inserisci un nuovo pagamento</h2>
-    <form [formGroup]="addPaymentForm" class="form" (ngSubmit)="onSubmit()">
+<div class="container">
+    <div class="form">
+        <h2></h2>
+        <form [formGroup]="addPaymentForm" class="form" (ngSubmit)="onSubmit()">
 
-        <mat-form-field appearance="outline">
-            <mat-label>Esercente</mat-label>
-            <input matInput formControlName="merchantName">
-        </mat-form-field>
-        <mat-form-field appearance="outline" floatLabel="always">
-            <mat-label>Importo</mat-label>
-            <input matInput type="number" class="right-align" placeholder="0,00" formControlName="amount">
-            <span matTextPrefix>€&nbsp;</span>
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-            <mat-label>Categoria</mat-label>
-            <input matInput formControlName="category">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-            <mat-label>Data esecuzione</mat-label>
-            <input matInput [matDatepicker]="picker" formControlName="accountingDate">
-            <mat-hint>DD/MM/YYYY</mat-hint>
-            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-            <mat-label>Descrizione</mat-label>
-            <textarea matInput formControlName="description"></textarea>
-        </mat-form-field>
-        <button mat-raised-button color="primary" type="submit" [disabled]="!addPaymentForm.valid">Aggiungi</button>
-    </form>
+            <mat-card>
+                <mat-card-header>
+                    <mat-card-title>Inserisci un nuovo pagamento</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                    <mat-form-field appearance="outline">
+                        <mat-label>Esercente</mat-label>
+                        <input matInput formControlName="merchantName">
+                        <mat-error *ngIf="hasError('merchantName', 'required')">Campo obbligatorio.</mat-error>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" floatLabel="always">
+                        <mat-label>Importo</mat-label>
+                        <input matInput type="number" class="right-align" placeholder="0,00" formControlName="amount">
+                        <span matTextPrefix>€&nbsp;</span>
+                        <mat-error *ngIf="hasError('amount', 'required')">Campo obbligatorio.</mat-error>
+                        <mat-error *ngIf="hasError('amount', 'min')">
+                            Numero positivo richiesto.
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-radio-group aria-label="Select an option" formControlName="type">
+                        <mat-radio-button value="1">Income</mat-radio-button>
+                        <mat-radio-button value="-1">Outcome</mat-radio-button>
+                    </mat-radio-group>
+                    <mat-form-field appearance="outline">
+                        <mat-label>Categoria</mat-label>
+                        <input matInput formControlName="category">
+                        <mat-error *ngIf="hasError('category', 'required')">Campo obbligatorio.</mat-error>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                        <mat-label>Data esecuzione</mat-label>
+                        <input matInput [matDatepicker]="picker" formControlName="accountingDate">
+                        <mat-hint>DD/MM/YYYY</mat-hint>
+                        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                        <mat-datepicker #picker></mat-datepicker>
+                        <mat-error *ngIf="hasError('accountingDate', 'required')">Campo obbligatorio.</mat-error>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                        <mat-label>Descrizione</mat-label>
+                        <textarea matInput formControlName="description"></textarea>
+                    </mat-form-field>
+                </mat-card-content>
+                <mat-card-actions>
+                    <button mat-raised-button color="primary" type="submit"
+                        [disabled]="!addPaymentForm.valid">Aggiungi</button>
+                </mat-card-actions>
+            </mat-card>
+        </form>
+    </div>
 </div>
