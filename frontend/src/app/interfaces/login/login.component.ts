@@ -53,6 +53,7 @@ export class LoginComponent {
         // todo granular error management
         this.errorMessage = 'Invalid username or password';
         this.isButtonDisabled = false;
+        dialogRef.close();
       }
     });
   }
