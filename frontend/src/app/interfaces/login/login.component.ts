@@ -12,6 +12,8 @@ import { Router } from '@angular/router';
 import { LoginDto } from '../../model/login';
 import { AuthService } from '../../services/auth.service';
 import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component';
+import { DialogSuccessComponent } from '../dialog-success/dialog-success.component';
+import { DialogErrorComponent } from '../dialog-error/dialog-error.component';
 
 @Component({
   selector: 'app-login',
@@ -34,7 +36,7 @@ export class LoginComponent {
 
   login(): void {
     // loader dialog
-    const dialogRef = this.dialog.open(DialogLoaderComponent, {
+    const loaderDialog = this.dialog.open(DialogLoaderComponent, {
       disableClose: true,
       panelClass: 'transparent-dialog'
     });
@@ -47,13 +49,29 @@ export class LoginComponent {
         this.router.navigate(['/']);
         console.log('Login successful');
         this.isButtonDisabled = false;
-        dialogRef.close();
+        loaderDialog.close();
+
+        // open success dialog and close it after 1 seconds
+        const successDialog = this.dialog.open(DialogSuccessComponent, {
+          panelClass: 'transparent-dialog'
+        });
+        setTimeout(() => {
+          successDialog.close();
+        }, 1000);
       },
       error: () => {
         // todo granular error management
         this.errorMessage = 'Invalid username or password';
         this.isButtonDisabled = false;
-        dialogRef.close();
+        loaderDialog.close();
+
+        // open error dialog and close it after 1 seconds
+        const errorDialog = this.dialog.open(DialogErrorComponent, {
+          panelClass: 'transparent-dialog'
+        });
+        setTimeout(() => {
+          errorDialog.close();
+        }, 1000);
       }
     });
   }

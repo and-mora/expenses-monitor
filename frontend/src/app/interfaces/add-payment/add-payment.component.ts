@@ -12,6 +12,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { PaymentDto } from '../../model/payment';
 import { ApiService } from '../../services/api.service';
 import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component';
+import { DialogSuccessComponent } from '../dialog-success/dialog-success.component';
 
 @Component({
   selector: 'app-add-payment',
@@ -22,7 +23,7 @@ import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component'
   { provide: MAT_DATE_LOCALE, useValue: 'it-IT' }
   ],
   imports: [NgIf, ReactiveFormsModule, MatFormFieldModule, MatButtonModule, MatDatepickerModule, MatInputModule,
-    MatCardModule, MatRadioModule, DialogLoaderComponent]
+    MatCardModule, MatRadioModule]
 })
 export class AddPaymentComponent {
   constructor(private formBuilder: FormBuilder, private apiService: ApiService, private dialog: MatDialog) { }
@@ -40,7 +41,7 @@ export class AddPaymentComponent {
     console.log("add payment form submitted!", this.addPaymentForm.value);
 
     // loader dialog
-    const dialogRef = this.dialog.open(DialogLoaderComponent, {
+    const loaderDialog = this.dialog.open(DialogLoaderComponent, {
       disableClose: true,
       panelClass: 'transparent-dialog'
     });
@@ -51,11 +52,19 @@ export class AddPaymentComponent {
       next: response => {
         console.log("payment added.", response);
         this.resetForm();
-        dialogRef.close();
+        loaderDialog.close();
+
+        // open success dialog and close it after 1 seconds
+        const successDialog = this.dialog.open(DialogSuccessComponent, {
+          panelClass: 'transparent-dialog'
+        });
+        setTimeout(() => {
+          successDialog.close();
+        }, 1000);
       },
       error: () => {
         console.log("error in inserting a payment");
-        dialogRef.close();
+        loaderDialog.close();
       }
     });
   }
