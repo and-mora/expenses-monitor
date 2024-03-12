@@ -55,6 +55,7 @@ export class AddPaymentComponent {
       },
       error: () => {
         console.log("error in inserting a payment");
+        dialogRef.close();
       }
     });
   }
