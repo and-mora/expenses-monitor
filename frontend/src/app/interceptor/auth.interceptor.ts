@@ -14,8 +14,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req)
     .pipe(
       catchError((error: HttpErrorResponse) => {
+        // intercept 401 and 403
         if ([HttpStatusCode.Unauthorized, HttpStatusCode.Forbidden].includes(error.status)) {
           router.navigate(['/login']);
+        }
+        // intercept network error
+        if (error.status == 0 && error.ok == false) {
+          router.navigate(['/error']);
         }
         return throwError(() => error);
       })
