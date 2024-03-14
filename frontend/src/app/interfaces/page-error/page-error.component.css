@@ -1,0 +1,10 @@
+.error-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 60svh;
+}
+
+.error-card {
+    width: 300px;
+}

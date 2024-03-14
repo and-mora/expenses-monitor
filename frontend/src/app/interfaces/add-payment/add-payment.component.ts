@@ -12,6 +12,8 @@ import { MatRadioModule } from '@angular/material/radio';
 import { PaymentDto } from '../../model/payment';
 import { ApiService } from '../../services/api.service';
 import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component';
+import { DialogSuccessComponent } from '../dialog-success/dialog-success.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-add-payment',
@@ -22,10 +24,13 @@ import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component'
   { provide: MAT_DATE_LOCALE, useValue: 'it-IT' }
   ],
   imports: [NgIf, ReactiveFormsModule, MatFormFieldModule, MatButtonModule, MatDatepickerModule, MatInputModule,
-    MatCardModule, MatRadioModule, DialogLoaderComponent]
+    MatCardModule, MatRadioModule]
 })
 export class AddPaymentComponent {
-  constructor(private formBuilder: FormBuilder, private apiService: ApiService, private dialog: MatDialog) { }
+  errorMessage: string = '';
+
+  constructor(private formBuilder: FormBuilder, private apiService: ApiService, private dialog: MatDialog,
+    private snackBar: MatSnackBar) { }
 
   addPaymentForm = this.formBuilder.group({
     merchantName: ['', Validators.required],
@@ -40,7 +45,7 @@ export class AddPaymentComponent {
     console.log("add payment form submitted!", this.addPaymentForm.value);
 
     // loader dialog
-    const dialogRef = this.dialog.open(DialogLoaderComponent, {
+    const loaderDialog = this.dialog.open(DialogLoaderComponent, {
       disableClose: true,
       panelClass: 'transparent-dialog'
     });
@@ -51,11 +56,15 @@ export class AddPaymentComponent {
       next: response => {
         console.log("payment added.", response);
         this.resetForm();
-        dialogRef.close();
+        loaderDialog.close();
+
+        this.snackBar.open('Pagamento inserito con successo.', undefined, {
+          duration: 1500
+        });
       },
       error: () => {
-        console.log("error in inserting a payment");
-        dialogRef.close();
+        this.errorMessage = "Error in inserting a payment.";
+        loaderDialog.close();
       }
     });
   }

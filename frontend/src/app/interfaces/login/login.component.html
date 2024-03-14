@@ -1,6 +1,5 @@
 <div class="container">
   <form [formGroup]="loginForm" class="login-form">
-    <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
     <mat-card>
       <mat-card-header>
         <mat-card-title>Login</mat-card-title>
@@ -16,9 +15,10 @@
         </mat-form-field>
       </mat-card-content>
       <mat-card-actions>
-        <button mat-raised-button type="submit" color="primary" (click)="login()" [disabled]="isButtonDisabled">
+        <button mat-raised-button type="submit" color="primary" (click)="login()" [disabled]="isButtonDisabled || !loginForm.valid">
           Login</button>
       </mat-card-actions>
+      <mat-error class="centered-text" *ngIf="errorMessage">{{ errorMessage }}</mat-error>
     </mat-card>
   </form>
 </div>

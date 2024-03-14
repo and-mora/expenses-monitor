@@ -48,6 +48,7 @@
                     <button mat-raised-button color="primary" type="submit"
                         [disabled]="!addPaymentForm.valid">Aggiungi</button>
                 </mat-card-actions>
+                <mat-error class="centered-text" *ngIf="errorMessage">{{ errorMessage }}</mat-error>
             </mat-card>
         </form>
     </div>
