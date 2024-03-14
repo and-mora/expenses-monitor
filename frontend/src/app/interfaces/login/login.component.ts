@@ -8,11 +8,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { LoginDto } from '../../model/login';
 import { AuthService } from '../../services/auth.service';
-import { DialogErrorComponent } from '../dialog-error/dialog-error.component';
 import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component';
 import { DialogSuccessComponent } from '../dialog-success/dialog-success.component';
 
@@ -33,7 +31,7 @@ export class LoginComponent {
   isButtonDisabled = false;
 
   constructor(private authService: AuthService, private router: Router,
-    private formBuilder: FormBuilder, private dialog: MatDialog, private snackBar: MatSnackBar) { }
+    private formBuilder: FormBuilder, private dialog: MatDialog) { }
 
   login(): void {
     // loader dialog
