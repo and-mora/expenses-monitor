@@ -13,6 +13,7 @@ import { PaymentDto } from '../../model/payment';
 import { ApiService } from '../../services/api.service';
 import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component';
 import { DialogSuccessComponent } from '../dialog-success/dialog-success.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-add-payment',
@@ -26,7 +27,10 @@ import { DialogSuccessComponent } from '../dialog-success/dialog-success.compone
     MatCardModule, MatRadioModule]
 })
 export class AddPaymentComponent {
-  constructor(private formBuilder: FormBuilder, private apiService: ApiService, private dialog: MatDialog) { }
+  errorMessage: string = '';
+
+  constructor(private formBuilder: FormBuilder, private apiService: ApiService, private dialog: MatDialog,
+    private snackBar: MatSnackBar) { }
 
   addPaymentForm = this.formBuilder.group({
     merchantName: ['', Validators.required],
@@ -54,16 +58,12 @@ export class AddPaymentComponent {
         this.resetForm();
         loaderDialog.close();
 
-        // open success dialog and close it after 1 seconds
-        const successDialog = this.dialog.open(DialogSuccessComponent, {
-          panelClass: 'transparent-dialog'
+        this.snackBar.open('Pagamento inserito con successo.', undefined, {
+          duration: 1500
         });
-        setTimeout(() => {
-          successDialog.close();
-        }, 1000);
       },
       error: () => {
-        console.log("error in inserting a payment");
+        this.errorMessage = "Error in inserting a payment.";
         loaderDialog.close();
       }
     });
