@@ -8,12 +8,13 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { LoginDto } from '../../model/login';
 import { AuthService } from '../../services/auth.service';
+import { DialogErrorComponent } from '../dialog-error/dialog-error.component';
 import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component';
 import { DialogSuccessComponent } from '../dialog-success/dialog-success.component';
-import { DialogErrorComponent } from '../dialog-error/dialog-error.component';
 
 @Component({
   selector: 'app-login',
@@ -32,7 +33,7 @@ export class LoginComponent {
   isButtonDisabled = false;
 
   constructor(private authService: AuthService, private router: Router,
-    private formBuilder: FormBuilder, private dialog: MatDialog) { }
+    private formBuilder: FormBuilder, private dialog: MatDialog, private snackBar: MatSnackBar) { }
 
   login(): void {
     // loader dialog
@@ -57,7 +58,7 @@ export class LoginComponent {
         });
         setTimeout(() => {
           successDialog.close();
-        }, 1000);
+        }, 500);
       },
       error: () => {
         // todo granular error management
@@ -66,12 +67,12 @@ export class LoginComponent {
         loaderDialog.close();
 
         // open error dialog and close it after 1 seconds
-        const errorDialog = this.dialog.open(DialogErrorComponent, {
-          panelClass: 'transparent-dialog'
-        });
-        setTimeout(() => {
-          errorDialog.close();
-        }, 1000);
+        // const errorDialog = this.dialog.open(DialogErrorComponent, {
+        //   panelClass: 'transparent-dialog'
+        // });
+        // setTimeout(() => {
+        //   errorDialog.close();
+        // }, 1000);
       }
     });
   }
