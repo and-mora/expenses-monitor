@@ -9,11 +9,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { PaymentDto } from '../../model/payment';
 import { ApiService } from '../../services/api.service';
 import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component';
-import { DialogSuccessComponent } from '../dialog-success/dialog-success.component';
-import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-add-payment',
@@ -41,7 +40,7 @@ export class AddPaymentComponent {
     description: ['']
   });
 
-  onSubmit() {
+  onSubmit(): void {
     console.log("add payment form submitted!", this.addPaymentForm.value);
 
     // loader dialog
@@ -70,14 +69,19 @@ export class AddPaymentComponent {
   }
 
   formToPaymentDto(): PaymentDto {
-    // convert euro in cents as required by backend api
     // set hour to avoid date shifting due to UTC conversion
     let fixedDate = new Date(this.addPaymentForm.get('accountingDate')?.getRawValue());
     fixedDate.setHours(6);
+
+    const parsedMerchant: string = this.addPaymentForm.get('merchantName')!.value!.trim();
+    // convert euro in cents as required by backend api
+    const parsedAmount: number = Number((this.addPaymentForm.get('amount')?.getRawValue() * 100 * this.addPaymentForm.get('type')?.getRawValue()).toFixed(0));
+    // category must be lower case
+    const parsedCategory: string = this.addPaymentForm.get('category')!.value!.trim().toLowerCase();
     return {
-      merchantName: this.addPaymentForm.get('merchantName')?.getRawValue(),
-      amountInCents: Number((this.addPaymentForm.get('amount')?.getRawValue() * 100 * this.addPaymentForm.get('type')?.getRawValue()).toFixed(0)),
-      category: this.addPaymentForm.get('category')?.getRawValue(),
+      merchantName: parsedMerchant,
+      amountInCents: parsedAmount,
+      category: parsedCategory,
       accountingDate: fixedDate.toISOString(),
       description: this.addPaymentForm.get('description')?.getRawValue()
     };
@@ -87,7 +91,7 @@ export class AddPaymentComponent {
     return this.addPaymentForm.get(field)?.hasError(error);
   }
 
-  resetForm() {
+  resetForm(): void {
     // form.reset() does not work as expected
     this.addPaymentForm.get('amount')?.reset();
     this.addPaymentForm.get('amount')?.clearValidators();
@@ -98,5 +102,6 @@ export class AddPaymentComponent {
     this.addPaymentForm.get('merchantName')?.reset();
     this.addPaymentForm.get('merchantName')?.clearValidators();
     this.addPaymentForm.get('merchantName')?.setValue('');
+    this.addPaymentForm.get('description')?.setValue('');
   }
 }
