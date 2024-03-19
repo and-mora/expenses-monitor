@@ -1,6 +1,7 @@
-import { NgIf } from '@angular/common';
-import { Component } from '@angular/core';
+import { AsyncPipe, NgIf } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
@@ -10,6 +11,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Observable, map } from 'rxjs';
 import { PaymentDto } from '../../model/payment';
 import { ApiService } from '../../services/api.service';
 import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component';
@@ -22,14 +24,13 @@ import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component'
   providers: [provideNativeDateAdapter(),
   { provide: MAT_DATE_LOCALE, useValue: 'it-IT' }
   ],
-  imports: [NgIf, ReactiveFormsModule, MatFormFieldModule, MatButtonModule, MatDatepickerModule, MatInputModule,
-    MatCardModule, MatRadioModule]
+  imports: [AsyncPipe, NgIf, ReactiveFormsModule, MatFormFieldModule, MatButtonModule, MatDatepickerModule, MatInputModule,
+    MatCardModule, MatRadioModule, MatAutocompleteModule]
 })
-export class AddPaymentComponent {
+export class AddPaymentComponent implements OnInit {
   errorMessage: string = '';
-
-  constructor(private formBuilder: FormBuilder, private apiService: ApiService, private dialog: MatDialog,
-    private snackBar: MatSnackBar) { }
+  categories: string[] = [];
+  filteredCategories!: Observable<string[]>;
 
   addPaymentForm = this.formBuilder.group({
     merchantName: ['', Validators.required],
@@ -39,6 +40,36 @@ export class AddPaymentComponent {
     accountingDate: [new Date(), Validators.required],
     description: ['']
   });
+
+  constructor(private formBuilder: FormBuilder, private apiService: ApiService, private dialog: MatDialog,
+    private snackBar: MatSnackBar) { }
+
+  ngOnInit(): void {
+    // retrieve categories from the backend
+    this.apiService.getCategories()
+      .subscribe({
+        next: a => {
+          this.categories.push(a);
+        },
+        complete: () => {
+          // workaround to make it refresh the filteredCategories at component startup
+          this.addPaymentForm.get('category')?.setValue('');
+        }
+      });
+    // filter the categories to show based on what the user types in the form
+    this.filteredCategories = this.addPaymentForm.get('category')!
+      .valueChanges
+      .pipe(
+        map(value => {
+          return this._filter(value || "");
+        }));
+  }
+
+  private _filter(value: string): string[] {
+    const filterValue = value.toLowerCase();
+
+    return this.categories.filter(cat => cat.toLowerCase().includes(filterValue));
+  }
 
   onSubmit(): void {
     console.log("add payment form submitted!", this.addPaymentForm.value);
