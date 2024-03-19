@@ -113,6 +113,20 @@ class PaymentDaoImplTest {
         .verify();
   }
 
+  @Test
+  void whenGetCategoriesThenReturnFlux() {
+    Mockito.when(repository.getCategories()).thenReturn(Flux.just("foo", "bar"));
+
+    var categories = paymentDao.getCategories();
+
+    Mockito.verify(repository).getCategories();
+    StepVerifier
+        .create(categories)
+        .expectNext("foo", "bar")
+        .expectComplete()
+        .verify();
+  }
+
   Flux<PaymentDbEntity> createOutcomeResponse() {
     return Flux.just(PaymentDbEntity.builder().id(1).amountInCents(-100).build(),
         PaymentDbEntity.builder().id(2).amountInCents(-300).build());

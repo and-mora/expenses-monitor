@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
 
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
+import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCategoriesRetriever;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCreator;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentDeleter;
 import it.andmora.expensesmonitor.backend.web.dto.PaymentDto;
@@ -19,6 +20,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -29,12 +31,15 @@ class PaymentControllerImplTest {
   PaymentCreator paymentCreator;
   @MockBean
   PaymentDeleter paymentDeleter;
+  @MockBean
+  PaymentCategoriesRetriever categoriesRetriever;
   @Autowired
   PaymentController paymentController;
   LocalDateTime dateInjected = LocalDateTime.now();
   WebTestClient webTestClient;
   private static final String POST_PAYMENT_ENDPOINT = "/api/payment";
   private static final String DELETE_PAYMENT_ENDPOINT = "/api/payment/{id}";
+  private static final String GET_CATEGORIES_ENDPOINT = "/api/payment/categories";
 
   @Autowired
   ApplicationContext context;
@@ -115,6 +120,27 @@ class PaymentControllerImplTest {
         .exchange()
         .expectStatus().isOk();
     Mockito.verify(paymentDeleter).deletePayment(0);
+  }
+
+  @Test
+  @WithMockUser
+  void whenGetCategoriesIsCalledThen200() {
+    Mockito.when(categoriesRetriever.getCategories()).thenReturn(Flux.just("foo", "bar"));
+
+    webTestClient
+        .mutate().build()
+        .get()
+        .uri(uriBuilder -> uriBuilder
+            .path(GET_CATEGORIES_ENDPOINT)
+            .build())
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isOk()
+        .expectHeader().contentType("application/json;charset=UTF-8")
+        .expectBody(String.class).value(value -> {
+          assertThat(value).contains("foobar");
+        });
+    Mockito.verify(categoriesRetriever).getCategories();
   }
 
   @Test

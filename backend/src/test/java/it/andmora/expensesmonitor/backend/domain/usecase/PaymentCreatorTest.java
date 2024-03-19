@@ -3,33 +3,26 @@ package it.andmora.expensesmonitor.backend.domain.usecase;
 import it.andmora.expensesmonitor.backend.domain.PaymentDao;
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
 import java.time.LocalDateTime;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+@ExtendWith(MockitoExtension.class)
 class PaymentCreatorTest {
 
   @Mock
   PaymentDao paymentDao;
   PaymentCreator paymentCreator;
-  AutoCloseable autoCloseable;
   LocalDateTime dateInjected = LocalDateTime.now();
 
   @BeforeEach
   void setup() {
-    autoCloseable = MockitoAnnotations.openMocks(this);
-
     paymentCreator = new PaymentCreatorImpl(paymentDao);
-  }
-
-  @AfterEach
-  void cleanup() throws Exception {
-    autoCloseable.close();
   }
 
   @Test

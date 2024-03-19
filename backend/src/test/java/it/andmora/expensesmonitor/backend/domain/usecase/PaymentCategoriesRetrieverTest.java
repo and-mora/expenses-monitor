@@ -1,7 +1,5 @@
 package it.andmora.expensesmonitor.backend.domain.usecase;
 
-import static org.mockito.ArgumentMatchers.any;
-
 import it.andmora.expensesmonitor.backend.domain.PaymentDao;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,31 +7,31 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
 @ExtendWith(MockitoExtension.class)
-class PaymentDeleterTest {
+class PaymentCategoriesRetrieverTest {
 
   @Mock
   PaymentDao paymentDao;
-  PaymentDeleter paymentDeleter;
+  private PaymentCategoriesRetriever retriever;
 
   @BeforeEach
-  void setup() {
-    paymentDeleter = new PaymentDeleterImpl(paymentDao);
+  void setUp() {
+    retriever = new PaymentCategoriesRetriever(paymentDao);
   }
 
   @Test
-  void givenAnIdWhenAPaymentIsDeletedThenReturnsNothing() {
-    Mockito.when(paymentDao.deletePayment(any())).thenReturn(Mono.empty());
+  void whenGetCategoriesThenReturnFlux() {
+    Mockito.when(paymentDao.getCategories()).thenReturn(Flux.just("foo", "bar", "pippo"));
 
-    Mono<Void> paymentResponse = paymentDeleter.deletePayment(0);
+    var categories = retriever.getCategories();
 
     StepVerifier
-        .create(paymentResponse)
+        .create(categories)
+        .expectNext("foo", "bar", "pippo")
         .expectComplete()
         .verify();
   }
-
 }
