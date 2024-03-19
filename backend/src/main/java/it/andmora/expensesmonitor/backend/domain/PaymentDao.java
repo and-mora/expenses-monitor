@@ -1,6 +1,7 @@
 package it.andmora.expensesmonitor.backend.domain;
 
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface PaymentDao {
@@ -10,4 +11,6 @@ public interface PaymentDao {
   Mono<Integer> getOverallBalance();
 
   Mono<Void> deletePayment(Integer id);
+
+  Flux<String> getCategories();
 }

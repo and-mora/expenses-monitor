@@ -1,5 +1,6 @@
 package it.andmora.expensesmonitor.backend.web;
 
+import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCategoriesRetriever;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCreator;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentDeleter;
 import it.andmora.expensesmonitor.backend.web.dto.PaymentDto;
@@ -7,6 +8,7 @@ import it.andmora.expensesmonitor.backend.web.mapper.PaymentControllerMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -21,6 +23,7 @@ class PaymentControllerImpl implements PaymentController {
   private final PaymentCreator paymentCreator;
   private final PaymentControllerMapper paymentMapper;
   private final PaymentDeleter paymentDeleter;
+  private final PaymentCategoriesRetriever paymentCategoriesRetriever;
 
   @Override
   public Mono<PaymentDto> createPayment(PaymentDto paymentDto) {
@@ -33,5 +36,11 @@ class PaymentControllerImpl implements PaymentController {
   public Mono<Void> deletePayment(Integer id) {
     log.info("Deletion of payment with id: {}", id);
     return paymentDeleter.deletePayment(id);
+  }
+
+  @Override
+  public Flux<String> getCategories() {
+    log.info("Retrieving categories...");
+    return paymentCategoriesRetriever.getCategories();
   }
 }
