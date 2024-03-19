@@ -28,8 +28,13 @@
                     </mat-radio-group>
                     <mat-form-field appearance="outline">
                         <mat-label>Categoria</mat-label>
-                        <input matInput formControlName="category">
+                        <input matInput placeholder="Pick one" formControlName="category" [matAutocomplete]="catAuto">
                         <mat-error *ngIf="hasError('category', 'required')">Campo obbligatorio.</mat-error>
+                        <mat-autocomplete autoActiveFirstOption #catAuto="matAutocomplete">
+                            @for (option of filteredCategories | async; track option) {
+                            <mat-option [value]="option">{{option}}</mat-option>
+                            }
+                        </mat-autocomplete>
                     </mat-form-field>
                     <mat-form-field appearance="outline">
                         <mat-label>Data esecuzione</mat-label>
