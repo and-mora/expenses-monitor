@@ -14,6 +14,7 @@ export class ApiService {
   private logoutUrl = 'logout';
   private checkUrl = 'greet';
   private paymentUrl = 'api/payment';
+  private categoryUrl = 'api/payment/categories'
 
   constructor(private http: HttpClient) { }
 
@@ -47,6 +48,21 @@ export class ApiService {
     return this.http.post(this.baseUrl + this.paymentUrl, JSON.stringify(payment), {
       headers: {
         'Content-Type': 'application/json'
+      }
+    });
+  }
+
+  getCategories(): Observable<string> {
+    const eventSource = new EventSource(this.baseUrl + this.categoryUrl, { withCredentials: true });
+
+    return new Observable(observer => {
+      eventSource.onmessage = event => {
+        const messageData: string = event.data;
+        observer.next(messageData);
+      };
+      eventSource.onerror = () => {
+        observer.complete();
+        eventSource.close();
       }
     });
   }
