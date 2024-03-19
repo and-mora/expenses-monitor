@@ -7,6 +7,7 @@ import it.andmora.expensesmonitor.backend.domain.PaymentDao;
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -37,6 +38,11 @@ class PaymentDaoImpl implements PaymentDao {
   @Override
   public Mono<Void> deletePayment(Integer id) {
     return repository.deleteById(id);
+  }
+
+  @Override
+  public Flux<String> getCategories() {
+    return repository.getCategories();
   }
 
 }
