@@ -35,7 +35,7 @@ services:
       - GMAIL_PASSWORD
 
   renderer:
-    image: grafana/grafana-image-renderer:v3.10.1
+    image: grafana/grafana-image-renderer:3.10.1
     environment:
       # Recommendation of grafana-image-renderer for optimal performance
       # https://grafana.com/docs/grafana/latest/setup-grafana/image-rendering/#configuration
