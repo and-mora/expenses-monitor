@@ -19,6 +19,8 @@ services:
     environment:
       DATABASE: postgres
       DB_GRAFANA_USERNAME: grafana_user
+      GF_RENDERING_SERVER_URL: http://renderer:8081/render
+      GF_RENDERING_CALLBACK_URL: https://expmonitor.freeddns.org:3000
     entrypoint: [ '/bin/sh', '-c', 'export DB_GRAFANA_PASSWORD=$$(cat /run/secrets/DB_GRAFANA_PASSWORD); export GF_SMTP_PASSWORD=$$(cat /run/secrets/GMAIL_PASSWORD); /run.sh' ]
     ports:
       - '3000:3000'
@@ -31,6 +33,20 @@ services:
     secrets:
       - DB_GRAFANA_PASSWORD
       - GMAIL_PASSWORD
+
+  renderer:
+    image: grafana/grafana-image-renderer:v3.10.1
+    environment:
+      # Recommendation of grafana-image-renderer for optimal performance
+      # https://grafana.com/docs/grafana/latest/setup-grafana/image-rendering/#configuration
+      - RENDERING_MODE=clustered
+      - RENDERING_CLUSTERING_MODE=browser
+      - RENDERING_CLUSTERING_MAX_CONCURRENCY=5
+      - RENDERING_CLUSTERING_TIMEOUT=60
+    ports:
+      - '8081'
+    networks:
+      - expenses_monitor
 
 secrets:
   DB_GRAFANA_PASSWORD:
