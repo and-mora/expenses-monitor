@@ -80,7 +80,7 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 3,
+        "w": 8,
         "x": 0,
         "y": 1
       },
@@ -166,8 +166,8 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 3,
-        "x": 3,
+        "w": 8,
+        "x": 8,
         "y": 1
       },
       "id": 4,
@@ -259,8 +259,8 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 3,
-        "x": 6,
+        "w": 8,
+        "x": 16,
         "y": 1
       },
       "id": 6,
@@ -312,19 +312,6 @@
       "type": "gauge"
     },
     {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 8
-      },
-      "id": 7,
-      "panels": [],
-      "title": "Andamenti",
-      "type": "row"
-    },
-    {
       "datasource": {
         "type": "postgres",
         "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
@@ -347,10 +334,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 11,
-        "w": 7,
+        "h": 18,
+        "w": 24,
         "x": 0,
-        "y": 9
+        "y": 8
       },
       "id": 9,
       "options": {
@@ -410,6 +397,19 @@
       ],
       "title": "Uscite per categoria mese corrente",
       "type": "piechart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      },
+      "id": 7,
+      "panels": [],
+      "title": "Andamenti",
+      "type": "row"
     },
     {
       "datasource": {
@@ -497,10 +497,10 @@
         ]
       },
       "gridPos": {
-        "h": 14,
-        "w": 11,
+        "h": 85,
+        "w": 24,
         "x": 0,
-        "y": 20
+        "y": 27
       },
       "id": 10,
       "options": {
@@ -527,7 +527,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select id, accounting_date, merchant_name, amount /100.0 as amount, category, description\r\nfrom payments\r\nWHERE $__timeFilter(accounting_date) \r\nORDER BY accounting_date desc\r\n",
+          "rawSql": "select id, accounting_date, merchant_name, amount /100.0 as amount, category, description\r\nfrom payments\r\nWHERE $__timeFilter(accounting_date) \r\nORDER BY accounting_date asc\r\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -560,8 +560,8 @@
     "list": []
   },
   "time": {
-    "from": "now/M",
-    "to": "now/M"
+    "from": "now-1M/M",
+    "to": "now-1M/M"
   },
   "timepicker": {
     "hidden": false
@@ -569,6 +569,6 @@
   "timezone": "",
   "title": "Monitoraggio mese corrente",
   "uid": "d0a30598-95a5-4098-89cc-435d965df315",
-  "version": 4,
+  "version": 5,
   "weekStart": "monday"
 }
