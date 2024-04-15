@@ -1,0 +1,18 @@
+### Workflow that generates a report
+
+name: Generate grafana report
+
+on:
+  workflow_dispatch:
+
+jobs:
+  Report:
+    name: Generate a report
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+      - name: Download the report
+        run: curl https://expmonitor.freeddns.org:3000/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=d0a30598-95a5-4098-89cc-435d965df315&from=now-1M%2FM&to=now-1M%2FM&layout=grid&orientation=landscape
+
+      - run: ls
