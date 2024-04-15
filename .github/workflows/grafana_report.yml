@@ -9,7 +9,7 @@ jobs:
   Report:
     name: Generate a report
     runs-on: ubuntu-latest
-#    environment: prod
+    environment: prod
 
     steps:
       - name: Download the report
