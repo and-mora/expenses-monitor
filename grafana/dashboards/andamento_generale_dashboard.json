@@ -126,7 +126,7 @@
       },
       "gridPos": {
         "h": 16,
-        "w": 11,
+        "w": 12,
         "x": 0,
         "y": 1
       },
@@ -283,7 +283,7 @@
       "gridPos": {
         "h": 16,
         "w": 12,
-        "x": 11,
+        "x": 12,
         "y": 1
       },
       "id": 10,
@@ -448,7 +448,7 @@
       },
       "gridPos": {
         "h": 16,
-        "w": 11,
+        "w": 12,
         "x": 0,
         "y": 17
       },
@@ -568,7 +568,7 @@
       "gridPos": {
         "h": 16,
         "w": 12,
-        "x": 11,
+        "x": 12,
         "y": 17
       },
       "id": 2,
@@ -668,7 +668,7 @@
             "sum"
           ],
           "fields": "",
-          "values": false
+          "values": true
         },
         "tooltip": {
           "mode": "single",
@@ -683,9 +683,9 @@
             "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
           },
           "editorMode": "code",
-          "format": "time_series",
+          "format": "table",
           "rawQuery": true,
-          "rawSql": "select accounting_date as time, category, amount/100 * -1 as spesa\nfrom expenses.payments\nwhere $__timeFilter(accounting_date) and amount < 0\norder by time",
+          "rawSql": "select category, sum(abs(amount))/100 as spesa\nfrom expenses.payments\nwhere $__timeFilter(accounting_date) and amount < 0\ngroup by category\norder by spesa desc",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1211,6 +1211,6 @@
   "timezone": "",
   "title": "Andamento generale",
   "uid": "c110264f-054a-407c-952c-e9abab86c9ff",
-  "version": 4,
+  "version": 5,
   "weekStart": ""
 }
