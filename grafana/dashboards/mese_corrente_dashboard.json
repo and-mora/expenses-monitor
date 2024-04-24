@@ -57,7 +57,6 @@
           "color": {
             "mode": "thresholds"
           },
-          "displayName": "current month",
           "mappings": [],
           "max": 100,
           "min": 0,
@@ -142,7 +141,6 @@
           "color": {
             "mode": "thresholds"
           },
-          "displayName": "current month",
           "mappings": [],
           "max": 100,
           "min": 0,
@@ -229,7 +227,6 @@
             "mode": "thresholds",
             "seriesBy": "last"
           },
-          "displayName": "current month",
           "mappings": [],
           "min": 0,
           "thresholds": {
@@ -334,8 +331,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 25,
-        "w": 24,
+        "h": 24,
+        "w": 12,
         "x": 0,
         "y": 11
       },
@@ -374,7 +371,7 @@
           "format": "time_series",
           "hide": false,
           "rawQuery": true,
-          "rawSql": "select accounting_date as time,\n  category,\n  abs(amount/100) as spesa\nFrom\n  payments\nwhere amount < 0 and $__timeFilter(accounting_date) \norder by\n  time",
+          "rawSql": "select accounting_date as time,\n  category,\n  sum(abs(amount/100)) as spesa\nFrom\n  payments\nwhere amount < 0 and $__timeFilter(accounting_date)\ngroup by time, category\norder by\n  time",
           "refId": "A",
           "sql": {
             "columns": [
@@ -399,12 +396,99 @@
       "type": "piechart"
     },
     {
+      "datasource": {
+        "type": "postgres",
+        "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 24,
+        "w": 12,
+        "x": 12,
+        "y": 11
+      },
+      "id": 11,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.5.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "select accounting_date as time,\n  category,\n  sum(abs(amount/100)) as entrata\nFrom\n  payments\nwhere amount > 0 and $__timeFilter(accounting_date)\ngroup by time, category\norder by\n  time",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Entrate per categoria",
+      "type": "piechart"
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 36
+        "y": 35
       },
       "id": 7,
       "panels": [],
@@ -500,7 +584,7 @@
         "h": 90,
         "w": 24,
         "x": 0,
-        "y": 37
+        "y": 36
       },
       "id": 10,
       "options": {
@@ -560,8 +644,8 @@
     "list": []
   },
   "time": {
-    "from": "now-1M/M",
-    "to": "now-1M/M"
+    "from": "now/M",
+    "to": "now/M"
   },
   "timepicker": {
     "hidden": false
@@ -569,6 +653,6 @@
   "timezone": "",
   "title": "Monitoraggio mese corrente",
   "uid": "d0a30598-95a5-4098-89cc-435d965df315",
-  "version": 6,
+  "version": 7,
   "weekStart": "monday"
 }
