@@ -353,7 +353,7 @@
             "sum"
           ],
           "fields": "",
-          "values": false
+          "values": true
         },
         "tooltip": {
           "mode": "single",
@@ -368,10 +368,10 @@
             "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
           },
           "editorMode": "code",
-          "format": "time_series",
+          "format": "table",
           "hide": false,
           "rawQuery": true,
-          "rawSql": "select accounting_date as time,\n  category,\n  sum(abs(amount/100)) as spesa\nFrom\n  payments\nwhere amount < 0 and $__timeFilter(accounting_date)\ngroup by time, category\norder by\n  time",
+          "rawSql": "select category,\n  sum(abs(amount))/100 as spesa\nFrom\n  payments\nwhere amount < 0 and $__timeFilter(accounting_date)\ngroup by category\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -392,7 +392,7 @@
           }
         }
       ],
-      "title": "Uscite per categoria mese corrente",
+      "title": "Uscite per categoria",
       "type": "piechart"
     },
     {
@@ -440,7 +440,7 @@
             "sum"
           ],
           "fields": "",
-          "values": false
+          "values": true
         },
         "tooltip": {
           "mode": "single",
@@ -455,10 +455,10 @@
             "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
           },
           "editorMode": "code",
-          "format": "time_series",
+          "format": "table",
           "hide": false,
           "rawQuery": true,
-          "rawSql": "select accounting_date as time,\n  category,\n  sum(abs(amount/100)) as entrata\nFrom\n  payments\nwhere amount > 0 and $__timeFilter(accounting_date)\ngroup by time, category\norder by\n  time",
+          "rawSql": "select category,\n  sum(abs(amount))/100 as entrata\nFrom\n  payments\nwhere amount > 0 and $__timeFilter(accounting_date)\ngroup by category",
           "refId": "A",
           "sql": {
             "columns": [
@@ -653,6 +653,6 @@
   "timezone": "",
   "title": "Monitoraggio mese corrente",
   "uid": "d0a30598-95a5-4098-89cc-435d965df315",
-  "version": 7,
+  "version": 8,
   "weekStart": "monday"
 }
