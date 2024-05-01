@@ -21,3 +21,5 @@ basic-auth:
 
 frontend:
   origin: ${FRONTEND_ORIGIN_URL:http://localhost:5173}
+
+logging.level._reactor.netty.channel.LeakDetection: debug
