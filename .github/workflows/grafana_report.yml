@@ -9,10 +9,19 @@ jobs:
   Report:
     name: Generate a report
     runs-on: ubuntu-latest
-#    environment: prod
+    environment: prod
 
     steps:
-      - name: Download the report
-        run: curl https://expmonitor.freeddns.org:3000/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=d0a30598-95a5-4098-89cc-435d965df315&from=now-1M%2FM&to=now-1M%2FM&layout=grid&orientation=landscape
+      - name: Retrieve service account ID
+        run: |
+          echo "SA_ID=$(curl --location "https://${{ secrets.VIEWER_NAME }}:${{ secrets.VIEWER_PASSWORD }}@expmonitor.freeddns.org:3000/api/serviceaccounts/search?query=grafana-reporter" | jq '.serviceAccounts[0].id')" >> $GITHUB_ENV
 
-      - run: ls
+      - name: Create service account token with ttl 10m
+        run: |
+          echo "SA_TOKEN=$(curl -X POST --location "https://${{ secrets.VIEWER_NAME }}:${{ secrets.VIEWER_PASSWORD }}@expmonitor.freeddns.org:3000/api/serviceaccounts/${{ env.SA_ID }}/tokens" -d "{\"name\": \"report-$(date)\", \"secondsToLive\": 600}" | jq '.key') >> $GITHUB_ENV
+
+      - name: Download the report
+        run: |
+          curl --output report.pdf --location "https://expmonitor.freeddns.org:3000/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=d0a30598-95a5-4098-89cc-435d965df315&from=now-1M%2FM&to=now-1M%2FM&layout=grid&orientation=landscape" -H "Authorization: Bearer ${{ env.SA_TOKEN }}"
+
+      - run: ls -al
