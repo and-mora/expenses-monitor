@@ -8,14 +8,11 @@ on:
 jobs:
   Report:
     name: Generate a report
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    #container: curlimages/curl:8.7.1@sha256:25d29daeb9b14b89e2fa8cc17c70e4b188bca1466086907c2d9a4b56b59d8e21
     environment: prod
 
     steps:
-      - name: Upgrade curl command
-        run: |
-          sudo apt update
-          sudo apt install --only-upgrade curl
       - name: Retrieve service account ID
         run: |
           echo "SA_ID=$(curl --location 'https://${{ secrets.VM_HOST }}:${{ secrets.VM_PORT }}/api/serviceaccounts/search?query=grafana-reporter' \
