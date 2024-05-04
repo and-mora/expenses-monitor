@@ -18,20 +18,20 @@ jobs:
             --header 'Authorization: Basic ${{ secrets.GF_VIEWER_BASIC_AUTH }}' \
           | jq '.serviceAccounts[0].id')" >> $GITHUB_ENV
 
-      - name: Create service account token with ttl 5m
+      - name: Create service account token with ttl 3m
         run: |
-          echo "SA_TOKEN=$(curl --location 'https://${{ secrets.VM_HOST }}:3000/api/serviceaccounts/${{ env.SA_ID }}/tokens' \
+          echo "SA_TOKEN=$(curl -X POST --location 'https://${{ secrets.VM_HOST }}:3000/api/serviceaccounts/${{ env.SA_ID }}/tokens' \
             --header 'Content-Type: application/json' \
             --header 'Authorization: Basic ${{ secrets.GF_VIEWER_BASIC_AUTH }}' \
-              --data '{
-                "name": "report-'"$(date +%s)"'",
-                "secondsToLive": 300
-              }'
-          | jq '.key' ) >> $GITHUB_ENV
+            --data "{
+              \"name\": \"report-$(date +%s)\",
+              \"secondsToLive\": 180
+            }" | jq '.key' )" >> $GITHUB_ENV
 
       - name: Download the report
         run: |
-          curl --output report.pdf --location 'https://${{ secrets.VM_HOST }}:3000/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=d0a30598-95a5-4098-89cc-435d965df315&from=now-1M%2FM&to=now-1M%2FM&layout=grid" \ 
-            --header "Authorization: Bearer ${{ env.SA_TOKEN }}"
+          curl --location 'https://${{ secrets.VM_HOST }}:3000/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=d0a30598-95a5-4098-89cc-435d965df315&from=now-1M%2FM&to=now-1M%2FM&layout=grid' \
+            --header "Authorization: Bearer ${{ env.SA_TOKEN }}" \
+            --output report.pdf
 
       - run: ls -al
