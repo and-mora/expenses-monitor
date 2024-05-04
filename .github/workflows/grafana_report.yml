@@ -12,7 +12,10 @@ jobs:
     environment: prod
 
     steps:
-      - run: curl --version
+      - name: Upgrade curl command
+        run: |
+          sudo apt update
+          sudo apt install --only-upgrade curl
       - name: Retrieve service account ID
         run: |
           echo "SA_ID=$(curl --location 'https://${{ secrets.VM_HOST }}:${{ secrets.VM_PORT }}/api/serviceaccounts/search?query=grafana-reporter' \
