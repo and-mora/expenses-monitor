@@ -14,13 +14,13 @@ jobs:
     steps:
       - name: Retrieve service account ID
         run: |
-          echo "SA_ID=$(curl --location '${{ secrets.VM_HOST }}:${{ secrets.VM_PORT }}/api/serviceaccounts/search?query=grafana-reporter' \
+          echo "SA_ID=$(curl --location 'https://${{ secrets.VM_HOST }}:${{ secrets.VM_PORT }}/api/serviceaccounts/search?query=grafana-reporter' \
             --header 'Authorization: Basic ${{ secrets.GF_VIEWER_BASIC_AUTH }}' \
           | jq '.serviceAccounts[0].id')" >> $GITHUB_ENV
 
       - name: Create service account token with ttl 5m
         run: |
-          echo "SA_TOKEN=$(curl --location '${{ secrets.VM_HOST }}:${{ secrets.VM_PORT }}/api/serviceaccounts/${{ env.SA_ID }}/tokens' \
+          echo "SA_TOKEN=$(curl --location 'https://${{ secrets.VM_HOST }}:${{ secrets.VM_PORT }}/api/serviceaccounts/${{ env.SA_ID }}/tokens' \
             --header 'Content-Type: application/json' \
             --header 'Authorization: Basic ${{ secrets.GF_VIEWER_BASIC_AUTH }}' \
               --data '{
@@ -31,7 +31,7 @@ jobs:
 
       - name: Download the report
         run: |
-          curl --output report.pdf --location '${{ secrets.VM_HOST }}:${{ secrets.VM_PORT }}/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=d0a30598-95a5-4098-89cc-435d965df315&from=now-1M%2FM&to=now-1M%2FM&layout=grid" \ 
+          curl --output report.pdf --location 'https://${{ secrets.VM_HOST }}:${{ secrets.VM_PORT }}/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=d0a30598-95a5-4098-89cc-435d965df315&from=now-1M%2FM&to=now-1M%2FM&layout=grid" \ 
             --header "Authorization: Bearer ${{ env.SA_TOKEN }}"
 
       - run: ls -al
