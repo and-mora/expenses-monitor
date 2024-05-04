@@ -31,7 +31,7 @@ jobs:
 
       - name: Download the report
         run: |
-          curl --output report.pdf --location '${{ secrets.VM_HOST }}:${{ secrets.VM_PORT }}/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=d0a30598-95a5-4098-89cc-435d965df315&from=now-1M%2FM&to=now-1M%2FM&layout=grid&orientation=landscape" \ 
+          curl --output report.pdf --location '${{ secrets.VM_HOST }}:${{ secrets.VM_PORT }}/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=d0a30598-95a5-4098-89cc-435d965df315&from=now-1M%2FM&to=now-1M%2FM&layout=grid" \ 
             --header "Authorization: Bearer ${{ env.SA_TOKEN }}"
 
       - run: ls -al
