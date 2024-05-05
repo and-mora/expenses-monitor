@@ -26,12 +26,12 @@ jobs:
             --data "{
               \"name\": \"report-$(date +%s)\",
               \"secondsToLive\": 180
-            }" | jq '.key' )" >> $GITHUB_ENV
+            }" | jq -r '.key' )" >> $GITHUB_ENV
 
       - name: Download the report
         run: |
           curl --location 'https://${{ secrets.VM_HOST }}:3000/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=d0a30598-95a5-4098-89cc-435d965df315&from=now-1M%2FM&to=now-1M%2FM&layout=grid' \
-            --header "Authorization: Bearer ${{ env.SA_TOKEN }}" \
+            --header "Authorization: Bearer ::add-mask::${{ env.SA_TOKEN }}" \
             --output report.pdf
 
       - run: ls -al
