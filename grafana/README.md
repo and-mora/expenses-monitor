@@ -61,6 +61,13 @@ Log in the viewer-only account with the credentials: `VIEWER_EMAIL` - `VIEWER_PA
 
 Log in the admin account with the credentials: `admin` - `ADMIN_PASSWORD`.
 
+### Scheduled report generation
+The dashboard reporter plugin it's provisioned with the application and allow to generate a pdf report from a dashboard.
+A service account must be created into the Grafana server and unfortunately atm it's not possible to provision it.
+
+It's necessary to manually create the service account with Grafana UI and configure user to allow token generation.
+The token will be created on the flight to run the scheduled action and will have low expire date.
+
 ## Uninstall
 ```
 docker stack rm grafana

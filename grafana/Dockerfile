@@ -1,4 +1,4 @@
-ARG GRAFANA_VERSION=10.1.0@sha256:047c1c5aa6fef257b6c2516f95c8fcd9f28707c201c6413dd78328b6cbedff6f
+ARG GRAFANA_VERSION=10.4.1@sha256:753bbb971071480d6630d3aa0d55345188c02f39456664f67c1ea443593638d0
 
 FROM grafana/grafana-oss:${GRAFANA_VERSION}
 
@@ -18,7 +18,7 @@ RUN mkdir -p "$GF_PATHS_PLUGINS" && \
     ln -s /usr/bin/chromium-browser "$GF_PLUGIN_RENDERING_CHROME_BIN" && \
     grafana cli \
         --pluginsDir "$GF_PATHS_PLUGINS" \
-        --pluginUrl https://github.com/mahendrapaipuri/grafana-dashboard-reporter-app/releases/download/v1.0.0/mahendrapaipuri-dashboardreporter-app-1.0.0.zip \
+        --pluginUrl https://github.com/mahendrapaipuri/grafana-dashboard-reporter-app/releases/download/v1.3.0/mahendrapaipuri-dashboardreporter-app-1.3.0.zip \
         plugins install mahendrapaipuri-dashboardreporter-app;
 
 ARG GF_INSTALL_PLUGINS=""
