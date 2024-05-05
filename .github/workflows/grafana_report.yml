@@ -19,6 +19,7 @@ jobs:
           | jq '.serviceAccounts[0].id')" >> $GITHUB_ENV
 
       - name: Create service account token with ttl 3m
+        id: generate-token
         run: |
           echo "SA_TOKEN=$(curl -X POST --location 'https://${{ secrets.VM_HOST }}:3000/api/serviceaccounts/${{ env.SA_ID }}/tokens' \
             --header 'Content-Type: application/json' \
@@ -26,12 +27,12 @@ jobs:
             --data "{
               \"name\": \"report-$(date +%s)\",
               \"secondsToLive\": 180
-            }" | jq -r '.key' )" >> $GITHUB_ENV
+            }" | jq -r '.key' )" >> $GITHUB_OUTPUT
 
       - name: Download the report
         run: |
           curl --location 'https://${{ secrets.VM_HOST }}:3000/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=d0a30598-95a5-4098-89cc-435d965df315&from=now-1M%2FM&to=now-1M%2FM&layout=grid' \
-            --header "Authorization: Bearer ::add-mask::${{ env.SA_TOKEN }}" \
+            --header "Authorization: Bearer ::add-mask::${{ steps.generate-token.outputs.SA_TOKEN }}" \
             --output report.pdf
 
       - run: ls -al
