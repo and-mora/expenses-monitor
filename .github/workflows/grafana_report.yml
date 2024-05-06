@@ -35,7 +35,7 @@ jobs:
           # Required mail subject:
           subject: "Estratto conto mensile"
           # Required recipients' addresses:
-          to: and.morabito@gmail.com,frsncescapirri91@gmail.com
+          to: ${{ vars.REPORT_RECIPIENT_LIST }}
           # Required sender full name (address can be skipped):
           from: Grafana Report # <user@example.com>
           # Optional plain body:
