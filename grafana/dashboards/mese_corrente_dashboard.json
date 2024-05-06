@@ -55,173 +55,6 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "max": 100,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 40
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 12,
-        "w": 8,
-        "x": 0,
-        "y": 1
-      },
-      "id": 5,
-      "options": {
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showThresholdLabels": true,
-        "showThresholdMarkers": true
-      },
-      "pluginVersion": "10.1.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-          },
-          "editorMode": "code",
-          "format": "time_series",
-          "rawQuery": true,
-          "rawSql": "select time, sum(spese) * 100 / sum(entrate) as spese_fisse_stipendio from (\nselect DATE_TRUNC('month', accounting_date) as time, abs(sum(amount)/100)::float as spese, NULL as entrate\nFROM payments\nwhere category in ('affitto', 'bolletta', 'condominio') and $__timeFilter(accounting_date)\ngroup by DATE_TRUNC('month', accounting_date)\nunion\nselect DATE_TRUNC('month', accounting_date) as time, NULL as spese, abs(sum(amount)/100)::float as entrate\nFROM payments\nwhere category in ('stipendio') and $__timeFilter(accounting_date)\ngroup by DATE_TRUNC('month', accounting_date)\n) p\ngroup by time",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "spese_fisse/stipendio",
-      "type": "gauge"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "max": 100,
-          "min": 0,
-          "noValue": "0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 40
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 12,
-        "w": 8,
-        "x": 8,
-        "y": 1
-      },
-      "id": 4,
-      "options": {
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showThresholdLabels": true,
-        "showThresholdMarkers": true
-      },
-      "pluginVersion": "10.1.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-          },
-          "editorMode": "code",
-          "format": "time_series",
-          "rawQuery": true,
-          "rawSql": "select time, sum(spese) * 100 / sum(entrate) as affitto_stipendio_rate from (\nselect DATE_TRUNC('month', accounting_date) as time, abs(sum(amount)/100)::float as spese, NULL as entrate\nFROM payments\nwhere category = 'affitto' and $__timeFilter(accounting_date)\ngroup by DATE_TRUNC('month', accounting_date)\nunion\nselect DATE_TRUNC('month', accounting_date) as time, NULL as spese, abs(sum(amount)/100)::float as entrate\nFROM payments\nwhere category = 'stipendio' and $__timeFilter(accounting_date)\ngroup by DATE_TRUNC('month', accounting_date)\n) p\ngroup by time",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "affitto/stipendio",
-      "type": "gauge"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
             "mode": "thresholds",
             "seriesBy": "last"
           },
@@ -253,13 +86,16 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 12,
-        "w": 8,
-        "x": 16,
+        "h": 6,
+        "w": 24,
+        "x": 0,
         "y": 1
       },
       "id": 6,
       "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -268,10 +104,11 @@
           "fields": "",
           "values": false
         },
-        "showThresholdLabels": true,
-        "showThresholdMarkers": true
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.1.0",
+      "pluginVersion": "10.4.1",
       "targets": [
         {
           "datasource": {
@@ -302,8 +139,8 @@
           }
         }
       ],
-      "title": "Bilancio mensile",
-      "type": "gauge"
+      "title": "Bilancio mensile (entrate - uscite)",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -313,51 +150,52 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
+            "mode": "thresholds"
           },
           "mappings": [],
-          "unit": "currencyEUR"
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 40
+              }
+            ]
+          },
+          "unit": "percent"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 24,
-        "w": 12,
+        "h": 6,
+        "w": 24,
         "x": 0,
-        "y": 13
+        "y": 7
       },
-      "id": 9,
+      "id": 5,
       "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "values": [
-            "value",
-            "percent"
-          ]
-        },
-        "pieType": "pie",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
         "reduceOptions": {
           "calcs": [
-            "sum"
+            "lastNotNull"
           ],
           "fields": "",
-          "values": true
+          "values": false
         },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "9.5.3",
+      "pluginVersion": "10.4.1",
       "targets": [
         {
           "datasource": {
@@ -365,10 +203,9 @@
             "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
           },
           "editorMode": "code",
-          "format": "table",
-          "hide": false,
+          "format": "time_series",
           "rawQuery": true,
-          "rawSql": "select category,\n  sum(abs(amount))/100 as spesa\nFrom\n  payments\nwhere amount < 0 and $__timeFilter(accounting_date)\ngroup by category\n",
+          "rawSql": "select time, sum(spese) * 100 / sum(entrate) as spese_fisse_stipendio from (\nselect DATE_TRUNC('month', accounting_date) as time, abs(sum(amount)/100)::float as spese, NULL as entrate\nFROM payments\nwhere category in ('affitto', 'bolletta', 'condominio') and $__timeFilter(accounting_date)\ngroup by DATE_TRUNC('month', accounting_date)\nunion\nselect DATE_TRUNC('month', accounting_date) as time, NULL as spese, abs(sum(amount)/100)::float as entrate\nFROM payments\nwhere category in ('stipendio') and $__timeFilter(accounting_date)\ngroup by DATE_TRUNC('month', accounting_date)\n) p\ngroup by time",
           "refId": "A",
           "sql": {
             "columns": [
@@ -389,62 +226,63 @@
           }
         }
       ],
-      "title": "Uscite per categoria",
-      "type": "piechart"
+      "title": "Rapporto tra spese fisse (affitto + bollette + condominio) e stipendio",
+      "type": "stat"
     },
     {
       "datasource": {
-        "type": "postgres",
+        "type": "grafana-postgresql-datasource",
         "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
       },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "continuous-GrYlRd"
           },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
+          "fieldMinMax": false,
           "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
           "unit": "currencyEUR"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 24,
-        "w": 12,
-        "x": 12,
+        "h": 10,
+        "w": 24,
+        "x": 0,
         "y": 13
       },
-      "id": 11,
+      "id": 12,
       "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "values": [
-            "value",
-            "percent"
-          ]
-        },
-        "pieType": "pie",
+        "displayMode": "gradient",
+        "maxVizHeight": 78,
+        "minVizHeight": 23,
+        "minVizWidth": 8,
+        "namePlacement": "left",
+        "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
             "sum"
           ],
           "fields": "",
+          "limit": 10,
           "values": true
         },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "showUnfilled": true,
+        "sizing": "auto",
+        "text": {},
+        "valueMode": "color"
       },
-      "pluginVersion": "9.5.3",
+      "pluginVersion": "10.4.1",
       "targets": [
         {
           "datasource": {
@@ -455,7 +293,91 @@
           "format": "table",
           "hide": false,
           "rawQuery": true,
-          "rawSql": "select category,\n  sum(abs(amount))/100 as entrata\nFrom\n  payments\nwhere amount > 0 and $__timeFilter(accounting_date)\ngroup by category",
+          "rawSql": "select category,\n  sum(abs(amount))/100 as spesa\nFrom\n  payments\nwhere amount < 0 and $__timeFilter(accounting_date)\ngroup by category\norder by spesa desc\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Uscite per categoria top 10",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-BlPu"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "id": 11,
+      "options": {
+        "displayMode": "gradient",
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "left",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "10.4.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "select category,\n  sum(abs(amount))/100 as entrata\nFrom\n  payments\nwhere amount > 0 and $__timeFilter(accounting_date)\ngroup by category\norder by entrata desc",
           "refId": "A",
           "sql": {
             "columns": [
@@ -477,7 +399,125 @@
         }
       ],
       "title": "Entrate per categoria",
-      "type": "piechart"
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 30,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 4,
+            "pointSize": 10,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
+      "id": 13,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.4.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "select DATE_TRUNC('day',accounting_date) AS time,\n  sum(abs(amount))/100 as spesa\nFrom\n  payments\nwhere amount < 0 and $__timeFilter(accounting_date)\ngroup by time\norder by time\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Uscite cumulate per giorno",
+      "type": "timeseries"
     },
     {
       "collapsed": false,
@@ -485,7 +525,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 37
+        "y": 38
       },
       "id": 7,
       "panels": [],
@@ -581,7 +621,7 @@
         "h": 90,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 39
       },
       "id": 10,
       "options": {
@@ -598,7 +638,7 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "10.1.0",
+      "pluginVersion": "10.4.1",
       "targets": [
         {
           "datasource": {
@@ -634,15 +674,14 @@
     }
   ],
   "refresh": "",
-  "schemaVersion": 38,
-  "style": "dark",
+  "schemaVersion": 39,
   "tags": [],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "now/M",
-    "to": "now/M"
+    "from": "now-1M/M",
+    "to": "now-1M/M"
   },
   "timepicker": {
     "hidden": false
