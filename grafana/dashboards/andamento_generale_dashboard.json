@@ -45,6 +45,7 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -126,7 +127,7 @@
       },
       "gridPos": {
         "h": 16,
-        "w": 12,
+        "w": 11,
         "x": 0,
         "y": 1
       },
@@ -192,6 +193,7 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -283,7 +285,7 @@
       "gridPos": {
         "h": 16,
         "w": 12,
-        "x": 12,
+        "x": 11,
         "y": 1
       },
       "id": 10,
@@ -340,7 +342,7 @@
     },
     {
       "datasource": {
-        "type": "postgres",
+        "type": "grafana-postgresql-datasource",
         "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
       },
       "fieldConfig": {
@@ -349,6 +351,7 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -448,7 +451,7 @@
       },
       "gridPos": {
         "h": 16,
-        "w": 12,
+        "w": 11,
         "x": 0,
         "y": 17
       },
@@ -478,7 +481,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "select * FROM (select DATE_TRUNC('month',accounting_date) AS time, sum(amount * -1)/100 as uscite_fisse, category\nFROM payments \nWHERE $__timeFilter(accounting_date) and category in ('affitto', 'bolletta', 'condominio')\nGROUP BY DATE_TRUNC('month', accounting_date), category\nUNION\nselect DATE_TRUNC('month',accounting_date) AS time, sum(amount * -1)/100 as entrate, 'totale'\nFROM payments \nWHERE $__timeFilter(accounting_date) and category in ('affitto', 'bolletta', 'condominio')\nGROUP BY DATE_TRUNC('month', accounting_date)) unione\norder by time\n\n",
+          "rawSql": "select * FROM (select DATE_TRUNC('month',accounting_date) AS time, abs(sum(amount))/100 as uscite_fisse, category\nFROM payments \nWHERE $__timeFilter(accounting_date) and category in ('affitto', 'bolletta', 'condominio')\nGROUP BY DATE_TRUNC('month', accounting_date), category\nUNION\nselect DATE_TRUNC('month',accounting_date) AS time, sum(amount * -1)/100 as entrate, 'totale'\nFROM payments \nWHERE $__timeFilter(accounting_date) and category in ('affitto', 'bolletta', 'condominio')\nGROUP BY DATE_TRUNC('month', accounting_date)) unione\norder by time\n\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -504,7 +507,7 @@
     },
     {
       "datasource": {
-        "type": "postgres",
+        "type": "grafana-postgresql-datasource",
         "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
       },
       "fieldConfig": {
@@ -513,6 +516,7 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -568,7 +572,7 @@
       "gridPos": {
         "h": 16,
         "w": 12,
-        "x": 12,
+        "x": 11,
         "y": 17
       },
       "id": 2,
@@ -599,7 +603,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "select DATE_TRUNC('month',accounting_date) AS time, category, sum(abs(amount)/100) as spesa\nfrom expenses.payments\nwhere $__timeFilter(accounting_date) and amount < 0\nGROUP BY DATE_TRUNC('month', accounting_date), category\norder by time",
+          "rawSql": "select DATE_TRUNC('month',accounting_date) AS time, category, abs(sum(amount))/100 as spesa\nfrom expenses.payments\nwhere $__timeFilter(accounting_date) and amount < 0\nGROUP BY DATE_TRUNC('month', accounting_date), category\norder by time",
           "refId": "A",
           "sql": {
             "columns": [
@@ -625,7 +629,7 @@
     },
     {
       "datasource": {
-        "type": "postgres",
+        "type": "grafana-postgresql-datasource",
         "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
       },
       "fieldConfig": {
@@ -668,7 +672,7 @@
             "sum"
           ],
           "fields": "",
-          "values": true
+          "values": false
         },
         "tooltip": {
           "mode": "single",
@@ -683,9 +687,9 @@
             "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
           },
           "editorMode": "code",
-          "format": "table",
+          "format": "time_series",
           "rawQuery": true,
-          "rawSql": "select category, sum(abs(amount))/100 as spesa\nfrom expenses.payments\nwhere $__timeFilter(accounting_date) and amount < 0\ngroup by category\norder by spesa desc",
+          "rawSql": "select accounting_date as time, category, abs(amount)/100 as spesa\nfrom expenses.payments\nwhere $__timeFilter(accounting_date) and amount < 0\norder by time",
           "refId": "A",
           "sql": {
             "columns": [
@@ -707,7 +711,6 @@
         }
       ],
       "title": "Raggruppamento spese per categoria",
-      "transformations": [],
       "type": "piechart"
     },
     {
@@ -721,6 +724,7 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -846,6 +850,7 @@
             "seriesBy": "last"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -969,6 +974,7 @@
             "mode": "thresholds"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -1089,6 +1095,7 @@
             "mode": "thresholds"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -1197,8 +1204,7 @@
     }
   ],
   "refresh": "",
-  "schemaVersion": 38,
-  "style": "dark",
+  "schemaVersion": 39,
   "tags": [],
   "templating": {
     "list": []
@@ -1211,6 +1217,6 @@
   "timezone": "",
   "title": "Andamento generale",
   "uid": "c110264f-054a-407c-952c-e9abab86c9ff",
-  "version": 5,
+  "version": 1,
   "weekStart": ""
 }

@@ -49,7 +49,7 @@
     },
     {
       "datasource": {
-        "type": "postgres",
+        "type": "grafana-postgresql-datasource",
         "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
       },
       "fieldConfig": {
@@ -58,6 +58,198 @@
             "mode": "thresholds",
             "seriesBy": "last"
           },
+          "displayName": "Totale entrate",
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 250
+              },
+              {
+                "color": "green",
+                "value": 500
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 1
+      },
+      "id": 15,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": false
+      },
+      "pluginVersion": "10.4.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "select DATE_TRUNC('month',accounting_date) AS time, sum(amount)/100 as bilancio\nfrom expenses.payments\nwhere $__timeFilter(accounting_date) and amount > 0\nGROUP BY DATE_TRUNC('month', accounting_date)\norder by time",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds",
+            "seriesBy": "last"
+          },
+          "displayName": "Totale uscite",
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 250
+              },
+              {
+                "color": "green",
+                "value": 500
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 1
+      },
+      "id": 14,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": false
+      },
+      "pluginVersion": "10.4.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "select DATE_TRUNC('month',accounting_date) AS time, sum(amount)/100 as bilancio\nfrom expenses.payments\nwhere $__timeFilter(accounting_date) and amount < 0\nGROUP BY DATE_TRUNC('month', accounting_date)\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds",
+            "seriesBy": "last"
+          },
+          "displayName": "Utile",
+          "fieldMinMax": false,
           "mappings": [],
           "min": 0,
           "thresholds": {
@@ -89,13 +281,13 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 1
+        "y": 7
       },
       "id": 6,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
-        "justifyMode": "auto",
+        "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -105,8 +297,9 @@
           "values": false
         },
         "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
+        "text": {},
+        "textMode": "value_and_name",
+        "wideLayout": false
       },
       "pluginVersion": "10.4.1",
       "targets": [
@@ -139,7 +332,6 @@
           }
         }
       ],
-      "title": "Bilancio mensile (entrate - uscite)",
       "type": "stat"
     },
     {
@@ -176,7 +368,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 7
+        "y": 13
       },
       "id": 5,
       "options": {
@@ -226,7 +418,7 @@
           }
         }
       ],
-      "title": "Rapporto tra spese fisse (affitto + bollette + condominio) e stipendio",
+      "title": "Rapporto tra spese fisse (affitto + bollette + condominio ecc) e stipendio",
       "type": "stat"
     },
     {
@@ -259,7 +451,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 13
+        "y": 19
       },
       "id": 12,
       "options": {
@@ -293,7 +485,7 @@
           "format": "table",
           "hide": false,
           "rawQuery": true,
-          "rawSql": "select category,\n  sum(abs(amount))/100 as spesa\nFrom\n  payments\nwhere amount < 0 and $__timeFilter(accounting_date)\ngroup by category\norder by spesa desc\n",
+          "rawSql": "select category,\n  abs(sum(amount))/100 as spesa\nFrom\n  payments\nwhere amount < 0 and $__timeFilter(accounting_date)\ngroup by category\norder by spesa desc\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -345,7 +537,7 @@
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 23
+        "y": 29
       },
       "id": 11,
       "options": {
@@ -469,7 +661,7 @@
         "h": 11,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 33
       },
       "id": 13,
       "options": {
@@ -525,7 +717,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 44
       },
       "id": 7,
       "panels": [],
@@ -621,7 +813,7 @@
         "h": 90,
         "w": 24,
         "x": 0,
-        "y": 39
+        "y": 45
       },
       "id": 10,
       "options": {
@@ -689,6 +881,6 @@
   "timezone": "",
   "title": "Monitoraggio mese corrente",
   "uid": "d0a30598-95a5-4098-89cc-435d965df315",
-  "version": 9,
+  "version": 11,
   "weekStart": "monday"
 }

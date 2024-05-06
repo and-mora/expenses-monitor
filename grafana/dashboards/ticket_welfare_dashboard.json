@@ -64,13 +64,15 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 11,
-        "w": 5,
+        "h": 8,
+        "w": 6,
         "x": 0,
         "y": 1
       },
       "id": 4,
       "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -81,9 +83,10 @@
         },
         "showThresholdLabels": true,
         "showThresholdMarkers": true,
+        "sizing": "auto",
         "text": {}
       },
-      "pluginVersion": "10.1.0",
+      "pluginVersion": "10.4.1",
       "targets": [
         {
           "datasource": {
@@ -128,6 +131,7 @@
             "mode": "continuous-RdYlGr"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -163,8 +167,8 @@
       },
       "gridPos": {
         "h": 11,
-        "w": 19,
-        "x": 5,
+        "w": 18,
+        "x": 6,
         "y": 1
       },
       "id": 1,
@@ -249,10 +253,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 12,
-        "w": 5,
+        "h": 13,
+        "w": 6,
         "x": 0,
-        "y": 12
+        "y": 9
       },
       "id": 2,
       "options": {
@@ -324,6 +328,7 @@
             "seriesBy": "min"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -377,9 +382,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 12,
-        "w": 19,
-        "x": 5,
+        "h": 10,
+        "w": 18,
+        "x": 6,
         "y": 12
       },
       "id": 5,
@@ -436,7 +441,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 24
+        "y": 22
       },
       "id": 6,
       "panels": [
@@ -472,6 +477,8 @@
           },
           "id": 7,
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "auto",
             "reduceOptions": {
               "calcs": [
@@ -482,9 +489,10 @@
             },
             "showThresholdLabels": false,
             "showThresholdMarkers": false,
+            "sizing": "auto",
             "text": {}
           },
-          "pluginVersion": "10.1.0",
+          "pluginVersion": "10.4.1",
           "targets": [
             {
               "datasource": {
@@ -552,6 +560,8 @@
           },
           "id": 10,
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "auto",
             "reduceOptions": {
               "calcs": [
@@ -562,9 +572,10 @@
             },
             "showThresholdLabels": true,
             "showThresholdMarkers": true,
+            "sizing": "auto",
             "text": {}
           },
-          "pluginVersion": "10.1.0",
+          "pluginVersion": "10.4.1",
           "targets": [
             {
               "datasource": {
@@ -632,6 +643,8 @@
           },
           "id": 11,
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "auto",
             "reduceOptions": {
               "calcs": [
@@ -642,9 +655,10 @@
             },
             "showThresholdLabels": true,
             "showThresholdMarkers": true,
+            "sizing": "auto",
             "text": {}
           },
-          "pluginVersion": "10.1.0",
+          "pluginVersion": "10.4.1",
           "targets": [
             {
               "datasource": {
@@ -712,6 +726,8 @@
           },
           "id": 12,
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "auto",
             "reduceOptions": {
               "calcs": [
@@ -722,9 +738,10 @@
             },
             "showThresholdLabels": true,
             "showThresholdMarkers": true,
+            "sizing": "auto",
             "text": {}
           },
-          "pluginVersion": "10.1.0",
+          "pluginVersion": "10.4.1",
           "targets": [
             {
               "datasource": {
@@ -792,6 +809,8 @@
           },
           "id": 8,
           "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
             "orientation": "auto",
             "reduceOptions": {
               "calcs": [
@@ -801,9 +820,10 @@
               "values": false
             },
             "showThresholdLabels": true,
-            "showThresholdMarkers": true
+            "showThresholdMarkers": true,
+            "sizing": "auto"
           },
-          "pluginVersion": "10.1.0",
+          "pluginVersion": "10.4.1",
           "targets": [
             {
               "datasource": {
@@ -928,505 +948,518 @@
       "type": "row"
     },
     {
-      "collapsed": true,
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 25
+        "y": 23
       },
       "id": 13,
-      "panels": [
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              },
-              "unit": "currencyEUR"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 6,
-            "w": 4,
-            "x": 0,
-            "y": 23
-          },
-          "id": 14,
-          "options": {
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "sum"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "showThresholdLabels": false,
-            "showThresholdMarkers": false,
-            "text": {}
-          },
-          "pluginVersion": "10.1.0",
-          "targets": [
-            {
-              "datasource": {
-                "type": "postgres",
-                "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-              },
-              "editorMode": "code",
-              "format": "table",
-              "rawQuery": true,
-              "rawSql": "select category, sum(amount)/100.0 as amount\nfrom payments\nWHERE category in ('welfare23', 'welfare23-servizi') and amount > 0\ngroup by category",
-              "refId": "A",
-              "sql": {
-                "columns": [
-                  {
-                    "parameters": [],
-                    "type": "function"
-                  }
-                ],
-                "groupBy": [
-                  {
-                    "property": {
-                      "type": "string"
-                    },
-                    "type": "groupBy"
-                  }
-                ],
-                "limit": 50
-              }
-            }
-          ],
-          "title": "entrata complessiva",
-          "type": "gauge"
-        },
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "continuous-RdYlGr"
-              },
-              "mappings": [],
-              "max": 258,
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              },
-              "unit": "currencyEUR"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 6,
-            "w": 4,
-            "x": 4,
-            "y": 23
-          },
-          "id": 15,
-          "options": {
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "showThresholdLabels": true,
-            "showThresholdMarkers": true,
-            "text": {}
-          },
-          "pluginVersion": "10.1.0",
-          "targets": [
-            {
-              "datasource": {
-                "type": "postgres",
-                "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-              },
-              "editorMode": "code",
-              "format": "table",
-              "rawQuery": true,
-              "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'welfare23' and merchant_name not in('Tezenis', 'H&M')\ngroup by category",
-              "refId": "A",
-              "sql": {
-                "columns": [
-                  {
-                    "parameters": [],
-                    "type": "function"
-                  }
-                ],
-                "groupBy": [
-                  {
-                    "property": {
-                      "type": "string"
-                    },
-                    "type": "groupBy"
-                  }
-                ],
-                "limit": 50
-              }
-            }
-          ],
-          "title": "saldo buoni edenred",
-          "type": "gauge"
-        },
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "continuous-RdYlGr"
-              },
-              "mappings": [],
-              "max": 241,
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "red",
-                    "value": null
-                  }
-                ]
-              },
-              "unit": "currencyEUR"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 6,
-            "w": 4,
-            "x": 8,
-            "y": 23
-          },
-          "id": 16,
-          "options": {
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "sum"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "showThresholdLabels": true,
-            "showThresholdMarkers": true
-          },
-          "pluginVersion": "10.1.0",
-          "targets": [
-            {
-              "datasource": {
-                "type": "postgres",
-                "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-              },
-              "editorMode": "code",
-              "format": "table",
-              "rawQuery": true,
-              "rawSql": "select sum(amount)/100 as bilancio\nfrom expenses.payments\nwhere category = 'welfare23-servizi'",
-              "refId": "A",
-              "sql": {
-                "columns": [
-                  {
-                    "parameters": [],
-                    "type": "function"
-                  }
-                ],
-                "groupBy": [
-                  {
-                    "property": {
-                      "type": "string"
-                    },
-                    "type": "groupBy"
-                  }
-                ],
-                "limit": 50
-              }
-            }
-          ],
-          "title": "saldo servizi",
-          "type": "gauge"
-        },
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "continuous-RdYlGr"
-              },
-              "mappings": [],
-              "max": 500,
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "red",
-                    "value": null
-                  }
-                ]
-              },
-              "unit": "currencyEUR"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 6,
-            "w": 4,
-            "x": 12,
-            "y": 23
-          },
-          "id": 18,
-          "options": {
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "sum"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "showThresholdLabels": true,
-            "showThresholdMarkers": true
-          },
-          "pluginVersion": "10.1.0",
-          "targets": [
-            {
-              "datasource": {
-                "type": "postgres",
-                "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-              },
-              "editorMode": "code",
-              "format": "table",
-              "rawQuery": true,
-              "rawSql": "select sum(amount)/100.0 as bilancio\nfrom expenses.payments\nwhere category in ('welfare23', 'welfare23-servizi')",
-              "refId": "A",
-              "sql": {
-                "columns": [
-                  {
-                    "parameters": [],
-                    "type": "function"
-                  }
-                ],
-                "groupBy": [
-                  {
-                    "property": {
-                      "type": "string"
-                    },
-                    "type": "groupBy"
-                  }
-                ],
-                "limit": 50
-              }
-            }
-          ],
-          "title": "saldo totale",
-          "type": "gauge"
-        },
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "continuous-RdYlGr"
-              },
-              "mappings": [],
-              "max": 200,
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              },
-              "unit": "currencyEUR"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 6,
-            "w": 4,
-            "x": 0,
-            "y": 29
-          },
-          "id": 19,
-          "options": {
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "sum"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "showThresholdLabels": true,
-            "showThresholdMarkers": false,
-            "text": {}
-          },
-          "pluginVersion": "10.1.0",
-          "targets": [
-            {
-              "datasource": {
-                "type": "postgres",
-                "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-              },
-              "editorMode": "code",
-              "format": "table",
-              "rawQuery": true,
-              "rawSql": "select category, sum(amount)/100.0 as amount\nfrom payments\nWHERE category = 'bonus-carburante23'\ngroup by category",
-              "refId": "A",
-              "sql": {
-                "columns": [
-                  {
-                    "parameters": [],
-                    "type": "function"
-                  }
-                ],
-                "groupBy": [
-                  {
-                    "property": {
-                      "type": "string"
-                    },
-                    "type": "groupBy"
-                  }
-                ],
-                "limit": 50
-              }
-            }
-          ],
-          "title": "buono carburante",
-          "type": "gauge"
-        },
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                }
-              },
-              "mappings": [],
-              "unit": "currencyEUR"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 10,
-            "w": 10,
-            "x": 0,
-            "y": 35
-          },
-          "id": 17,
-          "options": {
-            "displayLabels": [],
-            "legend": {
-              "displayMode": "table",
-              "placement": "right",
-              "showLegend": true,
-              "values": [
-                "percent",
-                "value"
-              ]
-            },
-            "pieType": "pie",
-            "reduceOptions": {
-              "calcs": [
-                "sum"
-              ],
-              "fields": "",
-              "values": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "datasource": {
-                "type": "postgres",
-                "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-              },
-              "editorMode": "code",
-              "format": "table",
-              "rawQuery": true,
-              "rawSql": "select merchant_name, sum(amount)/-100 as co\nfrom payments \nwhere category in ('welfare23', 'welfare23-servizi') and amount < 0\ngroup by merchant_name\n",
-              "refId": "A",
-              "sql": {
-                "columns": [
-                  {
-                    "parameters": [],
-                    "type": "function"
-                  }
-                ],
-                "groupBy": [
-                  {
-                    "property": {
-                      "type": "string"
-                    },
-                    "type": "groupBy"
-                  }
-                ],
-                "limit": 50
-              }
-            }
-          ],
-          "title": "spese welfare per merchant",
-          "type": "piechart"
-        }
-      ],
+      "panels": [],
       "title": "welfare 2023",
       "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 0,
+        "y": 24
+      },
+      "id": 14,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "sizing": "auto",
+        "text": {}
+      },
+      "pluginVersion": "10.4.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select category, sum(amount)/100.0 as amount\nfrom payments\nWHERE category in ('welfare23', 'welfare23-servizi') and amount > 0\ngroup by category",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "entrata complessiva",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-RdYlGr"
+          },
+          "mappings": [],
+          "max": 258,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 4,
+        "y": 24
+      },
+      "id": 15,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "sizing": "auto",
+        "text": {}
+      },
+      "pluginVersion": "10.4.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'welfare23' and merchant_name not in('Tezenis', 'H&M')\ngroup by category",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "saldo buoni edenred",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-RdYlGr"
+          },
+          "mappings": [],
+          "max": 241,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 8,
+        "y": 24
+      },
+      "id": 16,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "10.4.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select sum(amount)/100 as bilancio\nfrom expenses.payments\nwhere category = 'welfare23-servizi'",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "saldo servizi",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-RdYlGr"
+          },
+          "mappings": [],
+          "max": 500,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 12,
+        "y": 24
+      },
+      "id": 18,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "10.4.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select sum(amount)/100.0 as bilancio\nfrom expenses.payments\nwhere category in ('welfare23', 'welfare23-servizi')",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "saldo totale",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-RdYlGr"
+          },
+          "mappings": [],
+          "max": 200,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 16,
+        "y": 24
+      },
+      "id": 19,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": true,
+        "showThresholdMarkers": false,
+        "sizing": "auto",
+        "text": {}
+      },
+      "pluginVersion": "10.4.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select category, sum(amount)/100.0 as amount\nfrom payments\nWHERE category = 'bonus-carburante23'\ngroup by category",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "buono carburante",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 10,
+        "x": 0,
+        "y": 30
+      },
+      "id": 17,
+      "options": {
+        "displayLabels": [],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "percent",
+            "value"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select merchant_name, sum(amount)/-100 as co\nfrom payments \nwhere category in ('welfare23', 'welfare23-servizi') and amount < 0\ngroup by merchant_name\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "spese welfare per merchant",
+      "type": "piechart"
     }
   ],
-  "refresh": "",
-  "schemaVersion": 38,
-  "style": "dark",
+  "refresh": false,
+  "schemaVersion": 39,
   "tags": [],
   "templating": {
     "list": []
@@ -1439,6 +1472,6 @@
   "timezone": "",
   "title": "Ticket & welfare",
   "uid": "dc691aa8-bf4e-4b81-9e05-ad2a47959615",
-  "version": 19,
+  "version": 1,
   "weekStart": ""
 }
