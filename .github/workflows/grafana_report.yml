@@ -12,10 +12,43 @@ jobs:
     environment: prod
 
     steps:
+      - name: Calculate report filename
+        id: filename
+        run: echo REPORT_FILENAME="report-$(date +%Y-%m-%d).pdf" >> $GITHUB_OUTPUT
+
       - name: Download the report
         run: |
           curl --location 'https://${{ secrets.VM_HOST }}:3000/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=d0a30598-95a5-4098-89cc-435d965df315&from=now-1M%2FM&to=now-1M%2FM&layout=grid' \
             --header "Authorization: Bearer ${{ secrets.GF_SA_REPORT_TOKEN }}" \
-            --output report.pdf
-
-      - run: ls -al
+            --output ${{ steps.filename.outputs.REPORT_FILENAME }}
+      - name: Send emails
+        uses: dawidd6/action-send-mail@2cea9617b09d79a095af21254fbcb7ae95903dde #v3.2.1
+        with:
+          # Required mail server address if not connection_url:
+          server_address: smtp.gmail.com
+          # Server port, default 25:
+          server_port: 465
+          # Optional (recommended) mail server username:
+          username: ${{ secrets.GMAIL_EMAIL }}
+          # Optional (recommended) mail server password:
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          # Required mail subject:
+          subject: "Estratto conto mensile"
+          # Required recipients' addresses:
+          to: and.morabito@gmail.com,frsncescapirri91@gmail.com
+          # Required sender full name (address can be skipped):
+          from: Grafana Report # <user@example.com>
+          # Optional plain body:
+          body: "Ciao, in allegato l'estratto conto mensile in formato pdf"
+          # Optional HTML body read from file:
+          #html_body: file://README.html
+          # Optional carbon copy recipients:
+          #cc: kyloren@example.com,leia@example.com
+          # Optional blind carbon copy recipients:
+          #bcc: r2d2@example.com,hansolo@example.com
+          # Optional recipient of the email response:
+          #reply_to: luke@example.com
+          # Optional Message ID this message is replying to:
+          #in_reply_to: <random-luke@example.com>
+          # Optional attachments:
+          attachments: ${{ steps.filename.outputs.REPORT_FILENAME }}
