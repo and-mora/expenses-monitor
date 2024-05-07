@@ -127,7 +127,7 @@
       },
       "gridPos": {
         "h": 16,
-        "w": 11,
+        "w": 12,
         "x": 0,
         "y": 1
       },
@@ -285,7 +285,7 @@
       "gridPos": {
         "h": 16,
         "w": 12,
-        "x": 11,
+        "x": 12,
         "y": 1
       },
       "id": 10,
@@ -571,7 +571,7 @@
       },
       "gridPos": {
         "h": 16,
-        "w": 12,
+        "w": 13,
         "x": 11,
         "y": 17
       },
@@ -651,7 +651,7 @@
       },
       "gridPos": {
         "h": 15,
-        "w": 9,
+        "w": 12,
         "x": 0,
         "y": 33
       },
@@ -712,131 +712,6 @@
       ],
       "title": "Raggruppamento spese per categoria",
       "type": "piechart"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 20,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 8,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              }
-            ]
-          },
-          "unit": "currencyEUR"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 6,
-        "x": 9,
-        "y": 33
-      },
-      "id": 7,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "9.5.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-          },
-          "editorMode": "code",
-          "format": "time_series",
-          "rawQuery": true,
-          "rawSql": "select DATE_TRUNC('month',accounting_date) AS time, percentile_disc(0.5) within group (order by abs(payments.amount/100)) as \"p(50)\", avg(abs(amount)/100)\nfrom expenses.payments\nwhere $__timeFilter(accounting_date) and amount < 0\nGROUP BY DATE_TRUNC('month', accounting_date)\norder by time",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Uscite mensili",
-      "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 48
-      },
-      "id": 11,
-      "panels": [],
-      "title": "aggregati",
-      "type": "row"
     },
     {
       "datasource": {
@@ -908,10 +783,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 10,
-        "w": 8,
+        "h": 9,
+        "w": 24,
         "x": 0,
-        "y": 49
+        "y": 48
       },
       "id": 6,
       "options": {
@@ -962,6 +837,19 @@
       ],
       "title": "Bilancio mensile",
       "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 57
+      },
+      "id": 11,
+      "panels": [],
+      "title": "aggregati",
+      "type": "row"
     },
     {
       "datasource": {
@@ -1030,9 +918,9 @@
       },
       "gridPos": {
         "h": 10,
-        "w": 6,
-        "x": 8,
-        "y": 49
+        "w": 8,
+        "x": 0,
+        "y": 58
       },
       "id": 9,
       "options": {
@@ -1148,9 +1036,9 @@
       },
       "gridPos": {
         "h": 10,
-        "w": 6,
-        "x": 14,
-        "y": 49
+        "w": 8,
+        "x": 8,
+        "y": 58
       },
       "id": 5,
       "options": {
@@ -1201,6 +1089,118 @@
       ],
       "title": "affitto/stipendio",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 8,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 16,
+        "y": 58
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.5.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "select DATE_TRUNC('month',accounting_date) AS time, percentile_disc(0.5) within group (order by abs(payments.amount/100)) as \"p(50)\", avg(abs(amount)/100)\nfrom expenses.payments\nwhere $__timeFilter(accounting_date) and amount < 0\nGROUP BY DATE_TRUNC('month', accounting_date)\norder by time",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Uscite mensili",
+      "type": "timeseries"
     }
   ],
   "refresh": "",
@@ -1217,6 +1217,6 @@
   "timezone": "",
   "title": "Andamento generale",
   "uid": "c110264f-054a-407c-952c-e9abab86c9ff",
-  "version": 1,
+  "version": 7,
   "weekStart": ""
 }
