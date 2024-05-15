@@ -58,7 +58,7 @@
             "mode": "thresholds",
             "seriesBy": "last"
           },
-          "displayName": "Totale entrate",
+          "displayName": "Hai guadagnato:",
           "mappings": [],
           "min": 0,
           "thresholds": {
@@ -153,7 +153,7 @@
             "mode": "thresholds",
             "seriesBy": "last"
           },
-          "displayName": "Totale uscite",
+          "displayName": "Hai speso:",
           "mappings": [],
           "min": 0,
           "thresholds": {
@@ -506,7 +506,7 @@
           }
         }
       ],
-      "title": "Uscite per categoria top 10",
+      "title": "Dettaglio spese - top 10",
       "type": "bargauge"
     },
     {
@@ -590,7 +590,7 @@
           }
         }
       ],
-      "title": "Entrate per categoria",
+      "title": "Dettaglio entrate",
       "type": "bargauge"
     },
     {
@@ -881,6 +881,6 @@
   "timezone": "",
   "title": "Monitoraggio mese corrente",
   "uid": "d0a30598-95a5-4098-89cc-435d965df315",
-  "version": 11,
+  "version": 12,
   "weekStart": "monday"
 }
