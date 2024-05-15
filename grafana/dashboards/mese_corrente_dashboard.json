@@ -65,20 +65,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 0
-              },
-              {
-                "color": "yellow",
-                "value": 250
-              },
-              {
                 "color": "green",
-                "value": 500
+                "value": null
               }
             ]
           },
@@ -162,18 +150,6 @@
               {
                 "color": "red",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 0
-              },
-              {
-                "color": "yellow",
-                "value": 250
-              },
-              {
-                "color": "green",
-                "value": 500
               }
             ]
           },
@@ -214,7 +190,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "select DATE_TRUNC('month',accounting_date) AS time, sum(amount)/100 as bilancio\nfrom expenses.payments\nwhere $__timeFilter(accounting_date) and amount < 0\nGROUP BY DATE_TRUNC('month', accounting_date)\n",
+          "rawSql": "select DATE_TRUNC('month',accounting_date) AS time, sum(abs(amount))/100 as bilancio\nfrom expenses.payments\nwhere $__timeFilter(accounting_date) and amount < 0\nGROUP BY DATE_TRUNC('month', accounting_date)\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -245,12 +221,13 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds",
+            "mode": "continuous-RdYlGr",
             "seriesBy": "last"
           },
           "displayName": "Utile",
-          "fieldMinMax": false,
+          "fieldMinMax": true,
           "mappings": [],
+          "max": 500,
           "min": 0,
           "thresholds": {
             "mode": "absolute",
@@ -434,6 +411,7 @@
           },
           "fieldMinMax": false,
           "mappings": [],
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -520,6 +498,7 @@
             "mode": "continuous-BlPu"
           },
           "mappings": [],
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -872,8 +851,8 @@
     "list": []
   },
   "time": {
-    "from": "now-1M/M",
-    "to": "now-1M/M"
+    "from": "now/M",
+    "to": "now/M"
   },
   "timepicker": {
     "hidden": false
@@ -881,6 +860,6 @@
   "timezone": "",
   "title": "Monitoraggio mese corrente",
   "uid": "d0a30598-95a5-4098-89cc-435d965df315",
-  "version": 12,
+  "version": 13,
   "weekStart": "monday"
 }
