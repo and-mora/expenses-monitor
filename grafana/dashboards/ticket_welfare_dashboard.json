@@ -318,7 +318,7 @@
     },
     {
       "datasource": {
-        "type": "postgres",
+        "type": "grafana-postgresql-datasource",
         "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
       },
       "fieldConfig": {
@@ -411,7 +411,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "select DATE_TRUNC('month',accounting_date) as time, 'entrate', sum(amount)/100 as welfare\nfrom payments \nwhere category = 'ticket' and $__timeFilter(accounting_date) and amount > 0\ngroup by category, DATE_TRUNC('month',accounting_date)\nUNION\nselect DATE_TRUNC('month',accounting_date) as time, 'uscite', sum(amount)/100 as entrate\nfrom payments \nwhere category = 'ticket' and $__timeFilter(accounting_date) and amount < 0\ngroup by category, DATE_TRUNC('month',accounting_date)\norder by time",
+          "rawSql": "select DATE_TRUNC('month',accounting_date) as time, 'entrate', sum(amount)/100 as ticket\nfrom payments \nwhere category = 'ticket' and $__timeFilter(accounting_date) and amount > 0\ngroup by category, DATE_TRUNC('month',accounting_date)\nUNION\nselect DATE_TRUNC('month',accounting_date) as time, 'uscite', sum(amount)/100 as entrate\nfrom payments \nwhere category = 'ticket' and $__timeFilter(accounting_date) and amount < 0\ngroup by category, DATE_TRUNC('month',accounting_date)\norder by time",
           "refId": "A",
           "sql": {
             "columns": [
@@ -460,8 +460,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -543,8 +542,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -626,8 +624,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -709,8 +706,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -792,8 +788,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "red",
-                    "value": null
+                    "color": "red"
                   }
                 ]
               },
@@ -1472,6 +1467,6 @@
   "timezone": "",
   "title": "Ticket & welfare",
   "uid": "dc691aa8-bf4e-4b81-9e05-ad2a47959615",
-  "version": 1,
+  "version": 21,
   "weekStart": ""
 }
