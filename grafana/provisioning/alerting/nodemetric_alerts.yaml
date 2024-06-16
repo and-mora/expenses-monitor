@@ -68,7 +68,7 @@ groups:
           summary: Disk usage is above the threshold
         isPaused: false
       - uid: c39e46d6-4ffd-40a0-a2b7-6326fceda734
-        title: Memory Usage > 80%
+        title: Memory Usage > 50%
         condition: B
         data:
           - refId: A
@@ -104,7 +104,7 @@ groups:
               conditions:
                 - evaluator:
                     params:
-                      - 80
+                      - 50
                     type: gt
                   operator:
                     type: and
