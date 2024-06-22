@@ -1,4 +1,4 @@
-FROM gradle:jdk21-alpine@sha256:df0e3bf4964dc6d9977e51498edcf45927a0494d086ed8344dc00876eeca868b AS build
+FROM gradle:jdk21@sha256:c582bc70eb666f62d90525367974dd66122bf069c1d45a70f621b0d08bd2182c AS build
 
 WORKDIR /build
 COPY . .
