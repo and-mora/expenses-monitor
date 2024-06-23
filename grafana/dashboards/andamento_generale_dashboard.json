@@ -797,7 +797,9 @@
           ],
           "displayMode": "table",
           "placement": "bottom",
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Last *",
+          "sortDesc": true
         },
         "tooltip": {
           "mode": "single",
@@ -850,6 +852,129 @@
       "panels": [],
       "title": "aggregati",
       "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds",
+            "seriesBy": "last"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "scheme",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 8,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "fieldMinMax": false,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 20
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 58
+      },
+      "id": 13,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.5.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "select time, (utile::float / entrate::float)*100 as ratio_utile_su_entrate\nfrom (select DATE_TRUNC('month',accounting_date) AS time, \n  sum( case when amount > 0 then amount else 0 end) as entrate, \n  sum(amount) as utile\nfrom expenses.payments\nwhere $__timeFilter(accounting_date)\nGROUP BY DATE_TRUNC('month', accounting_date)\norder by time\n) q",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Ratio utile/entrate",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -920,7 +1045,7 @@
         "h": 10,
         "w": 8,
         "x": 0,
-        "y": 58
+        "y": 67
       },
       "id": 9,
       "options": {
@@ -1038,7 +1163,7 @@
         "h": 10,
         "w": 8,
         "x": 8,
-        "y": 58
+        "y": 67
       },
       "id": 5,
       "options": {
@@ -1150,7 +1275,7 @@
         "h": 10,
         "w": 8,
         "x": 16,
-        "y": 58
+        "y": 67
       },
       "id": 7,
       "options": {
@@ -1217,6 +1342,6 @@
   "timezone": "",
   "title": "Andamento generale",
   "uid": "c110264f-054a-407c-952c-e9abab86c9ff",
-  "version": 7,
+  "version": 8,
   "weekStart": ""
 }
