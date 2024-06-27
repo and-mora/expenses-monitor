@@ -952,7 +952,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "select time, (utile::float / entrate::float)*100 as ratio_utile_su_entrate\nfrom (select DATE_TRUNC('month',accounting_date) AS time, \n  sum( case when amount > 0 then amount else 0 end) as entrate, \n  sum(amount) as utile\nfrom expenses.payments\nwhere $__timeFilter(accounting_date)\nGROUP BY DATE_TRUNC('month', accounting_date)\norder by time\n) q",
+          "rawSql": "select time, case when entrate != 0 then (utile::float / entrate::float)*100 else 0 end as ratio_utile_su_entrate\nfrom (select DATE_TRUNC('month',accounting_date) AS time, \n  sum( case when amount > 0 then amount else 0 end) as entrate, \n  sum(amount) as utile\nfrom expenses.payments\nwhere $__timeFilter(accounting_date)\nGROUP BY DATE_TRUNC('month', accounting_date)\norder by time\n) q",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1335,13 +1335,13 @@
     "list": []
   },
   "time": {
-    "from": "now-1y",
+    "from": "now-1y/M",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Andamento generale",
   "uid": "c110264f-054a-407c-952c-e9abab86c9ff",
-  "version": 8,
+  "version": 9,
   "weekStart": ""
 }
