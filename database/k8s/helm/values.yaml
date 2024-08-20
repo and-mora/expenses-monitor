@@ -1,3 +1,9 @@
 auth:
   existingSecret: postgresql
   database: expenses-monitor
+
+primary:
+  initdb:
+    scripts:
+      init-schema: schema.sql
+    scriptsSecret: postgresql-init-user-script
