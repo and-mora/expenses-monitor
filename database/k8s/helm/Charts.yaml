@@ -1,0 +1,9 @@
+apiVersion: v2
+name: postgres-chart
+version: 0.1.0
+
+dependencies:
+  - name: postgresql
+    version: 15.5.23
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled

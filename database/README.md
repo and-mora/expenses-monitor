@@ -2,7 +2,8 @@
 
 The database involved in the Expenses monitor application is a PostgreSQL self hosted on a docker swarm inside a VM.
 
-## Installation
+## Installation in Docker Swarm
+
 It's possible to deploy the db with `docker-compose.yml` file provided.
 It creates a persistent volume to prevent data loss.
 
@@ -17,7 +18,7 @@ printf "my root password" | docker secret create POSTGRES_PASSWORD -
 read -sp 'Enter password: ' PASS
 echo $PASS | docker secret create POSTGRES_PASSWORD -
 ```
-### Deploy in Docker Swarm
+### Deploy
 To deploy run: 
 ```
 docker stack deploy --compose-file docker-compose.yml database
@@ -43,3 +44,19 @@ The backend needs the secret:
 
 Grafana needs:
 - `DB_GRAFANA_PASSWORD`
+
+## Installation in K8s
+
+- move to workdir
+```
+cd k8s/helm
+```
+- create postgres master password and related k8s secret
+```
+read -sp 'Enter password: ' PASS
+kubectl create secret generic postgresql --from-literal=postgres-password=$PASS
+```
+- install chart
+```
+helm install postgresql charts/* -f values.yaml
+```
