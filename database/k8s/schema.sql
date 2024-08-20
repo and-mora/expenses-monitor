@@ -42,4 +42,4 @@ CREATE TABLE expenses.payment_tags (
 	CONSTRAINT paymenttag_fk_1 FOREIGN KEY (tag) REFERENCES expenses.tags(id)
 );
 
-alter database expenses-monitor set search_path = expenses;
+alter database "expenses-monitor" set search_path = expenses;

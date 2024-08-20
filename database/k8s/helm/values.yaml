@@ -4,6 +4,5 @@ auth:
 
 primary:
   initdb:
-    scripts:
-      init-schema: schema.sql
+    scriptsConfigMap: postgresql-init-schema
     scriptsSecret: postgresql-init-user-script
