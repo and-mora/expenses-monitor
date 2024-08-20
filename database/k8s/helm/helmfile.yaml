@@ -1,0 +1,7 @@
+releases:
+  - name: postgresql
+    namespace: default
+    chart: bitnami/postgresql
+    version: 15.5.23
+    values:
+      - values.yaml
