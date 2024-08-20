@@ -49,12 +49,18 @@ Grafana needs:
 
 - move to workdir
 ```
-cd k8s/helm
+cd k8s
 ```
 - create postgres master password and related k8s secret
 ```
-read -sp 'Enter password: ' PASS
-kubectl create secret generic postgresql --from-literal=postgres-password=$PASS
+read -sp 'Enter password: ' PASS_POSTGRES
+kubectl create secret generic postgresql --from-literal=postgres-password=$PASS_POSTGRES
+read -sp 'Enter grafana user password: ' PASS_USER_GRAFANA
+read -sp 'Enter backend user password: ' PASS_USER_BACKEND
+kubectl create secret generic postgresql --from-literal=postgres-password=$PASS_POSTGRES
+sed -i 's/$PASS_USER_GRAFANA/'"$PASS_USER_GRAFANA"'/' init-system-users.sql
+sed -i~ 's/$PASS_USER_BACKEND/'"$PASS_USER_BACKEND"'/' init-system-users.sql
+kubectl create secret generic postgresql-init-user-script --from-file=script=init-system-users.sql
 ```
 - install chart
 ```
