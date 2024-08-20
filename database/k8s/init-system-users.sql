@@ -1,9 +1,9 @@
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;
-REVOKE ALL ON DATABASE expenses-monitor FROM PUBLIC;
+REVOKE ALL ON DATABASE "expenses-monitor" FROM PUBLIC;
 
 -- Read only
 CREATE ROLE read_only;
-GRANT CONNECT ON DATABASE expenses-monitor TO read_only;
+GRANT CONNECT ON DATABASE "expenses-monitor" TO read_only;
 GRANT USAGE ON SCHEMA expenses TO read_only;
 GRANT SELECT ON ALL TABLES IN SCHEMA expenses TO read_only;
 --ALTER DEFAULT PRIVILEGES IN SCHEMA expenses GRANT SELECT ON TABLES TO read_only;
@@ -11,7 +11,7 @@ GRANT SELECT ON ALL TABLES IN SCHEMA expenses TO read_only;
 -- Read-write
 CREATE ROLE read_write;
 
-GRANT CONNECT ON DATABASE expenses-monitor TO read_write;
+GRANT CONNECT ON DATABASE "expenses-monitor" TO read_write;
 GRANT USAGE, CREATE ON SCHEMA expenses TO read_write;
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA expenses TO read_write;
