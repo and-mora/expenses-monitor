@@ -49,5 +49,21 @@ jobs:
           script: |
             mkdir -p expenses-monitor/database
             cd expenses-monitor/database
-            wget -O docker-compose.yml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/database/docker-compose.yml
+            wget -O docker-compose.yml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/database/docker/docker-compose.yml
             docker stack deploy --compose-file docker-compose.yml database
+
+      - name: 'Deploy on k8s'
+        uses: appleboy/ssh-action@55dabf81b49d4120609345970c91507e2d734799
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME }}
+          key: ${{ secrets.VM_PRIVATE_KEY }}
+          port: ${{ secrets.VM_PORT }}
+          fingerprint: ${{ secrets.HOST_FINGERPRINT }}
+          script: |
+            mkdir -p expenses-monitor/database/k8s && cd expenses-monitor/database/k8s
+            wget -O Chart.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/database/k8s/helm/Chart.yaml
+            wget -O helmfile.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/database/k8s/helm/helmfile.yaml
+            wget -O values.yml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/database/k8s/helm/values.yaml
+            helm dependency build
+            helm upgrade --install postgresql charts/* -f values.yaml
