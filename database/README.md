@@ -45,18 +45,31 @@ The backend needs the secret:
 Grafana needs:
 - `DB_GRAFANA_PASSWORD`
 
-## Installation in K8s
+## Installation in K8s (tested on microk8s)
 
 - move to workdir
 ```
-cd k8s/helm
+cd k8s
 ```
 - create postgres master password and related k8s secret
 ```
-read -sp 'Enter password: ' PASS
-kubectl create secret generic postgresql --from-literal=postgres-password=$PASS
+read -sp 'Enter password: ' PASS_POSTGRES
+kubectl create secret generic postgresql --from-literal=postgres-password=$PASS_POSTGRES
+read -sp 'Enter grafana user password: ' PASS_USER_GRAFANA
+read -sp 'Enter backend user password: ' PASS_USER_BACKEND
+sed -i 's/$PASS_USER_GRAFANA/'"$PASS_USER_GRAFANA"'/' init-system-users.sql
+sed -i 's/$PASS_USER_BACKEND/'"$PASS_USER_BACKEND"'/' init-system-users.sql
+kubectl create secret generic postgresql-init-user-script --from-file=init-system-users.sql
+kubectl create cm postgresql-init-schema --from-file=schema.sql
 ```
 - install chart
 ```
+cd helm
+helm dependency build
 helm install postgresql charts/* -f values.yaml
+```
+- cleanup
+```
+kubectl delete cm postgresql-init-schema
+kubectl delete secrets postgresql-init-user-script
 ```
