@@ -1,0 +1,73 @@
+### Action to Deploy on VM
+
+name: Deploy Monitoring stack
+
+on:
+  workflow_dispatch:
+    inputs:
+      enabled:
+        required: false
+        type: string
+        description: 'Flag to enable the deploy'
+        default: 'true'
+      folder:
+        description: 'Component'
+        required: true
+        default: 'monitoring'
+        type: choice
+        options:
+          - grafana
+          - backend
+          - frontend
+      version:
+        description: 'Tag'
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      enabled:
+        required: true
+        type: string
+        default: false
+      folder:
+        required: true
+        type: string
+    secrets:
+      VM_HOST:
+        required: true
+      VM_USERNAME:
+        required: true
+      VM_PRIVATE_KEY:
+        required: true
+      VM_PORT:
+        required: true
+
+jobs:
+
+  Deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: prod
+    if: inputs.enabled == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+
+      - name: 'Deploy on k8s'
+        uses: appleboy/ssh-action@55dabf81b49d4120609345970c91507e2d734799
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME }}
+          key: ${{ secrets.VM_PRIVATE_KEY }}
+          port: ${{ secrets.VM_PORT }}
+          fingerprint: ${{ secrets.HOST_FINGERPRINT }}
+          script: |
+            mkdir -p expenses-monitor/${{ inputs.folder }}/k8s && cd expenses-monitor/${{ inputs.folder }}/k8s
+            wget -O Chart.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/${{ inputs.folder }}/k8s/helm/Chart.yaml
+            wget -O helmfile.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/${{ inputs.folder }}/k8s/helm/helmfile.yaml
+            wget -O values.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/${{ inputs.folder }}/k8s/helm/values.yaml
+            helm dependency build
+            helm upgrade --install ${{ inputs.folder }} charts/* -f values.yaml
