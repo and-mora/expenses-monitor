@@ -32,8 +32,8 @@ on:
         required: true
 
 jobs:
-  Deploy:
-    name: Deploy
+  DockerDeploy:
+    name: DockerDeploy
     runs-on: ubuntu-latest
     if: inputs.enabled == 'true'
     environment: prod
@@ -52,6 +52,12 @@ jobs:
             wget -O docker-compose.yml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/database/docker/docker-compose.yml
             docker stack deploy --compose-file docker-compose.yml database
 
+  k8sDeploy:
+    name: k8sDeploy
+    runs-on: ubuntu-latest
+    if: inputs.enabled == 'true'
+    environment: prod
+    steps:
       - name: 'Deploy on k8s'
         uses: appleboy/ssh-action@55dabf81b49d4120609345970c91507e2d734799
         with:
