@@ -185,13 +185,11 @@ jobs:
     secrets: inherit
 
   MonitoringRelease:
-    needs: [ SemanticVersioning, PrometheusRelease ]
-    uses: ./.github/workflows/deploy_workflow.yml
+    needs: SemanticVersioning
+    uses: ./.github/workflows/release.yml
     with:
-      version: ${{needs.SemanticVersioning.outputs.monitoring_version_tag}}
+      tag: ${{needs.SemanticVersioning.outputs.monitoring_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.monitoring_changed}}
-      folder: monitoring
-    secrets: inherit
 
   MonitoringDeploy:
     needs: [ SemanticVersioning, MonitoringRelease ]
