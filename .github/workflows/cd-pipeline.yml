@@ -27,6 +27,8 @@ jobs:
       database_version_tag: ${{ steps.database-versioning.outputs.version_tag }}
       prometheus_changed: ${{ steps.prometheus-versioning.outputs.changed }}
       prometheus_version_tag: ${{ steps.prometheus-versioning.outputs.version_tag }}
+      monitoring_changed: ${{ steps.monitoring-versioning.outputs.changed }}
+      monitoring_version_tag: ${{ steps.monitoring-versioning.outputs.version_tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
@@ -86,6 +88,15 @@ jobs:
         with:
           change_path: "prometheus"
           namespace: prometheus
+          major_pattern: "breaking"
+          minor_pattern: "feat"
+
+      - name: Monitoring Version
+        id: monitoring-versioning
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
+        with:
+          change_path: "monitoring"
+          namespace: monitoring
           major_pattern: "breaking"
           minor_pattern: "feat"
 
@@ -171,4 +182,22 @@ jobs:
       version: ${{needs.SemanticVersioning.outputs.prometheus_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.prometheus_changed}}
       folder: prometheus
+    secrets: inherit
+
+  MonitoringRelease:
+    needs: [ SemanticVersioning, PrometheusRelease ]
+    uses: ./.github/workflows/deploy_workflow.yml
+    with:
+      version: ${{needs.SemanticVersioning.outputs.monitoring_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.monitoring_changed}}
+      folder: monitoring
+    secrets: inherit
+
+  MonitoringDeploy:
+    needs: [ SemanticVersioning, MonitoringRelease ]
+    uses: ./.github/workflows/deploy_monitoring_stack.yml
+    with:
+      version: ${{needs.SemanticVersioning.outputs.monitoring_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.monitoring_changed}}
+      folder: monitoring
     secrets: inherit
