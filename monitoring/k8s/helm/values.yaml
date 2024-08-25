@@ -5,3 +5,22 @@ grafana:
   grafana.ini:
     plugins:
       allow_loading_unsigned_plugins: mahendrapaipuri-dashboardreporter-appapp
+
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: PostgreSQL
+          type: postgres
+          uid: c8fbcbf5-8f4f-4640-8d37-887b135a905e
+          url: postgresql:5432
+          database: expenses-monitor
+          user: $DB_GRAFANA_USERNAME
+          jsonData:
+            sslmode: disable
+            postgresVersion: 1500
+          secureJsonData:
+            password: $DB_GRAFANA_PASSWORD
+          readOnly: true
+
+  envFromSecret: grafana-db-credentials
