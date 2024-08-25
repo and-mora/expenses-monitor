@@ -55,11 +55,13 @@ cd k8s
 ```
 read -sp 'Enter password: ' PASS_POSTGRES
 kubectl create secret generic postgresql --from-literal=postgres-password=$PASS_POSTGRES
+read -sp 'Enter grafana username: ' USERNAME_GRAFANA
 read -sp 'Enter grafana user password: ' PASS_USER_GRAFANA
 read -sp 'Enter backend user password: ' PASS_USER_BACKEND
 sed -i 's/$PASS_USER_GRAFANA/'"$PASS_USER_GRAFANA"'/' init-system-users.sql
 sed -i 's/$PASS_USER_BACKEND/'"$PASS_USER_BACKEND"'/' init-system-users.sql
 kubectl create secret generic postgresql-init-user-script --from-file=init-system-users.sql
+kubectl create secret generic grafana-db-credentials --from-literal=DB_GRAFANA_USERNAME=$USERNAME_GRAFANA --from-literal=DB_GRAFANA_PASSWORD=$PASS_USER_GRAFANA
 kubectl create cm postgresql-init-schema --from-file=schema.sql
 ```
 - install chart
