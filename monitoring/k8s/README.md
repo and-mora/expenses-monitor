@@ -4,5 +4,5 @@ reference [here](https://github.com/prometheus-community/helm-charts/blob/main/c
 
 ```
 cd monitoring/k8s/helm
-helm install prometheus-stack charts/* -f values.yaml
+•helm upgrade --install monitoring charts/* -f values.yaml
 ```
