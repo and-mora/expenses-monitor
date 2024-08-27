@@ -5,6 +5,13 @@ grafana:
   grafana.ini:
     plugins:
       allow_loading_unsigned_plugins: mahendrapaipuri-dashboardreporter-appapp
+    smtp:
+      enabled: true
+      host: smtp.gmail.com:465
+      user: and.morabito@gmail.com
+      skip_verify: false
+      from_address: grafana_alerting@gmail.com
+      from_name: Grafana
 
   datasources:
     datasources.yaml:
@@ -31,3 +38,150 @@ grafana:
       folderAnnotation: grafana_folder
       provider:
         foldersFromFilesStructure: true
+
+  alerting:
+    alerts.yaml:
+      apiVersion: 1
+      groups:
+        - orgId: 1
+          name: node_metrics
+          folder: metrics
+          interval: 10m
+          rules:
+            - uid: e92c8421-8e1f-43e1-ab5d-b2a23ba32135
+              title: Disk Usage > 80%
+              condition: B
+              data:
+                - refId: A
+                  relativeTimeRange:
+                    from: 600
+                    to: 0
+                  datasourceUid: prometheus
+                  model:
+                    datasource:
+                      type: prometheus
+                      uid: prometheus
+                    disableTextWrap: false
+                    editorMode: code
+                    exemplar: false
+                    expr: 100 - (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100
+                    fullMetaSearch: false
+                    includeNullMetadata: true
+                    instant: true
+                    interval: ""
+                    intervalMs: 1000
+                    legendFormat: __auto
+                    maxDataPoints: 43200
+                    range: false
+                    refId: A
+                    useBackend: false
+                - refId: B
+                  relativeTimeRange:
+                    from: 600
+                    to: 0
+                  datasourceUid: __expr__
+                  model:
+                    conditions:
+                      - evaluator:
+                          params:
+                            - 80
+                          type: gt
+                        operator:
+                          type: and
+                        query:
+                          params:
+                            - C
+                        reducer:
+                          params: [ ]
+                          type: last
+                        type: query
+                    datasource:
+                      type: __expr__
+                      uid: __expr__
+                    expression: A
+                    intervalMs: 1000
+                    maxDataPoints: 43200
+                    refId: B
+                    type: threshold
+              noDataState: NoData
+              execErrState: Error
+              for: 10m
+              annotations:
+                description: Disk usage has reached the critical level set in threshold parameter. Please free the node disk or increase the available space.
+                summary: Disk usage is above the threshold
+              isPaused: false
+            - uid: c39e46d6-4ffd-40a0-a2b7-6326fceda734
+              title: Memory Usage > 50%
+              condition: B
+              data:
+                - refId: A
+                  relativeTimeRange:
+                    from: 600
+                    to: 0
+                  datasourceUid: prometheus
+                  model:
+                    datasource:
+                      type: prometheus
+                      uid: prometheus
+                    editorMode: code
+                    expr: |-
+                      100 -
+                      (
+                        avg(node_memory_MemAvailable_bytes)
+                      /
+                        avg(node_memory_MemTotal_bytes)
+                      * 100
+                      )
+                    instant: true
+                    intervalMs: 1000
+                    legendFormat: __auto
+                    maxDataPoints: 43200
+                    range: false
+                    refId: A
+                - refId: B
+                  relativeTimeRange:
+                    from: 600
+                    to: 0
+                  datasourceUid: __expr__
+                  model:
+                    conditions:
+                      - evaluator:
+                          params:
+                            - 50
+                          type: gt
+                        operator:
+                          type: and
+                        query:
+                          params:
+                            - C
+                        reducer:
+                          params: [ ]
+                          type: last
+                        type: query
+                    datasource:
+                      type: __expr__
+                      uid: __expr__
+                    expression: A
+                    intervalMs: 1000
+                    maxDataPoints: 43200
+                    refId: B
+                    type: threshold
+              noDataState: NoData
+              execErrState: Error
+              for: 10m
+              annotations:
+                description: Memory usage has reached the critical level set in threshold parameter. Please check the node or increase the available memory.
+                summary: Memory usage is above the threshold
+              isPaused: false
+    contact-points.yaml:
+      apiVersion: 1
+      contactPoints:
+        - orgId: 1
+          name: Andrea Morabito
+          receivers:
+            - uid: de989dcd-a9cc-4b42-a813-e2cd200d4495
+              type: email
+              settings:
+                addresses: and.morabito@gmail.com
+                singleEmail: false
+              disableResolveMessage: false
