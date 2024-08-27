@@ -56,10 +56,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
 
-      - uses: marceloprado/has-changed-path@df1b7a3161b8fb9fd8c90403c66a9e66dfde50cb #v1.0.1
-        id: changed-helm
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 #v3.0.2
+        id: changed-path
         with:
-          paths: monitoring/k8s/helm
+          filters: |
+            helm:
+              - 'monitoring/k8s/helm/**'
 
       - name: 'Update config maps in k8s'
         uses: appleboy/ssh-action@55dabf81b49d4120609345970c91507e2d734799
@@ -93,7 +95,7 @@ jobs:
 
       - name: 'Deploy on k8s'
         uses: appleboy/ssh-action@55dabf81b49d4120609345970c91507e2d734799
-        if: steps.changed-helm.outputs.changed == 'true'
+        if: steps.changed-path.outputs.helm == 'true'
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USERNAME }}
