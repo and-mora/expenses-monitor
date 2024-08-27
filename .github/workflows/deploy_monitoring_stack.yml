@@ -16,9 +16,9 @@ on:
         default: 'monitoring'
         type: choice
         options:
-          - grafana
           - backend
           - frontend
+          - monitoring
       version:
         description: 'Tag'
         required: true
