@@ -8,10 +8,16 @@ grafana:
     smtp:
       enabled: true
       host: smtp.gmail.com:465
-      user: and.morabito@gmail.com
       skip_verify: false
       from_address: grafana_alerting@gmail.com
       from_name: Grafana
+
+  smtp:
+    # `existingSecret` is a reference to an existing secret containing the smtp configuration
+    # for Grafana.
+    existingSecret: "grafana-smtp-credentials"
+    userKey: "username"
+    passwordKey: "password"
 
   datasources:
     datasources.yaml:
