@@ -26,7 +26,7 @@
       "collapsed": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "e6a44035-5b16-4ce8-972f-88e7c53bdeb4"
+        "uid": "${datasource}"
       },
       "gridPos": {
         "h": 1,
@@ -42,7 +42,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "e6a44035-5b16-4ce8-972f-88e7c53bdeb4"
+        "uid": "${datasource}"
       },
       "fieldConfig": {
         "defaults": {
@@ -127,7 +127,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "e6a44035-5b16-4ce8-972f-88e7c53bdeb4"
+            "uid": "${datasource}"
           },
           "editorMode": "builder",
           "exemplar": true,
@@ -146,7 +146,7 @@
       "collapsed": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "e6a44035-5b16-4ce8-972f-88e7c53bdeb4"
+        "uid": "${datasource}"
       },
       "gridPos": {
         "h": 1,
@@ -162,7 +162,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "e6a44035-5b16-4ce8-972f-88e7c53bdeb4"
+        "uid": "${datasource}"
       },
       "fieldConfig": {
         "defaults": {
@@ -247,7 +247,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "e6a44035-5b16-4ce8-972f-88e7c53bdeb4"
+            "uid": "${datasource}"
           },
           "exemplar": true,
           "expr": "sum(container_memory_usage_bytes{instance=~\"$host\", name=~\"$container\", name=~\".+\"}) by (name)",
@@ -263,7 +263,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "e6a44035-5b16-4ce8-972f-88e7c53bdeb4"
+        "uid": "${datasource}"
       },
       "fieldConfig": {
         "defaults": {
@@ -360,7 +360,7 @@
       "collapsed": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "e6a44035-5b16-4ce8-972f-88e7c53bdeb4"
+        "uid": "${datasource}"
       },
       "gridPos": {
         "h": 1,
@@ -376,7 +376,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "e6a44035-5b16-4ce8-972f-88e7c53bdeb4"
+        "uid": "${datasource}"
       },
       "fieldConfig": {
         "defaults": {
@@ -472,7 +472,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "e6a44035-5b16-4ce8-972f-88e7c53bdeb4"
+        "uid": "${datasource}"
       },
       "fieldConfig": {
         "defaults": {
@@ -568,7 +568,7 @@
       "collapsed": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "e6a44035-5b16-4ce8-972f-88e7c53bdeb4"
+        "uid": "${datasource}"
       },
       "gridPos": {
         "h": 1,
@@ -584,7 +584,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "e6a44035-5b16-4ce8-972f-88e7c53bdeb4"
+        "uid": "${datasource}"
       },
       "fieldConfig": {
         "defaults": {
@@ -728,7 +728,7 @@
         "current": {
           "selected": false,
           "text": "Prometheus",
-          "value": "e6a44035-5b16-4ce8-972f-88e7c53bdeb4"
+          "value": "prometheus"
         },
         "hide": 0,
         "includeAll": false,
