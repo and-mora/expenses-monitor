@@ -64,10 +64,28 @@ jobs:
           key: ${{ secrets.VM_PRIVATE_KEY }}
           port: ${{ secrets.VM_PORT }}
           fingerprint: ${{ secrets.HOST_FINGERPRINT }}
+          # atm the config map updates are done in a manual push way. It will be replaced by some tool like FluxCD or ArgoCD
           script: |
             mkdir -p expenses-monitor/${{ inputs.folder }}/k8s && cd expenses-monitor/${{ inputs.folder }}/k8s
+            wget -O andamento_generale_dashboard.json https://raw.githubusercontent.com/and-mora/expenses-monitor/master/grafana/dashboards/andamento_generale_dashboard.json
+            wget -O mese_corrente_dashboard.json https://raw.githubusercontent.com/and-mora/expenses-monitor/master/grafana/dashboards/mese_corrente_dashboard.json
+            wget -O ticket_welfare_dashboard.json https://raw.githubusercontent.com/and-mora/expenses-monitor/master/grafana/dashboards/ticket_welfare_dashboard.json
+            wget -O container_metrics.json https://raw.githubusercontent.com/and-mora/expenses-monitor/master/grafana/dashboards/metrics/container_metrics.json
+            wget -O node_metrics.json https://raw.githubusercontent.com/and-mora/expenses-monitor/master/grafana/dashboards/metrics/node_metrics.json
+            kubectl create configmap monitoring-grafana-dashboard-and-gen --from-file andamento_generale_dashboard.json -o yaml --dry-run=client | kubectl apply -f -
+            kubectl label configmap monitoring-grafana-dashboard-and-gen grafana_dashboard=1
+            kubectl annotate configmap monitoring-grafana-dashboard-and-gen grafana_folder='expenses-monitor'
+            kubectl create configmap monitoring-grafana-dashboard-mese-corrente --from-file mese_corrente_dashboard.json -o yaml --dry-run=client | kubectl apply -f -
+            kubectl label configmap monitoring-grafana-dashboard-mese-corrente grafana_dashboard=1
+            kubectl annotate configmap monitoring-grafana-dashboard-mese-corrente grafana_folder='expenses-monitor'
+            kubectl create configmap monitoring-grafana-dashboard-ticket-welfare --from-file ticket_welfare_dashboard.json -o yaml --dry-run=client | kubectl apply -f -
+            kubectl label configmap monitoring-grafana-dashboard-ticket-welfare grafana_dashboard=1
+            kubectl annotate configmap monitoring-grafana-dashboard-ticket-welfare grafana_folder='expenses-monitor'
+            kubectl create configmap monitoring-grafana-dashboard-node-metrics --from-file node_metrics.json -o yaml --dry-run=client | kubectl apply -f -
+            kubectl label configmap monitoring-grafana-dashboard-node-metrics grafana_dashboard=1
+            kubectl create configmap monitoring-grafana-dashboard-container-metrics --from-file container_metrics.json -o yaml --dry-run=client | kubectl apply -f -
+            kubectl label configmap monitoring-grafana-dashboard-container-metrics grafana_dashboard=1
             wget -O Chart.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/${{ inputs.folder }}/k8s/helm/Chart.yaml
-            wget -O helmfile.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/${{ inputs.folder }}/k8s/helm/helmfile.yaml
             wget -O values.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/${{ inputs.folder }}/k8s/helm/values.yaml
             helm dependency build
             helm upgrade --install ${{ inputs.folder }} charts/* -f values.yaml
