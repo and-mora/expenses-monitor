@@ -6,7 +6,7 @@ apps:
     org_name: Main Org.
     disabled: false
     jsonData:
-      appUrl: https://expmonitor.freeddns.org:3000
+      appUrl: http://monitoring-grafana.default:80
       orientation: portrait
       layout: simple
       dashboardMode: default
