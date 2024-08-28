@@ -11,6 +11,8 @@ grafana:
       skip_verify: false
       from_address: grafana_alerting@gmail.com
       from_name: Grafana
+    feature_toggles:
+      enable: externalServiceAccounts
 
   extraConfigmapMounts:
     - name: grafana-plugin-reporter-config
