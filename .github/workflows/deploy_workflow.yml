@@ -54,7 +54,7 @@ jobs:
     if: inputs.enabled == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.7
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 #v3.0.0
@@ -82,7 +82,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
 
       - name: 'Deploy on docker in VM'
-        uses: appleboy/ssh-action@55dabf81b49d4120609345970c91507e2d734799
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 #v1.0.3
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USERNAME }}
@@ -96,7 +96,7 @@ jobs:
             tag=${{ inputs.version }} docker stack deploy --compose-file docker-compose.yml ${{ inputs.folder }}
 
       - name: 'Docker stack wait till healthy'
-        uses: appleboy/ssh-action@55dabf81b49d4120609345970c91507e2d734799
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 #v1.0.3
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USERNAME }}

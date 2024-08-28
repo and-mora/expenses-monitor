@@ -54,7 +54,7 @@ jobs:
     if: inputs.enabled == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.7
 
       - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 #v3.0.2
         id: changed-path
@@ -64,7 +64,7 @@ jobs:
               - 'monitoring/k8s/helm/**'
 
       - name: 'Update config maps in k8s'
-        uses: appleboy/ssh-action@55dabf81b49d4120609345970c91507e2d734799
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 #v1.0.3
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USERNAME }}
@@ -94,7 +94,7 @@ jobs:
             kubectl label configmap monitoring-grafana-dashboard-container-metrics grafana_dashboard=1
 
       - name: 'Deploy on k8s'
-        uses: appleboy/ssh-action@55dabf81b49d4120609345970c91507e2d734799
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 #v1.0.3
         if: steps.changed-path.outputs.helm == 'true'
         with:
           host: ${{ secrets.VM_HOST }}
