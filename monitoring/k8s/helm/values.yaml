@@ -12,6 +12,13 @@ grafana:
       from_address: grafana_alerting@gmail.com
       from_name: Grafana
 
+  extraConfigmapMounts:
+    - name: grafana-plugin-reporter-config
+      mountPath: /etc/grafana/provisioning/plugins
+      configMap: grafana-plugin-reporter-config
+      readOnly: true
+      optional: false
+
   smtp:
     # `existingSecret` is a reference to an existing secret containing the smtp configuration
     # for Grafana.
