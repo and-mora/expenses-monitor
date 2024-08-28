@@ -4,7 +4,7 @@ grafana:
 
   grafana.ini:
     plugins:
-      allow_loading_unsigned_plugins: mahendrapaipuri-dashboardreporter-appapp
+      allow_loading_unsigned_plugins: mahendrapaipuri-dashboardreporter-app
     smtp:
       enabled: true
       host: smtp.gmail.com:465
@@ -191,3 +191,44 @@ grafana:
                 addresses: and.morabito@gmail.com
                 singleEmail: false
               disableResolveMessage: false
+
+  ## Add a seperate remote image renderer deployment/service
+  imageRenderer:
+    deploymentStrategy: { }
+    # Enable the image-renderer deployment & service
+    enabled: true
+    replicas: 1
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 5
+      targetCPU: "60"
+      targetMemory: ""
+      behavior: { }
+    image:
+      # -- The Docker registry
+      registry: docker.io
+      # image-renderer Image repository
+      repository: grafana/grafana-image-renderer
+      # image-renderer Image tag
+      tag: 3.10.1
+      # image-renderer Image sha (optional)
+      sha: ""
+      # image-renderer ImagePullPolicy
+      pullPolicy: Always
+    # extra environment variables
+    env:
+      HTTP_HOST: "0.0.0.0"
+      RENDERING_MODE: clustered
+      RENDERING_CLUSTERING_MODE: browser
+      RENDERING_CLUSTERING_MAX_CONCURRENCY: 5
+      RENDERING_CLUSTERING_TIMEOUT: 60
+      RENDERING_VIEWPORT_MAX_WIDTH: 1000
+
+    resources: { }
+    #   limits:
+    #     cpu: 100m
+    #     memory: 100Mi
+    #   requests:
+    #     cpu: 50m
+    #     memory: 50Mi
