@@ -39,7 +39,7 @@ jobs:
     environment: prod
     steps:
       - name: 'Deploy on docker in VM'
-        uses: appleboy/ssh-action@55dabf81b49d4120609345970c91507e2d734799
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 #v1.0.3
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USERNAME }}
@@ -59,7 +59,7 @@ jobs:
     environment: prod
     steps:
       - name: 'Deploy on k8s'
-        uses: appleboy/ssh-action@55dabf81b49d4120609345970c91507e2d734799
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 #v1.0.3
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USERNAME }}
