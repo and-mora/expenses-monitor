@@ -110,4 +110,4 @@ jobs:
             wget -O app.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/provisioning/plugins/app.yaml
             kubectl create configmap grafana-plugin-reporter-config --from-file app.yaml -o yaml --dry-run=client | kubectl apply -f -
             helm dependency build
-            helm upgrade --install ${{ inputs.folder }} charts/* -f values.yaml --wait --timeout 300
+            helm upgrade --install ${{ inputs.folder }} charts/* -f values.yaml --wait --timeout 300s
