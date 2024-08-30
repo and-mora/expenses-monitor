@@ -744,33 +744,52 @@
       {
         "allValue": ".*",
         "current": {
+          "isNone": true,
           "selected": false,
-          "text": "All",
-          "value": "$__all"
+          "text": "None",
+          "value": ""
         },
         "datasource": {
           "type": "prometheus",
           "uid": "${datasource}"
         },
-        "definition": "label_values(cadvisor_version_info, instance)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Host",
+        "definition": "",
+        "hide": 2,
+        "includeAll": false,
+        "label": "cluster",
         "multi": false,
-        "name": "host",
+        "name": "cluster",
         "options": [],
-        "query": {
-          "query": "label_values(cadvisor_version_info, instance)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 1,
+        "query": "label_values(up{job=\"kube-state-metrics\"}, cluster)",
+        "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
-        "sort": 5,
-        "tagValuesQuery": "",
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "default",
+          "value": "default"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "",
+        "hide": 0,
+        "includeAll": false,
+        "label": "namespace",
+        "multi": false,
+        "name": "namespace",
+        "options": [],
+        "query": "label_values(kube_namespace_status_phase{job=\"kube-state-metrics\", cluster=\"$cluster\"}, namespace)",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
       },
       {
         "allValue": ".*",
@@ -787,25 +806,19 @@
           "type": "prometheus",
           "uid": "${datasource}"
         },
-        "definition": "label_values(name)",
+        "definition": "",
         "hide": 0,
         "includeAll": true,
-        "label": "Container",
+        "label": "pod",
         "multi": true,
-        "name": "container",
+        "name": "pod",
         "options": [],
-        "query": {
-          "query": "label_values(name)",
-          "refId": "PrometheusVariableQueryEditor-VariableQuery"
-        },
-        "refresh": 1,
+        "query": "label_values(kube_pod_info{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\"}, pod)",
+        "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
+        "sort": 1,
+        "type": "query"
       }
     ]
   },
@@ -824,6 +837,6 @@
   "timezone": "",
   "title": "Container metrics",
   "uid": "ca43e6df-e3d7-49db-a08c-0b0f237dc08a",
-  "version": 19,
+  "version": 20,
   "weekStart": ""
 }
