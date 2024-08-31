@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: backend
+  name: backend
+  namespace: expenses-monitor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: backend
+    spec:
+      volumes:
+        - name: tls-secret
+          secret:
+            secretName: backend-tls
+      containers:
+        - image: 'ghcr.io/and-mora/expenses-monitor:v0.8.5-backend'
+          name: expenses-monitor
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "50m"
+            limits:
+              memory: "756Gi"
+              cpu: "150m"
+          volumeMounts:
+            - name: tls-secret
+              readOnly: true
+              mountPath: "/tls"
+      automountServiceAccountToken: false
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: backend
+  name: backend
+  namespace: expenses-monitor
+spec:
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: backend
+  sessionAffinity: None
+  type: ClusterIP
+
+---
+
