@@ -25,6 +25,12 @@ spec:
       containers:
         - image: 'ghcr.io/and-mora/expenses-monitor:v0.8.7-backend'
           name: expenses-monitor
+          env:
+            - name: DB_CONNECTION_URI
+              valueFrom:
+                secretKeyRef:
+                  name: db-connection-string
+                  key: connection-string
           resources:
             requests:
               memory: "512Mi"
