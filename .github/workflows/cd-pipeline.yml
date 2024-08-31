@@ -117,7 +117,7 @@ jobs:
     secrets: inherit
 
   BackendDeployK8s:
-    needs: [ SemanticVersioning, BackendRelease ]
+    needs: [ BackendDeploy ]
     uses: ./.github/workflows/deploy_backend.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.backend_version_tag}}
