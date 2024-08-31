@@ -23,7 +23,7 @@ spec:
           secret:
             secretName: backend-tls
       containers:
-        - image: 'ghcr.io/and-mora/expenses-monitor:v0.8.5-backend'
+        - image: 'ghcr.io/and-mora/expenses-monitor:v0.8.6-backend'
           name: expenses-monitor
           resources:
             requests:

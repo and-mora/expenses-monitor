@@ -1,6 +1,10 @@
 name: Deploy Backend
 
 on:
+  push:
+    branches: [master]
+    paths:
+      - 'backend_deploy'
   workflow_dispatch:
     inputs:
       enabled:
@@ -47,5 +51,5 @@ jobs:
           fingerprint: ${{ secrets.HOST_FINGERPRINT }}
           script: |
             mkdir -p expenses-monitor/backend && cd expenses-monitor/backend
-            wget -O manifest.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/backend_deploy/manifest.yaml
+            wget -O manifest.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/backend_deploy/manifest.yaml
             kubectl apply -f manifest.yaml
