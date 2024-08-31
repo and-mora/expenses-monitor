@@ -47,5 +47,5 @@ jobs:
           fingerprint: ${{ secrets.HOST_FINGERPRINT }}
           script: |
             mkdir -p expenses-monitor/backend && cd expenses-monitor/backend
-            wget -O manifest.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/backend/manifest.yaml
+            wget -O manifest.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/backend_deploy/manifest.yaml
             kubectl apply -f manifest.yaml
