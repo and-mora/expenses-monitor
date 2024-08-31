@@ -26,8 +26,8 @@ services:
       FRONTEND_ORIGIN_URL: "https://expmonitor.freeddns.org"
       DB_BACKEND_USER: backend_user
     volumes:
-      - /etc/letsencrypt/live/expmonitor.freeddns.org/privkey.pem:/key.pem
-      - /etc/letsencrypt/live/expmonitor.freeddns.org/fullchain.pem:/cert.pem
+      - /etc/letsencrypt/live/expmonitor.freeddns.org/privkey.pem:/tls/tls.key
+      - /etc/letsencrypt/live/expmonitor.freeddns.org/fullchain.pem:/tls/tls.crt
     networks:
       - expenses_monitor
     secrets:
