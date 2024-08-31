@@ -122,7 +122,6 @@ jobs:
     with:
       version: ${{needs.SemanticVersioning.outputs.backend_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.backend_changed}}
-      folder: backend
     secrets: inherit
 
   BackendApiTest:
