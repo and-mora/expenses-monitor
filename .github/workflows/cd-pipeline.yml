@@ -116,6 +116,15 @@ jobs:
       folder: backend
     secrets: inherit
 
+  BackendDeployK8s:
+    needs: [ SemanticVersioning, BackendRelease ]
+    uses: ./.github/workflows/deploy_backend.yml
+    with:
+      version: ${{needs.SemanticVersioning.outputs.backend_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.backend_changed}}
+      folder: backend
+    secrets: inherit
+
   BackendApiTest:
     needs: [ BackendDeploy ]
     uses: ./.github/workflows/api_test.yml
