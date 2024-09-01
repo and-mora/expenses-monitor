@@ -31,6 +31,26 @@ spec:
                 secretKeyRef:
                   name: db-connection-string
                   key: connection-string
+            - name: DB_BACKEND_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backend-db-credentials
+                  key: postgres-password
+            - name: DB_BACKEND_USER
+              valueFrom:
+                secretKeyRef:
+                  name: backend-db-credentials
+                  key: postgres-username
+            - name: BASIC_AUTH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backend-user-credentials
+                  key: user-password
+            - name: BASIC_AUTH_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: backend-user-credentials
+                  key: user-username
           resources:
             requests:
               memory: "512Mi"
