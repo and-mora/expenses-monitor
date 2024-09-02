@@ -123,7 +123,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "10.1.0",
+      "pluginVersion": "11.1.4",
       "targets": [
         {
           "datasource": {
@@ -248,7 +248,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "10.1.0",
+      "pluginVersion": "11.1.4",
       "targets": [
         {
           "datasource": {
@@ -352,12 +352,12 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "10.1.0",
+      "pluginVersion": "11.1.4",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${datasource}"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "expr": "sum(container_memory_cache{namespace=\"$namespace\", node=~\"$node\"}) by (pod)",
@@ -472,12 +472,12 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "10.1.0",
+      "pluginVersion": "11.1.4",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${datasource}"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "expr": "sum(rate(container_network_receive_bytes_total{namespace=\"$namespace\", node=~\"$node\"}[5m])) by (pod)",
@@ -575,12 +575,12 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "10.1.0",
+      "pluginVersion": "11.1.4",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${datasource}"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "expr": "sum(rate(container_network_transmit_bytes_total{namespace=\"$namespace\", node=~\"$node\"}[5m])) by (pod)",
