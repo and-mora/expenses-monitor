@@ -357,7 +357,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${datasource}"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "expr": "sum(container_memory_cache{namespace=\"$namespace\", node=~\"$node\"}) by (pod)",
@@ -477,7 +477,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${datasource}"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "expr": "sum(rate(container_network_receive_bytes_total{namespace=\"$namespace\", node=~\"$node\"}[5m])) by (pod)",
@@ -580,7 +580,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${datasource}"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "expr": "sum(rate(container_network_transmit_bytes_total{namespace=\"$namespace\", node=~\"$node\"}[5m])) by (pod)",
