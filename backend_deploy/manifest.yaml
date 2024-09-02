@@ -23,7 +23,7 @@ spec:
           secret:
             secretName: backend-tls
       containers:
-        - image: 'ghcr.io/and-mora/expenses-monitor:v0.8.7-backend'
+        - image: 'ghcr.io/and-mora/expenses-monitor:v0.8.9-backend'
           name: expenses-monitor
           env:
             - name: DB_CONNECTION_URI
@@ -89,3 +89,28 @@ spec:
 
 ---
 
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+  generation: 1
+  name: backend
+  namespace: expenses-monitor
+spec:
+  ingressClassName: public
+  rules:
+    - host: api.expmonitor.freeddns.org
+      http:
+        paths:
+          - backend:
+              service:
+                name: backend
+                port:
+                  number: 8080
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+      - api.expmonitor.freeddns.org
+      secretName: backend-tls
