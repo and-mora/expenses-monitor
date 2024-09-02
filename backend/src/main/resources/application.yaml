@@ -9,12 +9,6 @@ spring:
   config:
     import: "optional:configtree:/run/secrets/"
 
-server:
-  port: 8443
-  ssl:
-    certificate: "/tls/tls.crt"
-    certificate-private-key: "/tls/tls.key"
-
 basic-auth:
   username: ${BASIC_AUTH_USERNAME:user}
   password: ${BASIC_AUTH_PASSWORD:{bcrypt}$2a$10$lnno9KSTgXgzXPidwsN0nudlqzMhd4Ls/9W122onLGQEgWUeydUmm} # "pwd" as default
