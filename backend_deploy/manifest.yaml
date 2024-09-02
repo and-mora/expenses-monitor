@@ -23,7 +23,7 @@ spec:
           secret:
             secretName: backend-tls
       containers:
-        - image: 'ghcr.io/and-mora/expenses-monitor:v0.8.7-backend'
+        - image: 'ghcr.io/and-mora/expenses-monitor:v0.8.9-backend'
           name: expenses-monitor
           env:
             - name: DB_CONNECTION_URI
