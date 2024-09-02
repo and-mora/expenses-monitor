@@ -81,27 +81,27 @@ jobs:
             ghcr.io/${{ github.repository }}:${{ inputs.version }}
           platforms: linux/amd64,linux/arm64
 
-      - name: 'Deploy on docker in VM'
-        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 #v1.0.3
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USERNAME }}
-          key: ${{ secrets.VM_PRIVATE_KEY }}
-          port: ${{ secrets.VM_PORT }}
-          fingerprint: ${{ secrets.HOST_FINGERPRINT }}
-          script: |
-            mkdir -p expenses-monitor/${{ inputs.folder }}
-            cd expenses-monitor/${{ inputs.folder }}
-            wget -O docker-compose.yml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/${{ inputs.folder }}/docker-compose.yml
-            tag=${{ inputs.version }} docker stack deploy --compose-file docker-compose.yml ${{ inputs.folder }}
-
-      - name: 'Docker stack wait till healthy'
-        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 #v1.0.3
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USERNAME }}
-          key: ${{ secrets.VM_PRIVATE_KEY }}
-          port: ${{ secrets.VM_PORT }}
-          fingerprint: ${{ secrets.HOST_FINGERPRINT }}
-          script: |
-            docker run --rm -v /var/run/docker.sock:/var/run/docker.sock sudobmitch/docker-stack-wait@sha256:cb4d86cbf40eea6183db29dc341a7aae9e8196acf9315b863f939540b911d3bb ${{ inputs.folder }}
+#      - name: 'Deploy on docker in VM'
+#        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 #v1.0.3
+#        with:
+#          host: ${{ secrets.VM_HOST }}
+#          username: ${{ secrets.VM_USERNAME }}
+#          key: ${{ secrets.VM_PRIVATE_KEY }}
+#          port: ${{ secrets.VM_PORT }}
+#          fingerprint: ${{ secrets.HOST_FINGERPRINT }}
+#          script: |
+#            mkdir -p expenses-monitor/${{ inputs.folder }}
+#            cd expenses-monitor/${{ inputs.folder }}
+#            wget -O docker-compose.yml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/${{ inputs.folder }}/docker-compose.yml
+#            tag=${{ inputs.version }} docker stack deploy --compose-file docker-compose.yml ${{ inputs.folder }}
+#
+#      - name: 'Docker stack wait till healthy'
+#        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 #v1.0.3
+#        with:
+#          host: ${{ secrets.VM_HOST }}
+#          username: ${{ secrets.VM_USERNAME }}
+#          key: ${{ secrets.VM_PRIVATE_KEY }}
+#          port: ${{ secrets.VM_PORT }}
+#          fingerprint: ${{ secrets.HOST_FINGERPRINT }}
+#          script: |
+#            docker run --rm -v /var/run/docker.sock:/var/run/docker.sock sudobmitch/docker-stack-wait@sha256:cb4d86cbf40eea6183db29dc341a7aae9e8196acf9315b863f939540b911d3bb ${{ inputs.folder }}
