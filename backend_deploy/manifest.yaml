@@ -25,6 +25,32 @@ spec:
       containers:
         - image: 'ghcr.io/and-mora/expenses-monitor:v0.8.7-backend'
           name: expenses-monitor
+          env:
+            - name: DB_CONNECTION_URI
+              valueFrom:
+                secretKeyRef:
+                  name: db-connection-string
+                  key: connection-string
+            - name: DB_BACKEND_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backend-db-credentials
+                  key: postgres-password
+            - name: DB_BACKEND_USER
+              valueFrom:
+                secretKeyRef:
+                  name: backend-db-credentials
+                  key: postgres-username
+            - name: BASIC_AUTH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backend-user-credentials
+                  key: user-password
+            - name: BASIC_AUTH_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: backend-user-credentials
+                  key: user-username
           resources:
             requests:
               memory: "512Mi"
