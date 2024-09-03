@@ -1,4 +1,4 @@
 export const environment = {
     production: true,
-    apiUrl: 'https://expmonitor.freeddns.org:8443/'
+    apiUrl: 'http://backend.expenses-monitor:8080/'
 };
