@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+  namespace: expenses-monitor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - image: ghcr.io/and-mora/expenses-monitor:v0.5.6-frontend
+          name: expenses-monitor
+          resources:
+            requests:
+              memory: "50Mi"
+              cpu: "20m"
+            limits:
+              memory: "100Gi"
+              cpu: "40m"
+      automountServiceAccountToken: false
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+  namespace: expenses-monitor
+spec:
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: frontend
+  sessionAffinity: None
+  type: ClusterIP
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+  generation: 1
+  name: frontend
+  namespace: expenses-monitor
+spec:
+  ingressClassName: public
+  rules:
+    - host: expmonitor.freeddns.org
+      http:
+        paths:
+          - backend:
+              service:
+                name: frontend
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+      - expmonitor.freeddns.org
+      secretName: frontend-tls
