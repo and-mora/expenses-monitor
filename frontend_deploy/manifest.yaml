@@ -17,7 +17,7 @@ spec:
         app: frontend
     spec:
       containers:
-        - image: ghcr.io/and-mora/expenses-monitor:v0.5.6-frontend
+        - image: ghcr.io/and-mora/expenses-monitor:v0.5.7-frontend
           name: expenses-monitor
           resources:
             requests:
