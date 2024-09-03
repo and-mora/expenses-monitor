@@ -6,7 +6,7 @@ apps:
     org_name: Main Org.
     disabled: false
     jsonData:
-      appUrl: http://monitoring-grafana.default:80
+      appUrl: http://monitoring-grafana.monitoring:80
       orientation: portrait
       layout: simple
       dashboardMode: default
