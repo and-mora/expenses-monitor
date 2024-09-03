@@ -182,7 +182,6 @@ jobs:
     with:
       version: ${{needs.SemanticVersioning.outputs.frontend_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.frontend_changed}}
-      folder: frontend
     secrets: inherit
 
   PrometheusRelease:
