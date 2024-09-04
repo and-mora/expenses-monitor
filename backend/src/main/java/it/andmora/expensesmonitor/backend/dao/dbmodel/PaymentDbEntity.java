@@ -1,6 +1,7 @@
 package it.andmora.expensesmonitor.backend.dao.dbmodel;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -13,7 +14,7 @@ import org.springframework.data.relational.core.mapping.Table;
 public class PaymentDbEntity {
 
   @Id
-  private int id;
+  private UUID id;
   private String description;
   @Column("amount")
   private int amountInCents;

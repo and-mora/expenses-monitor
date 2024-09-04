@@ -10,6 +10,7 @@ import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCreator;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentDeleter;
 import it.andmora.expensesmonitor.backend.web.dto.PaymentDto;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -159,7 +160,7 @@ class PaymentControllerImplTest {
   }
 
   PaymentDto createPaymentDto() {
-    return new PaymentDto(0,
+    return new PaymentDto(UUID.randomUUID(),
         "shopping",
         1000,
         "H&M",
