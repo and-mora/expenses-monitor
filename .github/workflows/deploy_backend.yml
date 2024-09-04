@@ -2,24 +2,7 @@ name: Deploy Backend
 
 on:
   workflow_dispatch:
-    inputs:
-      enabled:
-        required: false
-        type: string
-        default: true
-      version:
-        required: true
-        description: 'image tag to deploy'
-        type: string
   workflow_call:
-    inputs:
-      version:
-        required: true
-        type: string
-      enabled:
-        required: true
-        type: string
-        default: false
     secrets:
       VM_HOST:
         required: true
@@ -34,7 +17,6 @@ jobs:
   k8sDeploy:
     name: k8sDeploy
     runs-on: ubuntu-latest
-    if: inputs.enabled == 'true'
     environment: prod
     steps:
       - name: 'Deploy on k8s'
