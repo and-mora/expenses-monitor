@@ -10,6 +10,6 @@ import reactor.core.publisher.Flux;
  */
 public interface PaymentPostgresRepository extends ReactiveCrudRepository<PaymentDbEntity, Integer> {
 
-  @Query("SELECT DISTINCT p.category FROM expenses.payments p")
+  @Query("SELECT DISTINCT p.category FROM payments p")
   Flux<String> getCategories();
 }
