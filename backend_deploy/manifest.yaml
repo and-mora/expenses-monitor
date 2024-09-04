@@ -18,10 +18,6 @@ spec:
       labels:
         app: backend
     spec:
-      volumes:
-        - name: tls-secret
-          secret:
-            secretName: backend-tls
       containers:
         - image: 'ghcr.io/and-mora/expenses-monitor:v0.8.9-backend'
           name: expenses-monitor
@@ -58,10 +54,6 @@ spec:
             limits:
               memory: "756Gi"
               cpu: "150m"
-          volumeMounts:
-            - name: tls-secret
-              readOnly: true
-              mountPath: "/tls"
       automountServiceAccountToken: false
 
 ---

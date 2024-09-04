@@ -48,4 +48,6 @@ jobs:
           script: |
             mkdir -p expenses-monitor/frontend && cd expenses-monitor/frontend
             wget -O manifest.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/frontend_deploy/manifest.yaml
+            wget -O default.conf https://raw.githubusercontent.com/and-mora/expenses-monitor/master/frontend/deploy-config/nginx.conf
+            kubectl create configmap frontend-nginx-config --from-file default.conf -o yaml -n expenses-monitor --dry-run=client | kubectl apply -f -
             kubectl apply -f manifest.yaml
