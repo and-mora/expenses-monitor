@@ -107,9 +107,9 @@ jobs:
       tag: ${{needs.SemanticVersioning.outputs.backend_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.backend_changed}}
 
-  BackendDeploy:
+  BackendBuildAndPush:
     needs: [ SemanticVersioning, BackendRelease ]
-    uses: ./.github/workflows/deploy_workflow.yml
+    uses: ./.github/workflows/build-push-workflow.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.backend_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.backend_changed}}
@@ -117,15 +117,12 @@ jobs:
     secrets: inherit
 
   BackendDeployK8s:
-    needs: [ BackendDeploy ]
+    needs: [ BackendBuildAndPush ]
     uses: ./.github/workflows/deploy_backend.yml
-    with:
-      version: ${{needs.SemanticVersioning.outputs.backend_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.backend_changed}}
     secrets: inherit
 
   BackendApiTest:
-    needs: [ BackendDeploy ]
+    needs: [ BackendDeployK8s ]
     uses: ./.github/workflows/api_test.yml
     secrets: inherit
 
@@ -153,7 +150,7 @@ jobs:
 
   GrafanaDeploy:
     needs: [SemanticVersioning, GrafanaRelease]
-    uses: ./.github/workflows/deploy_workflow.yml
+    uses: ./.github/workflows/build-push-workflow.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.grafana_changed}}
@@ -169,7 +166,7 @@ jobs:
 
   FrontendDeploy:
     needs: [ SemanticVersioning, FrontendRelease ]
-    uses: ./.github/workflows/deploy_workflow.yml
+    uses: ./.github/workflows/build-push-workflow.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.frontend_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.frontend_changed}}
@@ -193,7 +190,7 @@ jobs:
 
   PrometheusDeploy:
     needs: [ SemanticVersioning, PrometheusRelease ]
-    uses: ./.github/workflows/deploy_workflow.yml
+    uses: ./.github/workflows/build-push-workflow.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.prometheus_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.prometheus_changed}}
