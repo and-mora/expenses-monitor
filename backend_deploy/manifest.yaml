@@ -47,6 +47,8 @@ spec:
                 secretKeyRef:
                   name: backend-user-credentials
                   key: user-username
+            - name: FRONTEND_ORIGIN_URL
+              value: "https://expmonitor.freeddns.org"
           resources:
             requests:
               memory: "512Mi"
