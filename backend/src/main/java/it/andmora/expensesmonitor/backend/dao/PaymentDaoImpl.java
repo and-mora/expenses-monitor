@@ -5,6 +5,7 @@ import it.andmora.expensesmonitor.backend.dao.mapper.PaymentDbMapper;
 import it.andmora.expensesmonitor.backend.dao.persistance.PaymentPostgresRepository;
 import it.andmora.expensesmonitor.backend.domain.PaymentDao;
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -36,7 +37,7 @@ class PaymentDaoImpl implements PaymentDao {
   }
 
   @Override
-  public Mono<Void> deletePayment(Integer id) {
+  public Mono<Void> deletePayment(UUID id) {
     return repository.deleteById(id);
   }
 
