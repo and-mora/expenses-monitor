@@ -138,9 +138,7 @@ class PaymentControllerImplTest {
         .exchange()
         .expectStatus().isOk()
         .expectHeader().contentType("application/json;charset=UTF-8")
-        .expectBody(String.class).value(value -> {
-          assertThat(value).contains("foobar");
-        });
+        .expectBody(String.class).value(value -> assertThat(value).contains("foobar"));
     Mockito.verify(categoriesRetriever).getCategories();
   }
 
