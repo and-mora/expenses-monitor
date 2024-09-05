@@ -103,11 +103,11 @@ class PaymentDaoImplTest {
 
   @Test
   void givenAPaymentWhenDeleteItThenGoesOk() {
-    Mockito.when(repository.deleteById(any(Integer.class))).thenReturn(Mono.empty());
+    Mockito.when(repository.deleteById(any(UUID.class))).thenReturn(Mono.empty());
 
-    var paymentDeleted = paymentDao.deletePayment(0);
+    var paymentDeleted = paymentDao.deletePayment(UUID.randomUUID());
 
-    Mockito.verify(repository).deleteById(any(Integer.class));
+    Mockito.verify(repository).deleteById(any(UUID.class));
     StepVerifier
         .create(paymentDeleted)
         .expectComplete()

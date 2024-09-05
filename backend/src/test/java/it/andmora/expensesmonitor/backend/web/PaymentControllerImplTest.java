@@ -74,7 +74,7 @@ class PaymentControllerImplTest {
   void whenDeletePaymentThenReturnsOk() {
     Mockito.when(paymentDeleter.deletePayment(any())).thenReturn(Mono.empty());
 
-    Mono<Void> paymentResponse = paymentController.deletePayment(0);
+    Mono<Void> paymentResponse = paymentController.deletePayment(UUID.randomUUID());
 
     Mockito.verify(paymentDeleter).deletePayment(any());
     StepVerifier
@@ -110,17 +110,17 @@ class PaymentControllerImplTest {
   @WithMockUser
   void givenAuthWhenDeleteEndpointIsCalledThen200() {
     Mockito.when(paymentDeleter.deletePayment(any())).thenReturn(Mono.empty());
-
+    var uuid = UUID.randomUUID();
     webTestClient
         .mutate().build()
         .delete()
         .uri(uriBuilder -> uriBuilder
             .path(DELETE_PAYMENT_ENDPOINT)
-            .build(0))
+            .build(uuid))
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
         .expectStatus().isOk();
-    Mockito.verify(paymentDeleter).deletePayment(0);
+    Mockito.verify(paymentDeleter).deletePayment(uuid);
   }
 
   @Test
@@ -138,9 +138,7 @@ class PaymentControllerImplTest {
         .exchange()
         .expectStatus().isOk()
         .expectHeader().contentType("application/json;charset=UTF-8")
-        .expectBody(String.class).value(value -> {
-          assertThat(value).contains("foobar");
-        });
+        .expectBody(String.class).value(value -> assertThat(value).contains("foobar"));
     Mockito.verify(categoriesRetriever).getCategories();
   }
 

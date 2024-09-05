@@ -1,5 +1,6 @@
 package it.andmora.expensesmonitor.backend.domain.usecase;
 
+import java.util.UUID;
 import reactor.core.publisher.Mono;
 
 /**
@@ -7,5 +8,5 @@ import reactor.core.publisher.Mono;
  */
 public interface PaymentDeleter {
 
-  Mono<Void> deletePayment(Integer id);
+  Mono<Void> deletePayment(UUID id);
 }

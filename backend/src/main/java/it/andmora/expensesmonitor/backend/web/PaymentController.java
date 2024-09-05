@@ -1,6 +1,7 @@
 package it.andmora.expensesmonitor.backend.web;
 
 import it.andmora.expensesmonitor.backend.web.dto.PaymentDto;
+import java.util.UUID;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +18,7 @@ public interface PaymentController {
   Mono<PaymentDto> createPayment(@RequestBody PaymentDto paymentDto);
 
   @DeleteMapping("/{id}")
-  Mono<Void> deletePayment(@PathVariable(name = "id") Integer id);
+  Mono<Void> deletePayment(@PathVariable(name = "id") UUID id);
 
   @GetMapping("/categories")
   Flux<String> getCategories();

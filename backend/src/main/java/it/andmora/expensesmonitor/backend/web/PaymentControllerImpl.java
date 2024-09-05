@@ -5,6 +5,7 @@ import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCreator;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentDeleter;
 import it.andmora.expensesmonitor.backend.web.dto.PaymentDto;
 import it.andmora.expensesmonitor.backend.web.mapper.PaymentControllerMapper;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,7 +34,7 @@ class PaymentControllerImpl implements PaymentController {
   }
 
   @Override
-  public Mono<Void> deletePayment(Integer id) {
+  public Mono<Void> deletePayment(UUID id) {
     log.info("Deletion of payment with id: {}", id);
     return paymentDeleter.deletePayment(id);
   }
