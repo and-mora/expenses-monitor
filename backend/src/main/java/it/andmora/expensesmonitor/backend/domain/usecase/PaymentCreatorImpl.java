@@ -17,7 +17,6 @@ class PaymentCreatorImpl implements PaymentCreator {
   public Mono<Payment> createPayment(Payment payment) {
     // business validation goes here
 
-    payment.setId(UUID.randomUUID());
     return paymentDao.savePayment(payment);
   }
 }
