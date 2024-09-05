@@ -19,7 +19,7 @@ spec:
         app: backend
     spec:
       containers:
-        - image: 'ghcr.io/and-mora/expenses-monitor:v0.8.11-backend'
+        - image: 'ghcr.io/and-mora/expenses-monitor:v0.8.12-backend'
           name: expenses-monitor
           env:
             - name: DB_CONNECTION_URI
@@ -55,7 +55,7 @@ spec:
               cpu: "50m"
             limits:
               memory: "756Gi"
-              cpu: "150m"
+              cpu: "200m"
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
