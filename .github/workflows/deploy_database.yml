@@ -69,7 +69,6 @@ jobs:
           script: |
             mkdir -p expenses-monitor/database/k8s && cd expenses-monitor/database/k8s
             wget -O Chart.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/database/k8s/helm/Chart.yaml
-            wget -O helmfile.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/database/k8s/helm/helmfile.yaml
             wget -O values.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/database/k8s/helm/values.yaml
             helm dependency build
-            helm upgrade --install postgresql charts/* -f values.yaml
+            helm upgrade --install postgresql charts/* -f values.yaml --wait --timeout 300s
