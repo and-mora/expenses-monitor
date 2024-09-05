@@ -2,6 +2,7 @@ package it.andmora.expensesmonitor.backend.domain.usecase;
 
 import it.andmora.expensesmonitor.backend.domain.PaymentDao;
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -16,6 +17,7 @@ class PaymentCreatorImpl implements PaymentCreator {
   public Mono<Payment> createPayment(Payment payment) {
     // business validation goes here
 
+    payment.setId(UUID.randomUUID());
     return paymentDao.savePayment(payment);
   }
 }
