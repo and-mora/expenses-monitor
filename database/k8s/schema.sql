@@ -9,7 +9,7 @@ CREATE SCHEMA expenses AUTHORIZATION postgres;
 -- DROP TABLE expenses.payments;
 
 CREATE TABLE expenses.payments (
-	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	id uuid DEFAULT gen_random_uuid(),
 	accounting_date timestamp NULL,
 	merchant_name varchar NULL,
 	amount int4 NULL,
