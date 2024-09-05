@@ -14,5 +14,6 @@ COPY --from=build /build/build/libs/*.jar /app/app.jar
 RUN chown -R 472:472 /app
 
 USER 472
+ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.7.0/opentelemetry-javaagent.jar /app/opentelemetry-javaagent.jar
 
-ENTRYPOINT ["java", "-XX:+UnlockExperimentalVMOptions", "-Djava.security.egd=file:/dev/./urandom","-jar","/app/app.jar"]
+ENTRYPOINT ["java", "-XX:+UnlockExperimentalVMOptions", "-Djava.security.egd=file:/dev/./urandom", "-javaagent:/app/opentelemetry-javaagent.jar","-jar","/app/app.jar"]
