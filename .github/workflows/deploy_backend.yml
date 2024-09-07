@@ -31,4 +31,4 @@ jobs:
             mkdir -p expenses-monitor/backend && cd expenses-monitor/backend
             wget -O manifest.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/backend_deploy/manifest.yaml
             kubectl apply -f manifest.yaml
-            kubectl wait --for=condition=Ready pod -n expenses-monitor -l app=backend
+            kubectl wait --for=condition=Ready pod -n expenses-monitor -l app=backend --timeout=300s
