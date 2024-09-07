@@ -113,3 +113,16 @@ jobs:
             kubectl create configmap grafana-plugin-reporter-config --from-file app.yaml -n monitoring -o yaml --dry-run=client | kubectl apply -f -
             helm dependency build
             helm upgrade --install ${{ inputs.folder }} charts/* -f values.yaml --wait --timeout 300s -n monitoring
+
+  DeployLoki:
+    uses: ./.github/workflows/deploy_loki.yml
+    secrets: inherit
+
+  DeployTempo:
+    uses: ./.github/workflows/deploy_tempo.yml
+    secrets: inherit
+
+  DeployAlloy:
+    needs: [ DeployLoki, DeployTempo ]
+    uses: ./.github/workflows/deploy_alloy.yml
+    secrets: inherit
