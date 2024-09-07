@@ -6,9 +6,6 @@ spring:
     password: ${DB_BACKEND_PASSWORD:postgres}
     pool.validation-query: SELECT 1
 
-  config:
-    import: "optional:configtree:/run/secrets/"
-
 basic-auth:
   username: ${BASIC_AUTH_USERNAME:user}
   password: ${BASIC_AUTH_PASSWORD:{bcrypt}$2a$10$lnno9KSTgXgzXPidwsN0nudlqzMhd4Ls/9W122onLGQEgWUeydUmm} # "pwd" as default
