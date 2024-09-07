@@ -19,7 +19,7 @@ spec:
         app: backend
     spec:
       containers:
-        - image: 'ghcr.io/and-mora/expenses-monitor:v0.9.0-backend'
+        - image: 'ghcr.io/and-mora/expenses-monitor:v0.9.1-backend'
           name: expenses-monitor
           env:
             - name: DB_CONNECTION_URI
@@ -49,6 +49,16 @@ spec:
                   key: user-username
             - name: FRONTEND_ORIGIN_URL
               value: "https://expmonitor.freeddns.org"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: OTEL_EXPORTER_OTLP_ENDPOINT
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: OTEL_SERVICE_NAME
           resources:
             requests:
               memory: "512Mi"

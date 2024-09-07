@@ -41,5 +41,6 @@ kubectl create secret generic backend-db-credentials --from-literal=postgres-pas
 kubectl create secret generic backend-user-credentials --from-literal=user-password=$BASIC_AUTH_PASSWORD --from-literal=user-username=$BASIC_AUTH_USERNAME -n expenses-monitor
 kubectl create secret tls backend-tls --cert=path/to/tls.crt --key=path/to/tls.key -n expenses-monitor
 kubectl create secret generic db-connection-string --from-literal=connection-string=r2dbc:postgresql://postgresql.default:5432/expenses-monitor -n expenses-monitor
+kubectl create cm backend-config --from-literal=OTEL_SERVICE_NAME=backend --from-literal=OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy.monitoring.svc.cluster.local:12345 -n expenses-monitor
 kubectl apply -f manifest.yaml
 ```
