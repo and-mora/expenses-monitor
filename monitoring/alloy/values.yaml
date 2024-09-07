@@ -1,0 +1,4 @@
+alloy:
+  configMap:
+    name: alloy-config
+    key: config.alloy
