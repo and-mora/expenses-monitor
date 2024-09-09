@@ -60,6 +60,33 @@ grafana:
             password: $DB_GRAFANA_PASSWORD
           readOnly: true
 
+        - uid: "cdxddsz7oioe8c"
+          name: "Loki"
+          type: loki
+          typeName: "Loki"
+          access: "proxy"
+          url: "loki-gateway.monitoring.svc.cluster.local"
+          basicAuth: false
+          isDefault: false
+          jsonData: {}
+          readOnly: true
+
+        - uid: "fdxdgtky9l8n4b"
+          name: "Tempo"
+          type: tempo
+          typeName: "Tempo"
+          access: "proxy"
+          url: "tempo.monitoring.svc.cluster.local:3100"
+          basicAuth: false
+          isDefault: false
+          jsonData:
+            tracesToLogsV2:
+              customQuery: false
+              datasourceUid: "cdxddsz7oioe8c"
+            tracesToMetrics:
+              datasourceUid: "prometheus"
+          readOnly: false
+
   envFromSecret: grafana-db-credentials
 
   ingress:
