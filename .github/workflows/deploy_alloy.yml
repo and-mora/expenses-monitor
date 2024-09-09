@@ -29,6 +29,7 @@ jobs:
           fingerprint: ${{ secrets.HOST_FINGERPRINT }}
           script: |
             mkdir -p expenses-monitor/monitoring/alloy && cd expenses-monitor/monitoring/alloy
+            wget -O values.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/alloy/values.yaml
             wget -O Chart.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/alloy/Chart.yaml
             wget -O config.alloy https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/alloy/config.alloy
             kubectl create cm alloy-config --from-file=config.alloy --dry-run=client -o yaml -n monitoring | kubectl apply -f -
