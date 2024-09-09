@@ -8,6 +8,12 @@ grafana:
     sha: "47e3c8ff73b079f42a24e14aa957f2223068ec043efad2408abee31e99ee33e4"
     pullPolicy: IfNotPresent
 
+  admin:
+    ## Name of the secret. Can be templated.
+    existingSecret: "grafana-admin-credentials"
+    userKey: admin-user
+    passwordKey: admin-password
+
   plugins:
     - https://github.com/mahendrapaipuri/grafana-dashboard-reporter-app/releases/download/v1.3.0/mahendrapaipuri-dashboardreporter-app-1.3.0.zip;mahendrapaipuri-dashboardreporter-app
 
