@@ -55,7 +55,7 @@ grafana:
         - name: PostgreSQL
           type: postgres
           uid: c8fbcbf5-8f4f-4640-8d37-887b135a905e
-          url: http://postgresql.default:5432
+          url: postgresql.default:5432
           database: expenses-monitor
           user: $DB_GRAFANA_USERNAME
           jsonData:
