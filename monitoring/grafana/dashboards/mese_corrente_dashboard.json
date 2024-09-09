@@ -29,7 +29,7 @@
       "title": "PDF report",
       "tooltip": "create pdf report",
       "type": "link",
-      "url": "https://expmonitor.freeddns.org:3000/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=d0a30598-95a5-4098-89cc-435d965df315"
+      "url": "https://grafana.expmonitor.freeddns.org/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=d0a30598-95a5-4098-89cc-435d965df315"
     }
   ],
   "liveNow": false,
