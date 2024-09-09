@@ -28,6 +28,8 @@ grafana:
       from_name: Grafana
     feature_toggles:
       enable: externalServiceAccounts
+    server:
+      root_url: https://grafana.expmonitor.freeddns.org
 
   extraConfigmapMounts:
     - name: grafana-plugin-reporter-config
