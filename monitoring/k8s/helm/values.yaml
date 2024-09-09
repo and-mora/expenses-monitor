@@ -45,6 +45,9 @@ grafana:
     userKey: "username"
     passwordKey: "password"
 
+  persistence:
+    enabled: true
+
   datasources:
     datasources.yaml:
       apiVersion: 1
