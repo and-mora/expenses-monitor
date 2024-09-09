@@ -133,7 +133,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum by(pod) (rate(container_cpu_usage_seconds_total{namespace=\"$namespace\", node=~\"$node\"}[5m])) * 100",
+          "expr": "sum by(pod) (rate(container_cpu_usage_seconds_total{namespace=\"$namespace\", node=~\"$node\", container!=\"\", image!=\"\"}[5m])) * 100",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -257,7 +257,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(container_memory_usage_bytes{namespace=\"$namespace\", node=~\"$node\"}) by (pod)",
+          "expr": "sum(container_memory_working_set_bytes{namespace=\"$namespace\", node=~\"$node\", container!=\"\", image!=\"\"}) by (pod)",
           "hide": false,
           "interval": "",
           "legendFormat": "{{name}}",
@@ -696,12 +696,22 @@
           "show": false
         },
         "showHeader": true,
-        "sortBy": []
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "Name"
+          }
+        ]
       },
       "pluginVersion": "11.1.4",
       "targets": [
         {
-          "expr": "(time() - container_start_time_seconds{instance=~\"$host\",name=~\"$container\",name=~\".+\"})/86400",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "(time() - container_start_time_seconds{name=~\".+\"})/86400",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -797,9 +807,9 @@
       },
       {
         "current": {
-          "selected": true,
-          "text": "default",
-          "value": "default"
+          "selected": false,
+          "text": "expenses-monitor",
+          "value": "expenses-monitor"
         },
         "datasource": {
           "type": "prometheus",
@@ -855,7 +865,7 @@
     ]
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-2d",
     "to": "now"
   },
   "timepicker": {
@@ -869,6 +879,6 @@
   "timezone": "",
   "title": "Container metrics",
   "uid": "ca43e6df-e3d7-49db-a08c-0b0f237dc08a",
-  "version": 2,
+  "version": 1,
   "weekStart": ""
 }
