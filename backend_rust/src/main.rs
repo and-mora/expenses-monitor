@@ -1,8 +1,8 @@
 use env_logger::Env;
-use sqlx::PgPool;
-use std::net::TcpListener;
 use expenses_monitor_be::configuration::get_configuration;
 use expenses_monitor_be::startup::run;
+use sqlx::PgPool;
+use std::net::TcpListener;
 
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
