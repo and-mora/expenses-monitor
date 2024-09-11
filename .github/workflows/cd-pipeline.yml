@@ -19,6 +19,8 @@ jobs:
       grafana_version_tag: ${{ steps.grafana-versioning.outputs.version_tag }}
       backend_changed: ${{ steps.backend-versioning.outputs.changed }}
       backend_version_tag: ${{ steps.backend-versioning.outputs.version_tag }}
+      backend_rust_changed: ${{ steps.backend-rust-versioning.outputs.changed }}
+      backend_rust_version_tag: ${{ steps.backend-rust-versioning.outputs.version_tag }}
       client_changed: ${{ steps.client-versioning.outputs.changed }}
       client_version_tag: ${{ steps.client-versioning.outputs.version_tag }}
       frontend_changed: ${{ steps.frontend-versioning.outputs.changed }}
@@ -41,6 +43,15 @@ jobs:
         with:
           change_path: "backend"
           namespace: backend
+          major_pattern: "breaking"
+          minor_pattern: "feat"
+
+      - name: Backend Rust Version
+        id: backend-rust-versioning
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
+        with:
+          change_path: "backend_rust"
+          namespace: backend_rust
           major_pattern: "breaking"
           minor_pattern: "feat"
 
@@ -124,6 +135,27 @@ jobs:
   BackendApiTest:
     needs: [ BackendDeployK8s ]
     uses: ./.github/workflows/api_test.yml
+    secrets: inherit
+
+  BackendRustRelease:
+    needs: SemanticVersioning
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{needs.SemanticVersioning.outputs.backend_rust_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.backend_rust_changed}}
+
+  BackendRustBuildAndPush:
+    needs: [ SemanticVersioning, BackendRelease ]
+    uses: ./.github/workflows/build-push-workflow.yml
+    with:
+      version: ${{needs.SemanticVersioning.outputs.backend_rust_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.backend_rust_changed}}
+      folder: backend_rust
+    secrets: inherit
+
+  BackendRustDeployK8s:
+    needs: [ BackendBuildAndPush ]
+    uses: ./.github/workflows/deploy_backend_rust.yml
     secrets: inherit
 
   DatabaseRelease:
