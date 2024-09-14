@@ -77,7 +77,7 @@ jobs:
           SKIP_DOCKER=true ./scripts/init_db.sh
 
       - name: Run tests
-        run: cargo test
+        run: cargo test --manifest-path backend_rust/Cargo.toml
 
   # `fmt` container job
   fmt:
