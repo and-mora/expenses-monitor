@@ -9,11 +9,11 @@ pub struct Payment {
     #[serde(skip_serializing_if = "Option::is_none")]
     description: String,
     category: String,
-    #[serde(rename="amountInCents")]
+    #[serde(rename = "amountInCents")]
     amount_in_cents: i32,
-    #[serde(rename="merchantName")]
+    #[serde(rename = "merchantName")]
     merchant_name: String,
-    #[serde(rename="accountingDate")]
+    #[serde(rename = "accountingDate")]
     accounting_date: NaiveDateTime,
 }
 
@@ -74,18 +74,12 @@ pub async fn delete_payment(
         payment_id
     );
 
-    match sqlx::query!(
-        "delete from expenses.payments where id = $1",
-        payment_id
-    )
+    match sqlx::query!("delete from expenses.payments where id = $1", payment_id)
         .execute(connection_pool.get_ref())
         .await
     {
         Ok(_) => {
-            tracing::info!(
-                "request_id {} - payment has been deleted",
-                request_id
-            );
+            tracing::info!("request_id {} - payment has been deleted", request_id);
             HttpResponse::Ok()
         }
         Err(e) => {
