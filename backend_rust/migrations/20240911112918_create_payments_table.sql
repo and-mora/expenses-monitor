@@ -1,4 +1,6 @@
 -- Add migration script here
+CREATE SCHEMA expenses;
+
 CREATE TABLE expenses.payments (
 	id uuid DEFAULT gen_random_uuid(),
 	accounting_date timestamp NULL,
