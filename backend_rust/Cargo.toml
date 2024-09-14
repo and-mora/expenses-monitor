@@ -15,17 +15,18 @@ path = "src/lib.rs"
 # have a look at the workspace feature - we'll cover it later on.
 [[bin]]
 path = "src/main.rs"
-name = "zero2prod"
+name = "expenses-monitor-be"
 
 [dependencies]
 actix-web = "4"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 serde = { version = "1.0.207", features = ["derive"] }
 config = "0.14.0"
-uuid = { version = "1.10.0", features = ["v4"] }
+uuid = { version = "1.10.0", features = ["v4", "serde"] }
 env_logger = "0.11.5"
 log = "0.4.22"
 tracing = "0.1.40"
+chrono = { version = "0.4.38", features = ["serde"] }
 
 # Using table-like toml syntax to avoid a super-long line!
 [dependencies.sqlx]
