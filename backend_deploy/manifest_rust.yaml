@@ -3,20 +3,20 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
-    app: backend_rust
-  name: backend_rust
+    app: backend-rust
+  name: backend-rust
   namespace: expenses-monitor
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: backend_rust
+      app: backend-rust
   strategy: {}
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: backend_rust
+        app: backend-rust
     spec:
       containers:
         - image: 'ghcr.io/and-mora/expenses-monitor:v0.9.1-backend'
@@ -89,8 +89,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: backend_rust
-  name: backend_rust
+    app: backend-rust
+  name: backend-rust
   namespace: expenses-monitor
 spec:
   internalTrafficPolicy: Cluster
@@ -102,7 +102,7 @@ spec:
       protocol: TCP
       targetPort: 8080
   selector:
-    app: backend_rust
+    app: backend-rust
   sessionAffinity: None
   type: ClusterIP
 
