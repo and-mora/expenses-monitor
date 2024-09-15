@@ -28,7 +28,7 @@ jobs:
           port: ${{ secrets.VM_PORT }}
           fingerprint: ${{ secrets.HOST_FINGERPRINT }}
           script: |
-            mkdir -p expenses-monitor/backend_rust && cd expenses-monitor/backend_rust
+            mkdir -p expenses-monitor/backend-rust && cd expenses-monitor/backend-rust
             wget -O manifest.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/backend_deploy/manifest_rust.yaml
             kubectl apply -f manifest.yaml
-            kubectl wait --for=condition=Ready pod -n expenses-monitor -l app=backend_rust --timeout=300s
+            kubectl wait --for=condition=Ready pod -n expenses-monitor -l app=backend-rust --timeout=300s

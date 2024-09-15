@@ -19,7 +19,7 @@ on:
           - grafana
           - backend
           - frontend
-          - backend_rust
+          - backend-rust
       version:
         description: 'Tag'
         required: true

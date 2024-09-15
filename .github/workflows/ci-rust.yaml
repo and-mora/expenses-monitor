@@ -4,11 +4,11 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - 'backend_rust/**'
+      - 'backend-rust/**'
   pull_request:
     types: [ opened, synchronize, reopened ]
     paths:
-      - 'backend_rust/**'
+      - 'backend-rust/**'
 
 env:
   CARGO_TERM_COLOR: always
@@ -73,11 +73,11 @@ jobs:
 
       - name: Migrate database
         run: |
-          cd backend_rust
+          cd backend-rust
           SKIP_DOCKER=true ./scripts/init_db.sh
 
       - name: Run tests
-        run: cargo test --manifest-path backend_rust/Cargo.toml
+        run: cargo test --manifest-path backend-rust/Cargo.toml
 
   # `fmt` container job
   fmt:
@@ -90,7 +90,7 @@ jobs:
           # Specific to dtolnay/rust-toolchain: Comma-separated string of additional components to install
           components: rustfmt
       - name: Enforce formatting
-        run: cargo fmt --check --manifest-path backend_rust/Cargo.toml
+        run: cargo fmt --check --manifest-path backend-rust/Cargo.toml
 
   # `clippy` container job
   clippy:
@@ -124,10 +124,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install postgresql-client -y
       - name: Migrate database
         run: |
-          cd backend_rust
+          cd backend-rust
           SKIP_DOCKER=true ./scripts/init_db.sh
       - name: Linting
-        run: cargo clippy --manifest-path backend_rust/Cargo.toml -- -D warnings
+        run: cargo clippy --manifest-path backend-rust/Cargo.toml -- -D warnings
 
   # `coverage` container job
   coverage:
@@ -160,7 +160,7 @@ jobs:
           --locked
       - name: Migrate database
         run: |
-          cd backend_rust
+          cd backend-rust
           SKIP_DOCKER=true ./scripts/init_db.sh
       - name: Generate code coverage
-        run: cargo install cargo-tarpaulin && cargo tarpaulin --verbose --workspace --manifest-path backend_rust/Cargo.toml
+        run: cargo install cargo-tarpaulin && cargo tarpaulin --verbose --workspace --manifest-path backend-rust/Cargo.toml
