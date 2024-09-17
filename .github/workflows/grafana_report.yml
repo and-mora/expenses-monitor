@@ -20,7 +20,7 @@ jobs:
 
       - name: Download the report
         run: |
-          curl --location 'https://${{ secrets.VM_HOST }}:3000/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=d0a30598-95a5-4098-89cc-435d965df315&from=now-1M%2FM&to=now-1M%2FM&layout=grid' \
+          curl --location 'https://${{ secrets.GF_URL }}/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=d0a30598-95a5-4098-89cc-435d965df315&from=now-1M%2FM&to=now-1M%2FM&layout=grid' \
             --header "Authorization: Bearer ${{ secrets.GF_SA_REPORT_TOKEN }}" \
             --output ${{ steps.filename.outputs.REPORT_FILENAME }}
       - name: Send emails
