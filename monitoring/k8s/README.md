@@ -13,6 +13,12 @@ kubectl create secret generic grafana-smtp-credentials --from-literal=username=$
 kubectl create secret generic grafana-db-credentials --from-literal=DB_GRAFANA_USERNAME=$USERNAME_GRAFANA --from-literal=DB_GRAFANA_PASSWORD=$PASS_USER_GRAFANA -n monitoring
 kubectl create secret generic grafana-admin-credentials --from-literal=admin-user=$GRAFANA_ADMIN_USER --from-literal=admin-password=$GRAFANA_ADMIN_PASSWORD -n monitoring
 helm upgrade --install monitoring charts/* -f values.yaml -n monitoring
+read -sp 'Enter grafana viewer username: ' GRAFANA_VIEWER_USERNAME
+read -sp 'Enter grafana viewer password: ' GRAFANA_VIEWER_PASSWORD
+read -sp 'Enter grafana viewer email: ' GRAFANA_VIEWER_EMAIL
+kubectl create secret generic grafana-user-credentials --from-literal=username=$GRAFANA_VIEWER_USERNAME --from-literal=password=$GRAFANA_VIEWER_PASSWORD --from-literal=email=$GRAFANA_VIEWER_EMAIL -n monitoring
 ```
 
 Only Google SMTP is configured in grafana.ini
+
+To create the viewer user run the `init-users.sh` file on host machine (with proper k8s secrets initialization)
