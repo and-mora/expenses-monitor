@@ -1,6 +1,9 @@
 auth:
   existingSecret: postgresql
+  secretKeys:
+    adminPasswordKey: "postgres-password"
   database: expenses-monitor
+  usePasswordFiles: true
 
 primary:
   initdb:
