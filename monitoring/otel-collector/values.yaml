@@ -1,0 +1,41 @@
+mode: deployment
+
+presets:
+  logsCollection:
+    enabled: true
+    includeCollectorLogs: true
+
+image:
+  repository: "otel/opentelemetry-collector-k8s"
+
+config:
+  exporters:
+    otlp:
+      endpoint: "http://tempo.monitoring.svc.cluster.local:4317"
+      tls:
+        insecure: true
+    otlphttp:
+      endpoint: "http://loki-gateway.monitoring.svc.cluster.local/otlp"
+  receivers:
+    jaeger: null
+    prometheus: null
+    zipkin: null
+  service:
+    pipelines:
+      traces:
+        receivers:
+          - otlp
+        exporters:
+          - otlp
+      metrics: null
+      logs:
+        exporters:
+          - otlphttp
+
+resources:
+  requests:
+    memory: '128Mi'
+    cpu: '20m'
+  limits:
+    memory: '128Mi'
+    cpu: '100m'

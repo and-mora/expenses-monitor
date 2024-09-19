@@ -122,7 +122,7 @@ jobs:
     uses: ./.github/workflows/deploy_tempo.yml
     secrets: inherit
 
-  DeployAlloy:
+  DeployOtelCollector:
     needs: [ DeployLoki, DeployTempo ]
-    uses: ./.github/workflows/deploy_alloy.yml
+    uses: ./.github/workflows/deploy_otel_collector.yml
     secrets: inherit
