@@ -30,5 +30,6 @@ jobs:
           script: |
             mkdir -p expenses-monitor/monitoring/tempo && cd expenses-monitor/monitoring/tempo
             wget -O Chart.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/tempo/Chart.yaml
+            wget -O values.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/tempo/values.yaml
             helm dependency build
-            helm upgrade --install tempo charts/* --wait --timeout 300s -n monitoring
+            helm upgrade --install tempo charts/* -f values.yaml --wait --timeout 300s -n monitoring
