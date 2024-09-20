@@ -19,7 +19,7 @@ spec:
         app: backend-rust
     spec:
       containers:
-        - image: 'ghcr.io/and-mora/expenses-monitor:v0.0.5-backend-rust-aarch64'
+        - image: 'ghcr.io/and-mora/expenses-monitor:v0.0.6-backend-rust-aarch64'
           name: expenses-monitor
           env:
             - name: APP_DATABASE__HOST
