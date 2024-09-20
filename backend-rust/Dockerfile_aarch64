@@ -57,13 +57,13 @@ RUN apt-get update -y \
   && apt-get clean -y \
   && rm -rf /var/lib/apt/lists/*
 
-case ${TARGETARCH} in \
-        arm64) COPY --from=builder /app/target/aarch64-unknown-linux-gnu/release/expenses-monitor-be expenses-monitor-be;; \
-        amd64) COPY --from=builder /app/target/release/expenses-monitor-be expenses-monitor-be;; \
+RUN case ${TARGETARCH} in \
+        arm64) target='/app/target/aarch64-unknown-linux-gnu/release/expenses-monitor-be';; \
+        amd64) target='/app/target/release/expenses-monitor-be';; \
         *) exit 1 ;; \
     esac
 
-#COPY --from=builder /app/target/aarch64-unknown-linux-gnu/release/expenses-monitor-be expenses-monitor-be
+COPY --from=builder $target expenses-monitor-be
 COPY configuration.yaml configuration.yaml
 ENV APP_ENVIRONMENT production
 ENTRYPOINT ["./expenses-monitor-be"]
