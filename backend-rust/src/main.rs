@@ -12,7 +12,7 @@ async fn main() -> Result<(), std::io::Error> {
     let configuration = get_configuration().expect("Failed to read configuration");
 
     // tpc configuration
-    let address = format!("localhost:{}", configuration.application_port);
+    let address = format!("localhost:{}", configuration.application.port);
     let listener = TcpListener::bind(address)?;
 
     // database configuration

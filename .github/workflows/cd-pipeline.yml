@@ -144,9 +144,9 @@ jobs:
       tag: ${{needs.SemanticVersioning.outputs.backend_rust_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.backend_rust_changed}}
 
-  BackendRustBuildAndPush:
+  BackendRustBuildAndPushAarch64:
     needs: [ SemanticVersioning, BackendRustRelease ]
-    uses: ./.github/workflows/build-push-workflow.yml
+    uses: ./.github/workflows/build-push-workflow-aarch64.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.backend_rust_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.backend_rust_changed}}
@@ -154,7 +154,7 @@ jobs:
     secrets: inherit
 
   BackendRustDeployK8s:
-    needs: [ BackendRustBuildAndPush ]
+    needs: [ BackendRustBuildAndPushAarch64 ]
     uses: ./.github/workflows/deploy_backend_rust.yml
     secrets: inherit
 

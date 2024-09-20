@@ -1,0 +1,47 @@
+FROM lukemathwalker/cargo-chef:latest-rust-latest AS chef
+WORKDIR /app
+RUN apt update && apt install lld clang -y
+
+FROM chef AS planner
+COPY . .
+# Compute a lock-like file for our project
+RUN cargo chef prepare --recipe-path recipe.json
+
+FROM chef AS builder
+COPY --from=planner /app/recipe.json recipe.json
+
+# Install dependencies for cross-compilation and protobuf
+RUN dpkg --add-architecture arm64 \
+    && apt-get update \
+    && apt-get install -y \
+    protobuf-compiler \
+    g++-aarch64-linux-gnu \
+    libc6-dev-arm64-cross \
+    libssl-dev:arm64 \
+    && rustup target add aarch64-unknown-linux-gnu \
+    && rustup toolchain install stable-aarch64-unknown-linux-gnu \
+    && rm -rf /var/lib/apt/lists/*
+
+# Build our project dependencies, not our application!
+RUN CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc cargo chef cook --target=aarch64-unknown-linux-gnu --release --recipe-path recipe.json
+# Up to this point, if our dependency tree stays the same,
+# all layers should be cached.
+COPY . .
+ENV SQLX_OFFLINE true
+
+# Build our project
+RUN cargo build --target=aarch64-unknown-linux-gnu --release --bin expenses-monitor-be
+
+FROM debian:bookworm-slim AS runtime
+WORKDIR /app
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  # Clean up
+  && apt-get autoremove -y \
+  && apt-get clean -y \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /app/target/aarch64-unknown-linux-gnu/release/expenses-monitor-be expenses-monitor-be
+COPY configuration.yaml configuration.yaml
+ENV APP_ENVIRONMENT production
+ENTRYPOINT ["./expenses-monitor-be"]
