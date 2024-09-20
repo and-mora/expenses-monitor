@@ -30,7 +30,7 @@ RUN dpkg --add-architecture arm64 \
 RUN #CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc cargo chef cook --target=aarch64-unknown-linux-gnu --release --recipe-path recipe.json
 
 # Build dependencies - this is the caching Docker layer!
-RUN case ${TARGETARCH} in \
+RUN case $TARGETARCH in \
         arm64) CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc cargo chef cook --target=aarch64-unknown-linux-gnu --release --recipe-path recipe.json ;; \
         amd64) cargo chef cook --release --recipe-path recipe.json ;; \
         *) exit 1 ;; \
@@ -43,7 +43,7 @@ ENV SQLX_OFFLINE true
 
 # Build our project
 RUN #CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc cargo build --target=aarch64-unknown-linux-gnu --release --bin expenses-monitor-be
-RUN case ${TARGETARCH} in \
+RUN case $TARGETARCH in \
         arm64) CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc cargo build --target=aarch64-unknown-linux-gnu --release ;; \
         amd64) cargo build --release ;; \
         *) exit 1 ;; \
@@ -58,13 +58,13 @@ RUN apt-get update -y \
   && apt-get clean -y \
   && rm -rf /var/lib/apt/lists/*
 
-RUN case ${TARGETARCH} in \
-        arm64) target='/app/target/aarch64-unknown-linux-gnu/release/expenses-monitor-be';; \
-        amd64) target='/app/target/release/expenses-monitor-be';; \
+RUN case $TARGETARCH in \
+        arm64) target='/app/target/aarch64-unknown-linux-gnu/release';; \
+        amd64) target='/app/target/release';; \
         *) exit 1 ;; \
     esac
 
-COPY --from=builder $target expenses-monitor-be
+COPY --from=builder /app/target/aarch64-unknown-linux-gnu/release/expenses-monitor-be expenses-monitor-be
 COPY configuration.yaml configuration.yaml
 ENV APP_ENVIRONMENT production
 ENTRYPOINT ["./expenses-monitor-be"]
