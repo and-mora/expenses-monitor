@@ -30,7 +30,7 @@ COPY . .
 ENV SQLX_OFFLINE true
 
 # Build our project
-RUN cargo build --target=aarch64-unknown-linux-gnu --release --bin expenses-monitor-be
+RUN CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc cargo build --target=aarch64-unknown-linux-gnu --release --bin expenses-monitor-be
 
 FROM debian:bookworm-slim AS runtime
 WORKDIR /app
