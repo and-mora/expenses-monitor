@@ -19,7 +19,7 @@ spec:
         app: backend
     spec:
       containers:
-        - image: 'ghcr.io/and-mora/expenses-monitor:v0.9.1-backend'
+        - image: 'ghcr.io/and-mora/expenses-monitor:v0.9.2-backend'
           name: expenses-monitor
           env:
             - name: DB_CONNECTION_URI
@@ -54,11 +54,36 @@ spec:
                 configMapKeyRef:
                   name: backend-config
                   key: OTEL_EXPORTER_OTLP_ENDPOINT
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: OTEL_EXPORTER_OTLP_PROTOCOL
             - name: OTEL_SERVICE_NAME
               valueFrom:
                 configMapKeyRef:
                   name: backend-config
                   key: OTEL_SERVICE_NAME
+            - name: OTEL_TRACES_EXPORTER
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: OTEL_TRACES_EXPORTER
+            - name: OTEL_METRICS_EXPORTER
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: OTEL_METRICS_EXPORTER
+            - name: OTEL_LOGS_EXPORTER
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: OTEL_LOGS_EXPORTER
+            - name: OTEL_TRACES_SAMPLER
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: OTEL_TRACES_SAMPLER
           resources:
             requests:
               memory: "512Mi"
