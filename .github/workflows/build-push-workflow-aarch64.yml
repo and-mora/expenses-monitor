@@ -35,7 +35,7 @@ on:
 
 jobs:
 
-  BuildAndPush:
+  BuildAndPushAarch64:
     name: BuildAndPush
     runs-on: ubuntu-latest
     environment: prod
@@ -68,3 +68,4 @@ jobs:
             ghcr.io/${{ github.repository }}:backend-rust-latest-aarch64
             ghcr.io/${{ github.repository }}:${{ github.sha }}-aarch64
             ghcr.io/${{ github.repository }}:${{ inputs.version }}-aarch64
+          platforms: linux/amd64,linux/arm64
