@@ -8,7 +8,7 @@ pub struct Settings {
 
 #[derive(Deserialize)]
 pub struct ApplicationSettings {
-    pub port: u16
+    pub port: u16,
 }
 
 #[derive(Deserialize)]
@@ -38,8 +38,7 @@ impl DatabaseSettings {
 }
 
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
-    let base_path = std::env::current_dir()
-        .expect("Failed to determine the current directory");
+    let base_path = std::env::current_dir().expect("Failed to determine the current directory");
     // let configuration_directory = base_path.join("configuration");
 
     // Detect the running environment.
@@ -59,7 +58,7 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
         .add_source(
             config::Environment::with_prefix("APP")
                 .prefix_separator("_")
-                .separator("__")
+                .separator("__"),
         )
         .build()?;
 
