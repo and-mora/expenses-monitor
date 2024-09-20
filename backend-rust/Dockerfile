@@ -1,129 +1,34 @@
-FROM --platform=linux/amd64 lukemathwalker/cargo-chef:latest-rust-latest AS amd64-chef
-FROM --platform=linux/arm64 lukemathwalker/cargo-chef:latest-rust-latest AS arm64-chef
-
-# Base image for the build stage - this is a multi-stage build that uses cross-compilation (thanks to --platform switch)
-FROM --platform=$BUILDPLATFORM lukemathwalker/cargo-chef:latest-rust-latest AS chef
+FROM lukemathwalker/cargo-chef:latest-rust-latest AS chef
 WORKDIR /app
+RUN apt update && apt install lld clang -y
 
-# Planner stage
 FROM chef AS planner
 COPY . .
+# Compute a lock-like file for our project
 RUN cargo chef prepare --recipe-path recipe.json
 
-# Builder stage
-FROM chef AS builder 
+FROM chef AS builder
 COPY --from=planner /app/recipe.json recipe.json
-
-ARG TARGETPLATFORM
-ARG TARGETARCH
-
-# Copy runtime dependencies for specific target platform/architecture
-# ARM specific folders
-WORKDIR /all-files/linux/arm64/lib/aarch64-linux-gnu
-
-# AMD64 specific folders
-WORKDIR /all-files/linux/amd64/lib/x86_64-linux-gnu
-WORKDIR /all-files/linux/amd64/lib64
-
-# Common folders
-WORKDIR /all-files/${TARGETPLATFORM}/etc/ssl/certs
-WORKDIR /all-files/${TARGETPLATFORM}/app
-
-# ARM64
-COPY --from=arm64-chef \
-        /lib/aarch64-linux-gnu/libssl.so.3 \
-        /lib/aarch64-linux-gnu/libcrypto.so.3 \
-        /lib/aarch64-linux-gnu/libgcc_s.so.1 \
-        /lib/aarch64-linux-gnu/libm.so.6 \
-        /lib/aarch64-linux-gnu/libc.so.6 \
-        /all-files/linux/arm64/lib/aarch64-linux-gnu/
-
-COPY --from=arm64-chef \
-       /lib/ld-linux-aarch64.so.1 \
-       /all-files/linux/arm64/lib
-
-# AMD64
-COPY --from=amd64-chef \
-        /lib/x86_64-linux-gnu/libssl.so.3 \
-        /lib/x86_64-linux-gnu/libcrypto.so.3 \
-        /lib/x86_64-linux-gnu/libgcc_s.so.1 \
-        /lib/x86_64-linux-gnu/libm.so.6 \
-        /lib/x86_64-linux-gnu/libc.so.6 \
-        /all-files/linux/amd64/lib/x86_64-linux-gnu/
-
-COPY --from=amd64-chef \
-        /lib64/ld-linux-x86-64.so.2 \
-        /all-files/linux/amd64/lib64/
-
-# Common files - certs
-COPY --from=amd64-chef \
-        /etc/ssl/certs/ca-certificates.crt \
-        /all-files/linux/amd64/etc/ssl/certs/
-COPY --from=arm64-chef \
-        /etc/ssl/certs/ca-certificates.crt \
-        /all-files/linux/arm64/etc/ssl/certs/
-
-WORKDIR /app
-
-# Install dependencies for cross-compilation and protobuf
-RUN dpkg --add-architecture arm64 \
-    && apt-get update \
-    && apt-get install -y \
-    protobuf-compiler \
-    g++-aarch64-linux-gnu \
-    libc6-dev-arm64-cross \
-    libssl-dev:arm64 \
-    ca-certificates \
-    && rustup target add aarch64-unknown-linux-gnu \
-    && rustup toolchain install stable-aarch64-unknown-linux-gnu \
-    && rm -rf /var/lib/apt/lists/*
-
-# Build dependencies - this is the caching Docker layer!
-RUN case ${TARGETARCH} in \
-        arm64) PKG_CONFIG_SYSROOT_DIR=/ CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc cargo chef cook --target=aarch64-unknown-linux-gnu --release --recipe-path recipe.json ;; \
-        amd64) cargo chef cook --release --recipe-path recipe.json ;; \
-        *) exit 1 ;; \
-    esac 
-
-# Copy the source code
-COPY . /app
+# Build our project dependencies, not our application!
+RUN cargo chef cook --release --recipe-path recipe.json
+# Up to this point, if our dependency tree stays the same,
+# all layers should be cached.
+COPY . .
 ENV SQLX_OFFLINE true
 
-# Build application - this is the caching Docker layer!
-RUN case ${TARGETARCH} in \
-        arm64) cargo build --target=aarch64-unknown-linux-gnu --release ;; \
-        amd64) cargo build --release ;; \
-        *) exit 1 ;; \
-    esac
+# Build our project
+RUN cargo build --release --bin expenses-monitor-be
 
-# Copy all the dependencies to a separate folder
-RUN set -ex; \
-    # Determine target (source folder for the binary and env files)
-    case ${TARGETARCH} in \
-        arm64) target='/app/target/aarch64-unknown-linux-gnu/release';; \
-        amd64) target='/app/target/release';; \
-        *) exit 1 ;; \
-    esac; \
-    # Copy files from the target folder to app folder
-#    cp $target/*-env.json  /all-files/${TARGETPLATFORM}/app && \
-    cp $target/expenses-monitor-be /all-files/${TARGETPLATFORM}/app
-
-# # Create a single layer image
-FROM scratch AS runtime
-
-# Make build arguments available in the runtime stage
-ARG TARGETPLATFORM
-ARG TARGETARCH
-
+FROM debian:bookworm-slim AS runtime
 WORKDIR /app
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  # Clean up
+  && apt-get autoremove -y \
+  && apt-get clean -y \
+  && rm -rf /var/lib/apt/lists/*
 
-# Copy the binary and the environment files from the pre-runtime stage as a single layer
-COPY --from=builder /all-files/${TARGETPLATFORM} /
-
-# Expose the port that the application listens on.
-EXPOSE 8080
-
-# Run the application
-ENTRYPOINT ["/app/expenses-monitor-be"]
-
-#ENTRYPOINT ["bash"]
+COPY --from=builder /app/target/release/expenses-monitor-be expenses-monitor-be
+COPY configuration.yaml configuration.yaml
+ENV APP_ENVIRONMENT production
+ENTRYPOINT ["./expenses-monitor-be"]
