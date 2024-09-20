@@ -50,6 +50,9 @@ RUN case $TARGETARCH in \
     esac
 
 FROM debian:bookworm-slim AS runtime
+ARG TARGETPLATFORM
+ARG TARGETARCH
+
 WORKDIR /app
 RUN apt-get update -y \
   && apt-get install -y --no-install-recommends openssl ca-certificates \
