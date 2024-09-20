@@ -23,22 +23,12 @@ on:
         required: true
         type: string
         default: false
-    secrets:
-      VM_HOST:
-        required: true
-      VM_USERNAME:
-        required: true
-      VM_PRIVATE_KEY:
-        required: true
-      VM_PORT:
-        required: true
 
 jobs:
 
   BuildAndPushAarch64:
     name: BuildAndPush
     runs-on: ubuntu-latest
-    environment: prod
     if: inputs.enabled == 'true'
     steps:
       - name: Checkout
