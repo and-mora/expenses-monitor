@@ -1,6 +1,6 @@
 ### Action to build and push image on GHCR
 
-name: Build and push image for aarch64
+name: Build and push image for aarch64 - backend-rust
 
 on:
   workflow_dispatch:
@@ -10,16 +10,6 @@ on:
         type: string
         description: 'Flag to enable the build and push'
         default: 'true'
-      folder:
-        description: 'Component'
-        required: true
-        default: 'backend'
-        type: choice
-        options:
-          - grafana
-          - backend
-          - frontend
-          - backend-rust
       version:
         description: 'Tag'
         required: true
@@ -33,9 +23,6 @@ on:
         required: true
         type: string
         default: false
-      folder:
-        required: true
-        type: string
     secrets:
       VM_HOST:
         required: true
@@ -74,10 +61,10 @@ jobs:
         id: docker_build_push
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 #v5.0.0
         with:
-          context: ${{ inputs.folder }}
-          file: {context}/Dockerfile_aarch64
+          context: backend-rust
+          file: backend-rust/Dockerfile_aarch64
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:${{ inputs.folder }}-latest-aarch64
+            ghcr.io/${{ github.repository }}:backend-rust-latest-aarch64
             ghcr.io/${{ github.repository }}:${{ github.sha }}-aarch64
             ghcr.io/${{ github.repository }}:${{ inputs.version }}-aarch64
