@@ -1,25 +1,60 @@
-FROM lukemathwalker/cargo-chef:latest-rust-latest AS chef
+# Base image for the build stage - this is a multi-stage build that uses cross-compilation (thanks to --platform switch)
+FROM --platform=$BUILDPLATFORM lukemathwalker/cargo-chef:latest-rust-latest AS chef
 WORKDIR /app
-RUN apt update && apt install lld clang -y
 
-FROM chef AS planner
+# Planner stage
+FROM --platform=$BUILDPLATFORM chef AS planner
 COPY . .
-# Compute a lock-like file for our project
 RUN cargo chef prepare --recipe-path recipe.json
 
-FROM chef AS builder
+#------------------ Build arm64
+
+FROM --platform=$BUILDPLATFORM chef AS builder-arm64
 COPY --from=planner /app/recipe.json recipe.json
-# Build our project dependencies, not our application!
+
+WORKDIR /app
+
+# Install dependencies for cross-compilation and protobuf
+RUN dpkg --add-architecture arm64 \
+    && apt-get update \
+    && apt-get install -y \
+    protobuf-compiler \
+    g++-aarch64-linux-gnu \
+    libc6-dev-arm64-cross \
+    libssl-dev:arm64 \
+    && rustup target add aarch64-unknown-linux-gnu \
+    && rustup toolchain install stable-aarch64-unknown-linux-gnu \
+    && rm -rf /var/lib/apt/lists/*
+
+# Build dependencies - this is the caching Docker layer!
+RUN CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc cargo chef cook --target=aarch64-unknown-linux-gnu --release --recipe-path recipe.json
+
+# Copy the source code
+COPY . /app
+ENV SQLX_OFFLINE true
+
+# Build application - this is the caching Docker layer!
+RUN CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc cargo build --target=aarch64-unknown-linux-gnu --release
+
+#----------------- Build amd64
+
+FROM --platform=$BUILDPLATFORM chef AS builder-amd64
+COPY --from=planner /app/recipe.json recipe.json
+WORKDIR /app
+
+# Copy the source code
+COPY . /app
+
 RUN cargo chef cook --release --recipe-path recipe.json
-# Up to this point, if our dependency tree stays the same,
-# all layers should be cached.
+
 COPY . .
 ENV SQLX_OFFLINE true
 
-# Build our project
-RUN cargo build --release --bin expenses-monitor-be
+RUN cargo build --release
 
-FROM debian:bookworm-slim AS runtime
+#------------------ Final arch stage
+
+FROM --platform=linux/arm64 debian:bookworm-slim AS runtime-arm64
 WORKDIR /app
 RUN apt-get update -y \
   && apt-get install -y --no-install-recommends openssl ca-certificates \
@@ -28,7 +63,23 @@ RUN apt-get update -y \
   && apt-get clean -y \
   && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/target/release/expenses-monitor-be expenses-monitor-be
+COPY --from=builder-arm64 /app/target/aarch64-unknown-linux-gnu/release/expenses-monitor-be expenses-monitor-be
 COPY configuration.yaml configuration.yaml
 ENV APP_ENVIRONMENT production
 ENTRYPOINT ["./expenses-monitor-be"]
+
+FROM --platform=linux/amd64 debian:bookworm-slim AS runtime-amd64
+WORKDIR /app
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  # Clean up
+  && apt-get autoremove -y \
+  && apt-get clean -y \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder-amd64 /app/target/release/expenses-monitor-be expenses-monitor-be
+COPY configuration.yaml configuration.yaml
+ENV APP_ENVIRONMENT production
+ENTRYPOINT ["./expenses-monitor-be"]
+
+FROM runtime-${TARGETARCH}
