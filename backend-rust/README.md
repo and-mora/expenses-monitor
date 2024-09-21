@@ -1,5 +1,6 @@
 # Backend
 
+Rust web service developed with Actix framework.
 ## Installation requirements
 
 refer to the [java backend README](../backend/README.md) for detailed information.
