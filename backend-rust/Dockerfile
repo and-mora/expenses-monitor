@@ -54,32 +54,30 @@ RUN cargo build --release
 
 #------------------ Final arch stage
 
-FROM --platform=linux/arm64 debian:bookworm-slim AS runtime-arm64
+FROM --platform=linux/arm64 ubuntu:noble-20240827.1 AS runtime-arm64
 WORKDIR /app
 RUN apt-get update -y \
   && apt-get install -y --no-install-recommends openssl ca-certificates \
   # Clean up
   && apt-get autoremove -y \
-  && apt-get clean -y \
-  && rm -rf /var/lib/apt/lists/*
+  && apt-get clean -y
 
 COPY --from=builder-arm64 /app/target/aarch64-unknown-linux-gnu/release/expenses-monitor-be expenses-monitor-be
-COPY configuration.yaml configuration.yaml
-ENV APP_ENVIRONMENT production
-ENTRYPOINT ["./expenses-monitor-be"]
 
-FROM --platform=linux/amd64 debian:bookworm-slim AS runtime-amd64
+FROM --platform=linux/amd64 ubuntu:noble-20240827.1 AS runtime-amd64
 WORKDIR /app
 RUN apt-get update -y \
   && apt-get install -y --no-install-recommends openssl ca-certificates \
   # Clean up
   && apt-get autoremove -y \
-  && apt-get clean -y \
-  && rm -rf /var/lib/apt/lists/*
+  && apt-get clean -y
 
 COPY --from=builder-amd64 /app/target/release/expenses-monitor-be expenses-monitor-be
+
+#---------- Runtime stage
+
+FROM runtime-${TARGETARCH}
+WORKDIR /app
 COPY configuration.yaml configuration.yaml
 ENV APP_ENVIRONMENT production
 ENTRYPOINT ["./expenses-monitor-be"]
-
-FROM runtime-${TARGETARCH}
