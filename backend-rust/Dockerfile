@@ -80,4 +80,5 @@ FROM runtime-${TARGETARCH}
 WORKDIR /app
 COPY configuration.yaml configuration.yaml
 ENV APP_ENVIRONMENT production
+EXPOSE 8080
 ENTRYPOINT ["./expenses-monitor-be"]
