@@ -150,6 +150,7 @@ jobs:
     with:
       version: ${{needs.SemanticVersioning.outputs.backend_rust_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.backend_rust_changed}}
+      folder: backend-rust
     secrets: inherit
 
   BackendRustDeployK8s:
