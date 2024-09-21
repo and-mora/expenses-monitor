@@ -312,3 +312,7 @@ grafana:
     #   requests:
     #     cpu: 50m
     #     memory: 50Mi
+
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false

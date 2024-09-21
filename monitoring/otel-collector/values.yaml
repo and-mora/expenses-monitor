@@ -6,7 +6,7 @@ presets:
     includeCollectorLogs: true
 
 image:
-  repository: "otel/opentelemetry-collector-k8s"
+  repository: "otel/opentelemetry-collector-contrib"
 
 config:
   exporters:
@@ -16,6 +16,8 @@ config:
         insecure: true
     otlphttp:
       endpoint: "http://loki-gateway.monitoring.svc.cluster.local/otlp"
+    prometheus:
+      endpoint: "0.0.0.0:9090"
   receivers:
     jaeger: null
     prometheus: null
@@ -27,15 +29,31 @@ config:
           - otlp
         exporters:
           - otlp
-      metrics: null
+      metrics:
+        receivers:
+          - otlp
+        exporters:
+          - prometheus
       logs:
         exporters:
           - otlphttp
 
+serviceMonitor:
+  enabled: true
+  metricsEndpoints:
+    - port: metrics
+
+ports:
+  metrics:
+    enabled: true
+    containerPort: 9090
+    servicePort: 9090
+    protocol: TCP
+
 resources:
   requests:
-    memory: '128Mi'
+    memory: '256Mi'
     cpu: '20m'
   limits:
-    memory: '128Mi'
+    memory: '256Mi'
     cpu: '100m'
