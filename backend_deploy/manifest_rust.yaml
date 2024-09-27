@@ -18,7 +18,7 @@ spec:
         app: backend-rust
     spec:
       containers:
-        - image: 'ghcr.io/and-mora/expenses-monitor:v0.2.0-backend-rust'
+        - image: 'ghcr.io/and-mora/expenses-monitor:v0.2.1-backend-rust'
           name: backend-rust
           env:
             - name: APP_DATABASE__HOST
@@ -36,6 +36,11 @@ spec:
                 secretKeyRef:
                   name: backend-db-credentials
                   key: postgres-username
+            - name: APP_OTLP__GRCP_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: OTEL_EXPORTER_OTLP_ENDPOINT
 #            - name: BASIC_AUTH_PASSWORD
 #              valueFrom:
 #                secretKeyRef:
