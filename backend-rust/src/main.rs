@@ -10,7 +10,12 @@ async fn main() -> Result<(), std::io::Error> {
     let configuration = get_configuration().expect("Failed to read configuration");
 
     // logger configuration
-    let subscriber = get_subscriber(configuration.application.name, configuration.application.log.level, std::io::stdout, configuration.otlp);
+    let subscriber = get_subscriber(
+        configuration.application.name,
+        configuration.application.log.level,
+        std::io::stdout,
+        configuration.otlp,
+    );
     init_subscriber(subscriber);
 
     // tpc configuration

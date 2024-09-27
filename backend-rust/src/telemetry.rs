@@ -1,3 +1,4 @@
+use crate::configuration::TelemetrySettings;
 use opentelemetry::trace::TracerProvider as _;
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::trace::TracerProvider;
@@ -8,7 +9,6 @@ use tracing_log::LogTracer;
 use tracing_subscriber::fmt::MakeWriter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::{EnvFilter, Registry};
-use crate::configuration::TelemetrySettings;
 
 /// Compose multiple layers into a `tracing`'s subscriber.
 ///
@@ -24,7 +24,7 @@ pub fn get_subscriber<Sink>(
     name: String,
     env_filter: String,
     sink: Sink,
-    otlp_settings: TelemetrySettings
+    otlp_settings: TelemetrySettings,
 ) -> impl Subscriber + Send + Sync
 where
     Sink: for<'a> MakeWriter<'a> + Send + Sync + 'static,

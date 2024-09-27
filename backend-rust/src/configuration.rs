@@ -5,7 +5,7 @@ use serde::Deserialize;
 pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
-    pub otlp: TelemetrySettings
+    pub otlp: TelemetrySettings,
 }
 
 #[derive(Deserialize)]
