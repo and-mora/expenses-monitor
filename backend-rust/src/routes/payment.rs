@@ -31,10 +31,10 @@ pub async fn create_payment(
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
     match insert_payment(payload.deref(), connection_pool.deref()).await {
-        Ok(_) => HttpResponse::Ok(),
+        Ok(_) => HttpResponse::Ok().await,
         Err(e) => {
             tracing::error!("Failed to execute query: {:?}", e);
-            HttpResponse::InternalServerError()
+            HttpResponse::InternalServerError().await
         }
     }
 }
@@ -77,10 +77,10 @@ pub async fn delete_payment(
     let payment_id = path.into_inner();
 
     match delete_payment_query(connection_pool.get_ref(), payment_id).await {
-        Ok(_) => HttpResponse::Ok(),
+        Ok(_) => HttpResponse::Ok().await,
         Err(e) => {
             tracing::error!("Failed to execute query: {:?}", e);
-            HttpResponse::InternalServerError()
+            HttpResponse::InternalServerError().await
         }
     }
 }
