@@ -5,11 +5,25 @@ use serde::Deserialize;
 pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
+    pub otlp: TelemetrySettings,
 }
 
 #[derive(Deserialize)]
 pub struct ApplicationSettings {
     pub port: u16,
+    pub name: String,
+    pub log: LogSettings,
+}
+
+#[derive(Deserialize)]
+pub struct LogSettings {
+    pub level: String,
+}
+
+#[derive(Deserialize)]
+pub struct TelemetrySettings {
+    pub grpc_endpoint: String,
+    pub service_name: String,
 }
 
 #[derive(Deserialize)]

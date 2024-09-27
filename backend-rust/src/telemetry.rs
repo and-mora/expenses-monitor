@@ -1,3 +1,7 @@
+use crate::configuration::TelemetrySettings;
+use opentelemetry::trace::TracerProvider as _;
+use opentelemetry_otlp::WithExportConfig;
+use opentelemetry_sdk::trace::TracerProvider;
 use tracing::subscriber::set_global_default;
 use tracing::Subscriber;
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
@@ -20,10 +24,26 @@ pub fn get_subscriber<Sink>(
     name: String,
     env_filter: String,
     sink: Sink,
+    otlp_settings: TelemetrySettings,
 ) -> impl Subscriber + Send + Sync
 where
     Sink: for<'a> MakeWriter<'a> + Send + Sync + 'static,
 {
+    let provider = TracerProvider::builder()
+        .with_batch_exporter(
+            opentelemetry_otlp::new_exporter()
+                .tonic()
+                .with_endpoint(otlp_settings.grpc_endpoint)
+                .build_span_exporter()
+                .unwrap(),
+            opentelemetry_sdk::runtime::Tokio,
+        )
+        .build();
+    let tracer = provider.tracer(otlp_settings.service_name);
+
+    // Create a tracing layer with the configured tracer
+    let telemetry = tracing_opentelemetry::layer().with_tracer(tracer);
+
     let env_filter =
         EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(env_filter));
     let formatting_layer = BunyanFormattingLayer::new(name, sink);
@@ -31,6 +51,7 @@ where
         .with(env_filter)
         .with(JsonStorageLayer)
         .with(formatting_layer)
+        .with(telemetry)
 }
 
 /// Register a subscriber as global default to process span data.
