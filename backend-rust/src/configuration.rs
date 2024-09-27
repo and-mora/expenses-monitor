@@ -11,7 +11,13 @@ pub struct Settings {
 #[derive(Deserialize)]
 pub struct ApplicationSettings {
     pub port: u16,
-    pub name: String
+    pub name: String,
+    pub log: LogSettings,
+}
+
+#[derive(Deserialize)]
+pub struct LogSettings {
+    pub level: String,
 }
 
 #[derive(Deserialize)]
