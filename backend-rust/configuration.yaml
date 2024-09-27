@@ -1,8 +1,12 @@
 application:
   port: 8080
+  name: expenses-monitor-be
 database:
   host: "localhost"
   port: 5432
   username: "postgres"
   password: "postgres"
   database_name: expenses-monitor
+otlp:
+  service_name: backend-rust # ensure this is equal to container name
+  grpc_endpoint: "http://localhost:4317"

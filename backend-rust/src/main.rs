@@ -7,11 +7,11 @@ use std::net::TcpListener;
 
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
-    // logger configuration
-    let subscriber = get_subscriber("expenses-monitor-be".into(), "info".into(), std::io::stdout);
-    init_subscriber(subscriber);
-
     let configuration = get_configuration().expect("Failed to read configuration");
+
+    // logger configuration
+    let subscriber = get_subscriber(configuration.application.name, "info".into(), std::io::stdout, configuration.otlp);
+    init_subscriber(subscriber);
 
     // tpc configuration
     let address = format!("0.0.0.0:{}", configuration.application.port);
