@@ -1,10 +1,10 @@
-use std::time::Duration;
 use crate::configuration::TelemetrySettings;
 use opentelemetry::trace::TracerProvider as _;
 use opentelemetry::KeyValue;
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::trace::{RandomIdGenerator, Sampler};
 use opentelemetry_sdk::{trace, Resource};
+use std::time::Duration;
 use tracing::subscriber::set_global_default;
 use tracing::Subscriber;
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
@@ -53,7 +53,8 @@ where
                     otlp_settings.service_name.clone(),
                 )])),
         )
-        .install_batch(opentelemetry_sdk::runtime::Tokio).unwrap();
+        .install_batch(opentelemetry_sdk::runtime::Tokio)
+        .unwrap();
     let tracer = provider.tracer(otlp_settings.service_name);
 
     // Create a tracing layer with the configured tracer
