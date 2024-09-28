@@ -28,7 +28,7 @@ pub fn get_subscriber<Sink>(
     name: String,
     env_filter: String,
     sink: Sink,
-    otlp_settings: TelemetrySettings,
+    otlp_settings: &TelemetrySettings,
 ) -> impl Subscriber + Send + Sync
 where
     Sink: for<'a> MakeWriter<'a> + Send + Sync + 'static,
@@ -61,31 +61,6 @@ where
     // Create a tracing layer with the configured tracer
     let telemetry = tracing_opentelemetry::layer().with_tracer(tracer);
 
-    let export_config = ExportConfig {
-        endpoint: otlp_settings.grpc_endpoint,
-        timeout: Duration::from_secs(3),
-        protocol: Protocol::Grpc,
-    };
-
-    let meter = opentelemetry_otlp::new_pipeline()
-        .metrics(opentelemetry_sdk::runtime::Tokio)
-        .with_exporter(
-            opentelemetry_otlp::new_exporter()
-                .tonic()
-                .with_export_config(export_config),
-        )
-        .with_resource(Resource::new(vec![KeyValue::new(
-            "service.name",
-            otlp_settings.service_name,
-        )]))
-        .with_period(Duration::from_secs(3))
-        .with_timeout(Duration::from_secs(10))
-        .with_aggregation_selector(DefaultAggregationSelector::new())
-        .with_temporality_selector(DefaultTemporalitySelector::new())
-        .build()
-        .unwrap();
-    global::set_meter_provider(meter);
-
     let env_filter =
         EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(env_filter));
     let formatting_layer = BunyanFormattingLayer::new(name, sink);
@@ -102,4 +77,31 @@ where
 pub fn init_subscriber(subscriber: impl Subscriber + Send + Sync) {
     LogTracer::init().expect("Failed to set logger");
     set_global_default(subscriber).expect("Failed to set subscriber");
+}
+
+pub fn init_meter(otlp_settings: &TelemetrySettings) {
+    let export_config = ExportConfig {
+        endpoint: otlp_settings.grpc_endpoint.clone(),
+        timeout: Duration::from_secs(3),
+        protocol: Protocol::Grpc,
+    };
+
+    let meter = opentelemetry_otlp::new_pipeline()
+        .metrics(opentelemetry_sdk::runtime::Tokio)
+        .with_exporter(
+            opentelemetry_otlp::new_exporter()
+                .tonic()
+                .with_export_config(export_config),
+        )
+        .with_resource(Resource::new(vec![KeyValue::new(
+            "service.name",
+            otlp_settings.service_name.clone(),
+        )]))
+        .with_period(Duration::from_secs(3))
+        .with_timeout(Duration::from_secs(10))
+        .with_aggregation_selector(DefaultAggregationSelector::new())
+        .with_temporality_selector(DefaultTemporalitySelector::new())
+        .build()
+        .unwrap();
+    global::set_meter_provider(meter);
 }
