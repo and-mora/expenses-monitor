@@ -1,7 +1,10 @@
 use crate::configuration::TelemetrySettings;
 use opentelemetry::trace::TracerProvider as _;
+use opentelemetry::KeyValue;
 use opentelemetry_otlp::WithExportConfig;
-use opentelemetry_sdk::trace::TracerProvider;
+use opentelemetry_sdk::trace::{RandomIdGenerator, Sampler};
+use opentelemetry_sdk::{trace, Resource};
+use std::time::Duration;
 use tracing::subscriber::set_global_default;
 use tracing::Subscriber;
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
@@ -29,16 +32,29 @@ pub fn get_subscriber<Sink>(
 where
     Sink: for<'a> MakeWriter<'a> + Send + Sync + 'static,
 {
-    let provider = TracerProvider::builder()
-        .with_batch_exporter(
+    // opentelemetry instrumentation
+    let provider = opentelemetry_otlp::new_pipeline()
+        .tracing()
+        .with_exporter(
             opentelemetry_otlp::new_exporter()
                 .tonic()
                 .with_endpoint(otlp_settings.grpc_endpoint)
-                .build_span_exporter()
-                .unwrap(),
-            opentelemetry_sdk::runtime::Tokio,
+                .with_timeout(Duration::from_secs(3)),
         )
-        .build();
+        .with_trace_config(
+            trace::Config::default()
+                .with_sampler(Sampler::AlwaysOn)
+                .with_id_generator(RandomIdGenerator::default())
+                .with_max_events_per_span(64)
+                .with_max_attributes_per_span(16)
+                .with_max_events_per_span(16)
+                .with_resource(Resource::new(vec![KeyValue::new(
+                    opentelemetry_semantic_conventions::attribute::SERVICE_NAME,
+                    otlp_settings.service_name.clone(),
+                )])),
+        )
+        .install_batch(opentelemetry_sdk::runtime::Tokio)
+        .unwrap();
     let tracer = provider.tracer(otlp_settings.service_name);
 
     // Create a tracing layer with the configured tracer
