@@ -77,6 +77,7 @@ jobs:
             wget -O andamento_generale_dashboard.json https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/andamento_generale_dashboard.json
             wget -O mese_corrente_dashboard.json https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/mese_corrente_dashboard.json
             wget -O ticket_welfare_dashboard.json https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/ticket_welfare_dashboard.json
+            wget -O viaggi_dashboard.json https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/viaggi_dashboard.json
             wget -O container_metrics.json https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/metrics/container_metrics.json
             wget -O node_metrics.json https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/metrics/node_metrics.json
             kubectl create configmap monitoring-grafana-dashboard-and-gen --from-file andamento_generale_dashboard.json -n monitoring -o yaml --dry-run=client | kubectl apply -f -
@@ -88,6 +89,9 @@ jobs:
             kubectl create configmap monitoring-grafana-dashboard-ticket-welfare --from-file ticket_welfare_dashboard.json -n monitoring -o yaml --dry-run=client | kubectl apply -f -
             kubectl label configmap monitoring-grafana-dashboard-ticket-welfare grafana_dashboard=1 -n monitoring
             kubectl annotate configmap monitoring-grafana-dashboard-ticket-welfare grafana_folder='expenses-monitor' -n monitoring
+            kubectl create configmap monitoring-grafana-dashboard-viaggi --from-file viaggi_dashboard.json -n monitoring -o yaml --dry-run=client | kubectl apply -f -
+            kubectl label configmap monitoring-grafana-dashboard-viaggi grafana_dashboard=1 -n monitoring
+            kubectl annotate configmap monitoring-grafana-dashboard-viaggi grafana_folder='expenses-monitor' -n monitoring
             kubectl create configmap monitoring-grafana-dashboard-node-metrics --from-file node_metrics.json -o yaml -n monitoring --dry-run=client | kubectl apply -f -
             kubectl label configmap monitoring-grafana-dashboard-node-metrics grafana_dashboard=1 -n monitoring
             kubectl annotate configmap monitoring-grafana-dashboard-node-metrics grafana_folder='metrics' -n monitoring
