@@ -1,7 +1,9 @@
+use actix_web_opentelemetry::PrometheusMetricsHandler;
 use expenses_monitor_be::configuration::{get_configuration, DatabaseSettings, TelemetrySettings};
 use expenses_monitor_be::startup::run;
 use expenses_monitor_be::telemetry::{get_subscriber, init_subscriber};
 use once_cell::sync::Lazy;
+use prometheus::Registry;
 use rstest::rstest;
 use secrecy::ExposeSecret;
 use sqlx::{Executor, PgPool};
@@ -24,7 +26,7 @@ static TRACING: Lazy<()> = Lazy::new(|| {
             subscriber_name,
             default_filter_level,
             std::io::stdout,
-            otlp_settings,
+            &otlp_settings,
         );
         init_subscriber(subscriber);
     } else {
@@ -32,7 +34,7 @@ static TRACING: Lazy<()> = Lazy::new(|| {
             subscriber_name,
             default_filter_level,
             std::io::sink,
-            otlp_settings,
+            &otlp_settings,
         );
         init_subscriber(subscriber);
     };
@@ -55,7 +57,12 @@ async fn spawn_app() -> TestApp {
     configuration.database.database_name = Uuid::new_v4().to_string();
     let connection_pool = configure_database(&configuration.database).await;
 
-    let server = run(listener, connection_pool.clone()).expect("Failed to bind address");
+    let server = run(
+        listener,
+        connection_pool.clone(),
+        PrometheusMetricsHandler::new(Registry::default()),
+    )
+    .expect("Failed to bind address");
     let _ = tokio::spawn(server);
     TestApp {
         address,
@@ -198,4 +205,22 @@ async fn create_payment_returns_a_400_when_data_is_missing(#[case] invalid_body:
         "The API did not fail with 400 Bad Request when the payload was {}.",
         invalid_body
     );
+}
+
+#[tokio::test]
+async fn metrics_are_exposed() {
+    // Arrange
+    let app = spawn_app().await;
+    let client = reqwest::Client::new();
+
+    // Act
+    let response = client
+        // Use the returned application address
+        .get(&format!("{}/metrics", &app.address))
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    // Assert
+    assert!(response.status().is_success());
 }
