@@ -971,7 +971,7 @@ dependencies = [
 
 [[package]]
 name = "expenses-monitor-be"
-version = "0.2.3"
+version = "0.3.0"
 dependencies = [
  "actix-web",
  "actix-web-opentelemetry",
