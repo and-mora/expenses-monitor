@@ -1,7 +1,9 @@
 use crate::configuration::TelemetrySettings;
+use actix_web_opentelemetry::PrometheusMetricsHandler;
 use opentelemetry::trace::TracerProvider;
-use opentelemetry::KeyValue;
+use opentelemetry::{global, KeyValue};
 use opentelemetry_otlp::WithExportConfig;
+use opentelemetry_sdk::metrics::SdkMeterProvider;
 use opentelemetry_sdk::trace::{RandomIdGenerator, Sampler};
 use opentelemetry_sdk::{trace, Resource};
 use std::time::Duration;
@@ -78,6 +80,20 @@ pub fn init_subscriber(subscriber: impl Subscriber + Send + Sync) {
     set_global_default(subscriber).expect("Failed to set subscriber");
 }
 
-// pub fn init_meter(otlp_settings: &TelemetrySettings) {
-//
-// }
+pub fn init_meter(otlp_settings: &TelemetrySettings) -> PrometheusMetricsHandler {
+    let registry = prometheus::Registry::new();
+    let exporter = opentelemetry_prometheus::exporter()
+        .with_registry(registry.clone())
+        .build()
+        .unwrap();
+    let provider = SdkMeterProvider::builder()
+        .with_reader(exporter)
+        .with_resource(Resource::new([KeyValue::new(
+            "service.name",
+            otlp_settings.service_name.clone(),
+        )]))
+        .build();
+    global::set_meter_provider(provider.clone());
+
+    PrometheusMetricsHandler::new(registry)
+}
