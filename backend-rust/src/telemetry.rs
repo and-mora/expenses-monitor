@@ -88,7 +88,7 @@ pub fn init_meter(otlp_settings: &TelemetrySettings) -> PrometheusMetricsHandler
         .unwrap();
     let provider = SdkMeterProvider::builder()
         .with_reader(exporter)
-        .with_resource(Resource::new([KeyValue::new(
+        .with_resource(Resource::new(vec![KeyValue::new(
             "service.name",
             otlp_settings.service_name.clone(),
         )]))
