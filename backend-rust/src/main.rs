@@ -1,6 +1,6 @@
 use expenses_monitor_be::configuration::get_configuration;
 use expenses_monitor_be::startup::run;
-use expenses_monitor_be::telemetry::{get_subscriber, init_meter, init_subscriber};
+use expenses_monitor_be::telemetry::{get_subscriber, init_subscriber};
 use secrecy::ExposeSecret;
 use sqlx::PgPool;
 use std::net::TcpListener;
@@ -17,7 +17,7 @@ async fn main() -> Result<(), std::io::Error> {
         &configuration.otlp,
     );
     init_subscriber(subscriber);
-    init_meter(&configuration.otlp);
+    // init_meter(&configuration.otlp);
 
     // tpc configuration
     let address = format!("0.0.0.0:{}", configuration.application.port);
