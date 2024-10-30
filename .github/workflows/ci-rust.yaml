@@ -4,11 +4,11 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - 'backend_rust/**'
+      - 'backend-rust/**'
   pull_request:
     types: [ opened, synchronize, reopened ]
     paths:
-      - 'backend_rust/**'
+      - 'backend-rust/**'
 
 env:
   CARGO_TERM_COLOR: always
@@ -29,12 +29,12 @@ jobs:
       # Label used to access the service container
       postgres:
         # Docker Hub image 
-        image: postgres:14
+        image: postgres:16
         # Environment variables scoped only for the `postgres` element
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: expenses-monitor
         # When you map ports using the ports keyword, GitHub uses the --publish command to publish the container’s ports to the Docker host
         # Opens tcp port 5432 on the host and service container
         ports:
@@ -72,10 +72,12 @@ jobs:
         run: sudo apt-get update && sudo apt-get install postgresql-client -y
 
       - name: Migrate database
-        run: SKIP_DOCKER=true ./scripts/init_db.sh
+        run: |
+          cd backend-rust
+          SKIP_DOCKER=true ./scripts/init_db.sh
 
       - name: Run tests
-        run: cargo test
+        run: cargo test --manifest-path backend-rust/Cargo.toml
 
   # `fmt` container job
   fmt:
@@ -88,7 +90,7 @@ jobs:
           # Specific to dtolnay/rust-toolchain: Comma-separated string of additional components to install
           components: rustfmt
       - name: Enforce formatting
-        run: cargo fmt --check
+        run: cargo fmt --check --manifest-path backend-rust/Cargo.toml
 
   # `clippy` container job
   clippy:
@@ -96,10 +98,10 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:14
+        image: postgres:16
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
+          POSTGRES_PASSWORD: postgres
           POSTGRES_DB: postgres
         ports:
           - 5432:5432
@@ -121,9 +123,11 @@ jobs:
       - name: Install postgresql-client
         run: sudo apt-get update && sudo apt-get install postgresql-client -y
       - name: Migrate database
-        run: SKIP_DOCKER=true ./scripts/init_db.sh
+        run: |
+          cd backend-rust
+          SKIP_DOCKER=true ./scripts/init_db.sh
       - name: Linting
-        run: cargo clippy -- -D warnings
+        run: cargo clippy --manifest-path backend-rust/Cargo.toml -- -D warnings
 
   # `coverage` container job
   coverage:
@@ -131,10 +135,10 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:14
+        image: postgres:16
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
+          POSTGRES_PASSWORD: postgres
           POSTGRES_DB: postgres
         ports:
           - 5432:5432
@@ -155,6 +159,8 @@ jobs:
           --no-default-features
           --locked
       - name: Migrate database
-        run: SKIP_DOCKER=true ./scripts/init_db.sh
+        run: |
+          cd backend-rust
+          SKIP_DOCKER=true ./scripts/init_db.sh
       - name: Generate code coverage
-        run: cargo install cargo-tarpaulin && cargo tarpaulin --verbose --workspace
+        run: cargo install cargo-tarpaulin && cargo tarpaulin --verbose --workspace --manifest-path backend-rust/Cargo.toml

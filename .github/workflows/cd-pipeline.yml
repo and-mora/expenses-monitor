@@ -50,8 +50,8 @@ jobs:
         id: backend-rust-versioning
         uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
         with:
-          change_path: "backend_rust"
-          namespace: backend_rust
+          change_path: "backend-rust"
+          namespace: backend-rust
           major_pattern: "breaking"
           minor_pattern: "feat"
 
@@ -145,16 +145,16 @@ jobs:
       enabled: ${{needs.SemanticVersioning.outputs.backend_rust_changed}}
 
   BackendRustBuildAndPush:
-    needs: [ SemanticVersioning, BackendRelease ]
+    needs: [ SemanticVersioning, BackendRustRelease ]
     uses: ./.github/workflows/build-push-workflow.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.backend_rust_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.backend_rust_changed}}
-      folder: backend_rust
+      folder: backend-rust
     secrets: inherit
 
   BackendRustDeployK8s:
-    needs: [ BackendBuildAndPush ]
+    needs: [ BackendRustBuildAndPush ]
     uses: ./.github/workflows/deploy_backend_rust.yml
     secrets: inherit
 

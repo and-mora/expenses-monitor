@@ -7,10 +7,6 @@ on:
         required: false
         type: string
         default: true
-      version:
-        required: true
-        description: 'image tag to deploy'
-        type: string
   workflow_call:
     inputs:
       version:

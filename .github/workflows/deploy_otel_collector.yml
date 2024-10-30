@@ -1,4 +1,4 @@
-name: Deploy Tempo
+name: Deploy Otel Collector
 
 on:
   workflow_dispatch:
@@ -28,8 +28,9 @@ jobs:
           port: ${{ secrets.VM_PORT }}
           fingerprint: ${{ secrets.HOST_FINGERPRINT }}
           script: |
-            mkdir -p expenses-monitor/monitoring/tempo && cd expenses-monitor/monitoring/tempo
-            wget -O Chart.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/tempo/Chart.yaml
-            wget -O values.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/tempo/values.yaml
+            mkdir -p expenses-monitor/monitoring/otel-collector && cd expenses-monitor/monitoring/otel-collector
+            wget -O values.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/otel-collector/values.yaml
+            wget -O Chart.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/otel-collector/Chart.yaml
+            helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
             helm dependency build
-            helm upgrade --install tempo charts/* -f values.yaml --wait --timeout 300s -n monitoring
+            helm upgrade --install otel-collector charts/* -f values.yaml --wait --timeout 300s -n monitoring
