@@ -121,7 +121,7 @@ pub async fn get_categories(connection_pool: web::Data<PgPool>) -> impl Responde
     skip(connection_pool)
 )]
 async fn get_categories_from_db(connection_pool: &PgPool) -> Result<Vec<String>, Error> {
-    let categories = sqlx::query!(r#"select distinct category from expenses.payments"#)
+    let categories = sqlx::query!("select distinct category from expenses.payments")
         .fetch_all(connection_pool)
         .await
         .map_err(|e| {
