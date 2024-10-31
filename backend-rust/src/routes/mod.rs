@@ -1,7 +1,7 @@
+mod greet;
 mod health_check;
 mod payment;
-mod greet;
 
+pub use greet::*;
 pub use health_check::*;
 pub use payment::*;
-pub use greet::*;
