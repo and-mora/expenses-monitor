@@ -101,3 +101,36 @@ async fn delete_payment_query(connection_pool: &PgPool, payment_id: Uuid) -> Res
         })?;
     Ok(())
 }
+
+/*
+ categories
+*/
+#[tracing::instrument(name = "Retrieve all categories", skip(connection_pool))]
+pub async fn get_categories(connection_pool: web::Data<PgPool>) -> impl Responder {
+    match get_categories_from_db(connection_pool.deref()).await {
+        Ok(categories) => HttpResponse::Ok().json(categories),
+        Err(e) => {
+            tracing::error!("Failed to execute query: {:?}", e);
+            HttpResponse::InternalServerError().finish()
+        }
+    }
+}
+
+#[tracing::instrument(
+    name = "Retrieving all categories from database",
+    skip(connection_pool)
+)]
+async fn get_categories_from_db(connection_pool: &PgPool) -> Result<Vec<String>, Error> {
+    let categories = sqlx::query!(r#"select distinct category from expenses.payments"#)
+        .fetch_all(connection_pool)
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to execute query: {:?}", e);
+            e
+        })?
+        .into_iter()
+        .map(|cat| cat.category.unwrap())
+        .collect();
+
+    Ok(categories)
+}
