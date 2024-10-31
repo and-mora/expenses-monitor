@@ -1,4 +1,4 @@
-use crate::routes::{create_payment, delete_payment, get_categories, health_check};
+use crate::routes::{create_payment, delete_payment, get_categories, greet, health_check};
 use actix_web::dev::Server;
 use actix_web::{web, App, HttpServer};
 use actix_web_opentelemetry::{PrometheusMetricsHandler, RequestMetrics};
@@ -20,6 +20,7 @@ pub fn run(
             .wrap(TracingLogger::default())
             .route("/health", web::get().to(health_check))
             .route("/api/payment/categories", web::get().to(get_categories))
+            .route("/greet", web::get().to(greet))
             .route("/api/payment", web::post().to(create_payment))
             .route("/api/payment/{id}", web::delete().to(delete_payment))
             .app_data(connection_pool.clone())
