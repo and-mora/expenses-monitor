@@ -1143,8 +1143,8 @@
     "list": []
   },
   "time": {
-    "from": "now-1M/M",
-    "to": "now-1M/M"
+    "from": "now/M",
+    "to": "now/M"
   },
   "timepicker": {
     "hidden": false
@@ -1152,6 +1152,6 @@
   "timezone": "",
   "title": "Monitoraggio mese corrente",
   "uid": "d0a30598-95a5-4098-89cc-435d965df315",
-  "version": 1,
+  "version": 15,
   "weekStart": "monday"
 }
