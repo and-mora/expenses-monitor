@@ -34,7 +34,8 @@ pub async fn create_payment(
     let payment = Payment {
         description: payload.0.description,
         merchant_name: payload.0.merchant_name,
-        category: PaymentCategory::parse(payload.0.category),
+        category: PaymentCategory::parse(payload.0.category)
+            .map_err(|err| HttpResponse::BadRequest().body(""))?,
         amount_in_cents: payload.0.amount_in_cents,
         accounting_date: payload.0.accounting_date,
     };
