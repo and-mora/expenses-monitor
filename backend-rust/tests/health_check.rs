@@ -181,6 +181,17 @@ async fn create_payment_returns_a_200() {
 }
 "#
 )]
+#[case(
+    r#"
+{
+    "description": "test",
+    "category": "",
+    "amountInCents": -100,
+    "merchantName": "Market",
+    "accountingDate": "2023-11-13T00:00:00.000"
+}
+"#
+)]
 #[case("")]
 #[tokio::test]
 async fn create_payment_returns_a_400_when_data_is_missing(#[case] invalid_body: String) {
