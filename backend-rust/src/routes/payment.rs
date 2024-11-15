@@ -4,9 +4,10 @@ use serde::Deserialize;
 use sqlx::{Error, PgPool};
 use std::ops::Deref;
 use uuid::Uuid;
+use crate::domain::{Payment, PaymentCategory};
 
 #[derive(Deserialize)]
-pub struct Payment {
+pub struct PaymentDto {
     #[serde(skip_serializing_if = "Option::is_none")]
     description: String,
     category: String,
@@ -27,10 +28,18 @@ pub struct Payment {
     )
 )]
 pub async fn create_payment(
-    payload: web::Json<Payment>,
+    payload: web::Json<PaymentDto>,
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
-    match insert_payment(payload.deref(), connection_pool.deref()).await {
+
+    let payment = Payment {
+        description: payload.0.description,
+        merchant_name: payload.0.merchant_name,
+        category: PaymentCategory::parse(payload.0.category),
+        amount_in_cents: payload.0.amount_in_cents,
+        accounting_date: payload.0.accounting_date,
+    };
+    match insert_payment(&payment, connection_pool.deref()).await {
         Ok(_) => HttpResponse::Ok().await,
         Err(e) => {
             tracing::error!("Failed to execute query: {:?}", e);
@@ -41,16 +50,16 @@ pub async fn create_payment(
 
 #[tracing::instrument(
     name = "Inserting a new payment in the database",
-    skip(payload, connection_pool)
+    skip(payment, connection_pool)
 )]
-async fn insert_payment(payload: &Payment, connection_pool: &PgPool) -> Result<(), Error> {
+async fn insert_payment(payment: &Payment, connection_pool: &PgPool) -> Result<(), Error> {
     sqlx::query!(
         "insert into expenses.payments (category, description, merchant_name, accounting_date, amount) values ($1, $2, $3, $4, $5)",
-        payload.category,
-        payload.description,
-        payload.merchant_name,
-        payload.accounting_date,
-        payload.amount_in_cents
+        payment.category.as_ref(),
+        payment.description,
+        payment.merchant_name,
+        payment.accounting_date,
+        payment.amount_in_cents
     )
         .execute(connection_pool)
         .await
