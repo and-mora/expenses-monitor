@@ -41,6 +41,7 @@ secrecy = { version = "0.10.2", features = ["serde"] }
 actix-web-opentelemetry = { version = "0.19.0", features = ["metrics", "opentelemetry-prometheus", "metrics-prometheus"] }
 prometheus = "0.13.4"
 opentelemetry-prometheus = { version = "0.17.0" }
+unicode-segmentation = "1.11.0"
 
 # Using table-like toml syntax to avoid a super-long line!
 [dependencies.sqlx]
