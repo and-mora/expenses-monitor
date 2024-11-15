@@ -1,10 +1,10 @@
+use crate::domain::{Payment, PaymentCategory};
 use actix_web::{web, HttpResponse, Responder};
 use chrono::NaiveDateTime;
 use serde::Deserialize;
 use sqlx::{Error, PgPool};
 use std::ops::Deref;
 use uuid::Uuid;
-use crate::domain::{Payment, PaymentCategory};
 
 #[derive(Deserialize)]
 pub struct PaymentDto {
@@ -31,7 +31,6 @@ pub async fn create_payment(
     payload: web::Json<PaymentDto>,
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
-
     let payment = Payment {
         description: payload.0.description,
         merchant_name: payload.0.merchant_name,
