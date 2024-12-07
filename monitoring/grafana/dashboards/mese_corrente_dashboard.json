@@ -815,7 +815,23 @@
           "id": "joinByField",
           "options": {
             "byField": "category",
-            "mode": "inner"
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "config": {
+                  "id": "isNull",
+                  "options": {}
+                },
+                "fieldName": "spesa_current"
+              }
+            ],
+            "match": "any",
+            "type": "exclude"
           }
         },
         {
@@ -858,6 +874,20 @@
                 "spesa_current"
               ],
               "reducer": "diffperc"
+            }
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "category",
+                "spesa_current",
+                "Difference percent PM",
+                "Difference percent 3PM",
+                "Difference percent LY"
+              ]
             }
           }
         }
@@ -1152,6 +1182,6 @@
   "timezone": "",
   "title": "Monitoraggio mese corrente",
   "uid": "d0a30598-95a5-4098-89cc-435d965df315",
-  "version": 15,
+  "version": 2,
   "weekStart": "monday"
 }
