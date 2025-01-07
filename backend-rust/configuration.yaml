@@ -11,4 +11,4 @@ database:
   database_name: expenses-monitor
 otlp:
   service_name: backend-rust # ensure this is equal to container name
-  grpc_endpoint: "http://localhost:4317"
+  grpc_endpoint: "http://localhost:4315"

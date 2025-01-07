@@ -975,6 +975,7 @@ version = "0.5.1"
 dependencies = [
  "actix-web",
  "actix-web-opentelemetry",
+ "anyhow",
  "chrono",
  "config",
  "once_cell",
@@ -989,6 +990,7 @@ dependencies = [
  "secrecy",
  "serde",
  "sqlx",
+ "thiserror",
  "tokio",
  "tracing",
  "tracing-actix-web",

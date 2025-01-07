@@ -7,6 +7,7 @@ use opentelemetry_sdk::metrics::{Aggregation, Instrument, SdkMeterProvider, Stre
 use opentelemetry_sdk::trace::{RandomIdGenerator, Sampler};
 use opentelemetry_sdk::{trace, Resource};
 use std::time::Duration;
+use tokio::task::JoinHandle;
 use tracing::subscriber::set_global_default;
 use tracing::Subscriber;
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
@@ -109,4 +110,13 @@ pub fn init_meter(otlp_settings: &TelemetrySettings) -> PrometheusMetricsHandler
     global::set_meter_provider(provider.clone());
 
     PrometheusMetricsHandler::new(registry)
+}
+
+pub fn spawn_blocking_with_tracing<F, R>(f: F) -> JoinHandle<R>
+where
+    F: FnOnce() -> R + Send + 'static,
+    R: Send + 'static,
+{
+    let current_span = tracing::Span::current();
+    tokio::task::spawn_blocking(move || current_span.in_scope(f))
 }

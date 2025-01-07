@@ -261,3 +261,22 @@ async fn when_get_categories_then_ok() {
     assert!(response.status().is_success());
     assert_ne!(response.content_length().unwrap(), 0);
 }
+
+#[tokio::test]
+async fn login_endpoint_success() {
+    // Arrange
+    let app = spawn_app().await;
+    let client = reqwest::Client::new();
+
+    // Act
+    let response = client
+        // Use the returned application address
+        .get(&format!("{}/api/login", &app.address))
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    // Assert
+    assert!(response.status().is_success());
+    assert_ne!(response.content_length().unwrap(), 0);
+}
