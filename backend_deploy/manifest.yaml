@@ -19,7 +19,7 @@ spec:
         app: backend
     spec:
       containers:
-        - image: 'ghcr.io/and-mora/expenses-monitor:v0.9.4-backend'
+        - image: 'ghcr.io/and-mora/expenses-monitor:v0.9.5-backend'
           name: backend-java
           env:
             - name: DB_CONNECTION_URI
@@ -109,7 +109,6 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-            runAsNonRoot: true
       automountServiceAccountToken: false
 
 ---
