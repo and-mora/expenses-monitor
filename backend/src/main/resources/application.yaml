@@ -7,7 +7,7 @@ spring:
     pool.validation-query: SELECT 1
   liquibase:
     change-log: db/changelog/db.changelog-master.xml
-    url: ${DB_CONNECTION_URI:jdbc:postgresql://localhost:5432/postgres}
+    url: ${DB_CONNECTION_URI_JDBC:jdbc:postgresql://localhost:5432/postgres}
     user: ${DB_BACKEND_USER:postgres}
     password: ${DB_BACKEND_PASSWORD:postgres}
 
