@@ -16,7 +16,6 @@ on:
         default: 'backend'
         type: choice
         options:
-          - grafana
           - backend
           - frontend
           - backend-rust
