@@ -27,6 +27,11 @@ spec:
                 secretKeyRef:
                   name: db-connection-string
                   key: connection-string
+            - name: DB_CONNECTION_URI_JDBC
+              valueFrom:
+                secretKeyRef:
+                  name: db-connection-string-jdbc
+                  key: connection-string
             - name: DB_BACKEND_PASSWORD
               valueFrom:
                 secretKeyRef:
