@@ -1,12 +1,19 @@
 plugins {
 	id 'org.springframework.boot' version '3.3.1'
 	id 'io.spring.dependency-management' version '1.1.4'
+	id 'org.liquibase.gradle' version '2.2.0'
+	id 'application'
 	id 'java'
 }
 
 group = 'it.andmora.expensesmonitor'
 version = '0.9.2'
-sourceCompatibility = '21'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
 
 configurations {
 	compileOnly {
@@ -30,7 +37,11 @@ dependencies {
 	implementation group: 'org.postgresql', name: 'r2dbc-postgresql', version: '1.0.5.RELEASE'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 	implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webflux-ui', version: '2.5.0'
+
+	runtimeOnly 'org.postgresql:postgresql'
+	implementation 'org.liquibase:liquibase-core:4.24.0'
 
 	testImplementation 'org.springframework.security:spring-security-test'
 	compileOnly 'org.projectlombok:lombok'
@@ -43,4 +54,10 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+application {
+	applicationDefaultJvmArgs = [
+			"--javaagent:/app/opentelemetry-javaagent.jar",
+	]
 }

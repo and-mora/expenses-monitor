@@ -5,6 +5,11 @@ spring:
     username: ${DB_BACKEND_USER:postgres}
     password: ${DB_BACKEND_PASSWORD:postgres}
     pool.validation-query: SELECT 1
+  liquibase:
+    change-log: db/changelog/db.changelog-master.xml
+    url: ${DB_CONNECTION_URI:jdbc:postgresql://localhost:5432/postgres}
+    user: ${DB_BACKEND_USER:postgres}
+    password: ${DB_BACKEND_PASSWORD:postgres}
 
 basic-auth:
   username: ${BASIC_AUTH_USERNAME:user}
