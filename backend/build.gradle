@@ -2,6 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '3.3.1'
 	id 'io.spring.dependency-management' version '1.1.4'
 	id 'org.liquibase.gradle' version '2.2.0'
+	id 'application'
 	id 'java'
 }
 
@@ -55,6 +56,8 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
-jvmArgs = [
-		"--javaagent:/app/opentelemetry-javaagent.jar",
-]
+application {
+	applicationDefaultJvmArgs = [
+			"--javaagent:/app/opentelemetry-javaagent.jar",
+	]
+}
