@@ -3,11 +3,6 @@ FROM gradle:jdk21-alpine@sha256:70c7191c382fc7f956cacd326ded88bf69a01f707aa2556a
 WORKDIR /app
 COPY . .
 
-RUN adduser -D 472
-
 ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.7.0/opentelemetry-javaagent.jar /app/opentelemetry-javaagent.jar
-
-RUN chown -R 472:472 /app
-USER 472
 
 ENTRYPOINT ["./gradlew", "bootRun"]
