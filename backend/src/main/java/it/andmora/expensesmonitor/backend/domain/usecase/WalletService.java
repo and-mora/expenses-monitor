@@ -18,7 +18,6 @@ public class WalletService {
 
   public Mono<Wallet> createWallet(String name) {
     return walletDao.saveWallet(Wallet.builder()
-        .id(UUID.randomUUID())
         .name(name)
         .build());
   }
