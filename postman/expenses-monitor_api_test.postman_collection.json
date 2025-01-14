@@ -165,14 +165,14 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"var paymentId;",
+							"var walletId;",
 							"pm.test('03. Add a wallet', () => {",
 							"    pm.response.to.have.status(200);",
 							"    // retrieve wallet id",
 							"    walletId = pm.response.json().id;",
 							"});",
 							"",
-							"_.deletePayment(pm, walletId);"
+							"_.deleteWallet(pm, walletId);"
 						],
 						"type": "text/javascript",
 						"packages": {}
@@ -218,7 +218,7 @@
 					"    });",
 					"};",
 					"",
-					"Object.prototype.deleteWallet = (that, paymentId) => {",
+					"Object.prototype.deleteWallet = (that, walletId) => {",
 					"    return that.sendRequest({",
 					"        url: `${pm.environment.get('host_name')}/api/wallets/${walletId}`,",
 					"        method: 'DELETE'",
