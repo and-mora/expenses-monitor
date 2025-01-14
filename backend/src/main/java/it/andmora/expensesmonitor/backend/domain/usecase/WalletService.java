@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 @Service
 public class WalletService {
 
-  private WalletDao walletDao;
+  private final WalletDao walletDao;
 
   public Mono<Wallet> createWallet(String name) {
     return walletDao.saveWallet(Wallet.builder()
