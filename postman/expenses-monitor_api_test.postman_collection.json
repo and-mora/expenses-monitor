@@ -157,6 +157,52 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "03. Add a wallet",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var paymentId;",
+							"pm.test('03. Add a wallet', () => {",
+							"    pm.response.to.have.status(200);",
+							"    // retrieve wallet id",
+							"    walletId = pm.response.json().id;",
+							"});",
+							"",
+							"_.deletePayment(pm, walletId);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"testwallet\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host_name}}/api/wallets",
+					"host": [
+						"{{host_name}}"
+					],
+					"path": [
+						"api",
+						"wallets"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
@@ -168,6 +214,13 @@
 					"Object.prototype.deletePayment = (that, paymentId) => {",
 					"    return that.sendRequest({",
 					"        url: `${pm.environment.get('host_name')}/api/payment/${paymentId}`,",
+					"        method: 'DELETE'",
+					"    });",
+					"};",
+					"",
+					"Object.prototype.deleteWallet = (that, paymentId) => {",
+					"    return that.sendRequest({",
+					"        url: `${pm.environment.get('host_name')}/api/wallets/${walletId}`,",
 					"        method: 'DELETE'",
 					"    });",
 					"};"
