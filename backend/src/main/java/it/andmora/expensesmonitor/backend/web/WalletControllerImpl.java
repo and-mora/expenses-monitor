@@ -20,6 +20,7 @@ public class WalletControllerImpl implements WalletController {
 
   @Override
   public Mono<WalletDto> createWallet(WalletDto walletDto) {
+    log.info("Creation of a new wallet {}", walletDto.name());
     return walletService
         .createWallet(walletDto.name())
         .map(mapper::entityToDto);
@@ -27,6 +28,7 @@ public class WalletControllerImpl implements WalletController {
 
   @Override
   public Flux<WalletDto> getWallets() {
+    log.info("Retrieving wallets...");
     return walletService
         .getWallets()
         .map(mapper::entityToDto);
@@ -34,6 +36,7 @@ public class WalletControllerImpl implements WalletController {
 
   @Override
   public Mono<Void> deleteWallet(UUID walletId) {
+    log.info("Deletion of wallet with id: {}", walletId);
     return walletService
         .deleteWallet(walletId);
   }
