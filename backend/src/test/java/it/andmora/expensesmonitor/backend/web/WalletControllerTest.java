@@ -80,6 +80,7 @@ class WalletControllerTest {
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
         .expectBody(WalletDto.class).value(wallet -> {
           assertThat(wallet.name()).isEqualTo("shopping");
+          assertThat(wallet.id()).isNotNull();
         });
   }
 
@@ -99,8 +100,8 @@ class WalletControllerTest {
         .expectStatus().isOk()
         .expectHeader().contentType("application/json")
         .expectBodyList(WalletDto.class).contains(
-            new WalletDto("wallet1"),
-            new WalletDto("wallet2")
+            new WalletDto(null, "wallet1"),
+            new WalletDto(null, "wallet2")
         );
 
     Mockito.verify(walletService).getWallets();
@@ -128,7 +129,7 @@ class WalletControllerTest {
   }
 
   WalletDto createWalletDto() {
-    return new WalletDto("shopping");
+    return new WalletDto(null, "shopping");
   }
 
 }
