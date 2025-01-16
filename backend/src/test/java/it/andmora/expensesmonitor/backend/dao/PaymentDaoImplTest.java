@@ -6,6 +6,7 @@ import it.andmora.expensesmonitor.backend.dao.dbmodel.PaymentDbEntity;
 import it.andmora.expensesmonitor.backend.dao.mapper.PaymentDbMapper;
 import it.andmora.expensesmonitor.backend.dao.persistance.PaymentPostgresRepository;
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
+import it.andmora.expensesmonitor.backend.domain.model.Wallet;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -149,6 +150,7 @@ class PaymentDaoImplTest {
         .merchantName("H&M")
         .amountInCents(1000)
         .accountingDate(dateInjected)
+        .wallet("wallet")
         .build());
   }
 
@@ -158,6 +160,7 @@ class PaymentDaoImplTest {
         .merchantName("H&M")
         .amountInCents(1000)
         .accountingDate(dateInjected)
+        .wallet(Wallet.builder().name("wallet").build())
         .build();
   }
 }
