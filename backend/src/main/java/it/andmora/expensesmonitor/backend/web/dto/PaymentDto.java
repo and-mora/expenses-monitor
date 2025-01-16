@@ -11,6 +11,7 @@ public record PaymentDto(UUID id,
                          int amountInCents,
                          String merchantName,
                          LocalDateTime accountingDate,
-                         String category) {
+                         String category,
+                         String wallet) {
 
 }

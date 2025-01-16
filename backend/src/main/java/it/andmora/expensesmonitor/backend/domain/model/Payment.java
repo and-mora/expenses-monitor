@@ -18,4 +18,5 @@ public class Payment {
   private String merchantName;
   private LocalDateTime accountingDate;
   private String category;
+  private Wallet wallet;
 }
