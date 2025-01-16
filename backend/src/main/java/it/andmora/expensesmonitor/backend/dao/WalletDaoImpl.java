@@ -42,4 +42,10 @@ class WalletDaoImpl implements WalletDao {
         .deleteById(walletId);
   }
 
+  @Override
+  public Mono<Wallet> findByName(String name) {
+    return repository.findByName(name)
+        .map(walletMapper::dbEntityToDomain);
+  }
+
 }

@@ -13,4 +13,8 @@
     <sqlFile path="db/migrations/002_add_wallets.sql" />
   </changeSet>
 
+  <changeSet id="3" author="andmora">
+    <sqlFile path="db/migrations/003_add_wallet_field.sql" />
+  </changeSet>
+
 </databaseChangeLog>

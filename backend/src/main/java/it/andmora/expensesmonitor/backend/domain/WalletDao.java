@@ -12,4 +12,6 @@ public interface WalletDao {
   Flux<Wallet> getWallets();
 
   Mono<Void> deleteWallet(UUID walletId);
+
+  Mono<Wallet> findByName(String name);
 }

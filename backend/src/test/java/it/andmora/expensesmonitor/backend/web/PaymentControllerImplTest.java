@@ -4,10 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
 
+import it.andmora.expensesmonitor.backend.domain.WalletNotFoundException;
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
+import it.andmora.expensesmonitor.backend.domain.model.Wallet;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCategoriesRetriever;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCreator;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentDeleter;
+import it.andmora.expensesmonitor.backend.web.dto.ErrorDto;
 import it.andmora.expensesmonitor.backend.web.dto.PaymentDto;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -157,12 +160,34 @@ class PaymentControllerImplTest {
         .expectStatus().isUnauthorized();
   }
 
+  @Test
+  @WithMockUser
+  void whenCreatePaymentAndWalletNotFoundThenReturnNotFound() {
+    Mockito.when(paymentCreator.createPayment(any())).thenThrow(new WalletNotFoundException(
+        Wallet.builder().name("wallet").build()));
+    PaymentDto paymentDto = createPaymentDto();
+
+    webTestClient
+        .mutate().build()
+        .post()
+        .uri(POST_PAYMENT_ENDPOINT)
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(paymentDto)
+        .exchange()
+        .expectStatus().is4xxClientError()
+        .expectBody(ErrorDto.class).isEqualTo(ErrorDto.builder()
+            .code("WALLET_NOT_FOUND")
+            .detail("Wallet null does not exist. Please create it first.")
+            .build());
+  }
+
   PaymentDto createPaymentDto() {
     return new PaymentDto(UUID.randomUUID(),
         "shopping",
         1000,
         "H&M",
-        dateInjected, null);
+        dateInjected, null, "wallet");
   }
 
   Payment createDefaultPayment() {

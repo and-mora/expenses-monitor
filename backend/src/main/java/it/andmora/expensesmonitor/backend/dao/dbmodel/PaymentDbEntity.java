@@ -23,4 +23,5 @@ public class PaymentDbEntity {
   @Column("accounting_date")
   private LocalDateTime accountingDate;
   private String category;
+  private String wallet;
 }

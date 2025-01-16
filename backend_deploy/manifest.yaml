@@ -19,7 +19,7 @@ spec:
         app: backend
     spec:
       containers:
-        - image: 'ghcr.io/and-mora/expenses-monitor:v0.10.4-backend'
+        - image: 'ghcr.io/and-mora/expenses-monitor:v0.11.0-backend'
           name: backend-java
           env:
             - name: DB_CONNECTION_URI
