@@ -48,10 +48,4 @@ class WalletDaoImpl implements WalletDao {
         .map(walletMapper::dbEntityToDomain);
   }
 
-  @Override
-  public Mono<Wallet> findById(UUID id) {
-    return repository.findById(id)
-        .map(walletMapper::dbEntityToDomain);
-  }
-
 }
