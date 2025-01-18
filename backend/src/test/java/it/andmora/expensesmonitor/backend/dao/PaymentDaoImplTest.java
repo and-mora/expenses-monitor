@@ -27,7 +27,7 @@ class PaymentDaoImplTest {
   PaymentDaoImpl paymentDao;
   AutoCloseable autoCloseable;
   LocalDateTime dateInjected = LocalDateTime.now();
-
+  UUID injectedUUID = UUID.randomUUID();
 
   @BeforeEach
   void setup() {
@@ -90,14 +90,22 @@ class PaymentDaoImplTest {
 
   @Test
   void givenAPaymentWhenSaveItThenGoesOk() {
-    var payment = createDefaultPayment();
+
+    var inputPayment = createDefaultPayment();
+    var expectedPayment = Payment.builder()
+        .description("shopping")
+        .merchantName("H&M")
+        .amountInCents(1000)
+        .accountingDate(dateInjected)
+        .wallet(Wallet.builder().id(injectedUUID).build())
+        .build();
     Mockito.when(repository.save(any())).thenReturn(getSavedEntity());
 
-    var paymentSaved = paymentDao.savePayment(payment);
+    var paymentSaved = paymentDao.savePayment(inputPayment);
 
     StepVerifier
         .create(paymentSaved)
-        .expectNext(payment)
+        .expectNext(expectedPayment)
         .expectComplete()
         .verify();
   }
@@ -150,7 +158,7 @@ class PaymentDaoImplTest {
         .merchantName("H&M")
         .amountInCents(1000)
         .accountingDate(dateInjected)
-        .wallet("wallet")
+        .wallet(injectedUUID)
         .build());
   }
 

@@ -17,10 +17,10 @@ class PaymentDbMapperTest {
   void whenMapFromDbEntityToDomainThenOk() {
     Payment payment = mapper.dbEntityToDomain(createDefaultEntity());
 
-    assertThat(payment).extracting(Payment::getDescription).isEqualTo("shopping");
-    assertThat(payment).extracting(Payment::getMerchantName).isEqualTo("H&M");
-    assertThat(payment).extracting(Payment::getAmountInCents).isEqualTo(1000);
-    assertThat(payment).extracting(Payment::getAccountingDate).isEqualTo(dateInjected);
+    assertThat(payment).extracting(Payment::description).isEqualTo("shopping");
+    assertThat(payment).extracting(Payment::merchantName).isEqualTo("H&M");
+    assertThat(payment).extracting(Payment::amountInCents).isEqualTo(1000);
+    assertThat(payment).extracting(Payment::accountingDate).isEqualTo(dateInjected);
   }
 
   @Test

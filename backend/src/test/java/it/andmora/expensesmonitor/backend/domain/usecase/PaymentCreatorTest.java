@@ -8,6 +8,7 @@ import it.andmora.expensesmonitor.backend.domain.WalletNotFoundException;
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
 import it.andmora.expensesmonitor.backend.domain.model.Wallet;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,15 +35,23 @@ class PaymentCreatorTest {
 
   @Test
   void givenAPaymentWhenIsCreatedThenReturnsThePayment() {
-    Payment paymentDefault = createDefaultPayment();
-    Mockito.when(paymentDao.savePayment(paymentDefault)).thenReturn(Mono.just(paymentDefault));
-    Mockito.when(walletDao.findByName(any())).thenReturn(Mono.just(Wallet.builder().name("wallet").build()));
+    var walletId = UUID.randomUUID();
+    var inputPayment = createDefaultPayment();
+    var paymentToSave = Payment.builder().description("shopping").merchantName("Lidl")
+        .amountInCents(1000)
+        .accountingDate(dateInjected)
+        .wallet(Wallet.builder().id(walletId).name("wallet").build())
+        .build();
 
-    Mono<Payment> paymentResponse = paymentCreator.createPayment(paymentDefault);
+    Mockito.when(walletDao.findByName(any()))
+        .thenReturn(Mono.just(Wallet.builder().id(walletId).name("wallet").build()));
+    Mockito.when(paymentDao.savePayment(paymentToSave)).thenReturn(Mono.just(paymentToSave));
+
+    Mono<Payment> paymentResponse = paymentCreator.createPayment(inputPayment);
 
     StepVerifier
         .create(paymentResponse)
-        .expectNext(paymentDefault)
+        .expectNext(paymentToSave)
         .expectComplete()
         .verify();
   }
@@ -59,8 +68,9 @@ class PaymentCreatorTest {
         .expectError(WalletNotFoundException.class)
         .verify();
   }
+
   Payment createDefaultPayment() {
-    return Payment.builder().description("shopping").merchantName("Lidl")
+    return Payment.builder().description("shopping").merchantName("Lidl").amountInCents(1000)
         .accountingDate(dateInjected).wallet(Wallet.builder().name("wallet").build()).build();
   }
 
