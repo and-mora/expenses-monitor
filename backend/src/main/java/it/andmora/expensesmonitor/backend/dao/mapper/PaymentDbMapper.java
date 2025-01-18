@@ -8,10 +8,10 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface PaymentDbMapper {
 
-  @Mapping(target = "wallet", source = "wallet.name")
+  @Mapping(target = "wallet", source = "wallet.id")
   PaymentDbEntity domainToDbEntity(Payment payment);
 
-  @Mapping(target = "wallet.name", source = "wallet")
+  @Mapping(target = "wallet.id", source = "wallet")
   Payment dbEntityToDomain(PaymentDbEntity paymentDbEntity);
 
 }

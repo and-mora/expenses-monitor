@@ -3,20 +3,30 @@ package it.andmora.expensesmonitor.backend.domain.model;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Builder;
-import lombok.Data;
 
 /**
  * Domain object to represent the single payment
  */
 @Builder
-@Data
-public class Payment {
 
-  private UUID id;
-  private String description;
-  private int amountInCents;
-  private String merchantName;
-  private LocalDateTime accountingDate;
-  private String category;
-  private Wallet wallet;
+public record Payment(UUID id,
+                      String description,
+                      int amountInCents,
+                      String merchantName,
+                      LocalDateTime accountingDate,
+                      String category,
+                      Wallet wallet) {
+
+  public Payment toPaymentWithWallet(Wallet wallet) {
+    return Payment.builder()
+        .id(this.id)
+        .description(this.description)
+        .amountInCents(this.amountInCents)
+        .merchantName(this.merchantName)
+        .accountingDate(this.accountingDate)
+        .category(this.category)
+        .wallet(wallet)
+        .build();
+  }
+
 }
