@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
 import { PaymentDto } from '../model/payment';
+import { WalletDto } from '../model/wallet';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,8 @@ export class ApiService {
   private logoutUrl = 'logout';
   private checkUrl = 'greet';
   private paymentUrl = 'api/payment';
-  private categoryUrl = 'api/payment/categories'
+  private categoryUrl = 'api/payment/categories';
+  private walletUrl = 'api/wallets';
 
   constructor(private http: HttpClient) { }
 
@@ -65,5 +67,9 @@ export class ApiService {
         eventSource.close();
       }
     });
+  }
+
+  getWallets(): Observable<WalletDto[]> {
+    return this.http.get<WalletDto[]>(this.baseUrl + this.walletUrl);
   }
 }

@@ -37,6 +37,16 @@
                         </mat-autocomplete>
                     </mat-form-field>
                     <mat-form-field appearance="outline">
+                      <mat-label>Wallet</mat-label>
+                      <input matInput placeholder="Pick one" formControlName="wallet" [matAutocomplete]="walAuto">
+                      <mat-error *ngIf="hasError('wallet', 'required')">Campo obbligatorio.</mat-error>
+                      <mat-autocomplete autoActiveFirstOption #walAuto="matAutocomplete">
+                        @for (option of filteredWallets | async; track option) {
+                        <mat-option [value]="option">{{option}}</mat-option>
+                        }
+                      </mat-autocomplete>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
                         <mat-label>Data esecuzione</mat-label>
                         <input matInput [matDatepicker]="picker" formControlName="accountingDate">
                         <mat-hint>DD/MM/YYYY</mat-hint>
