@@ -4,4 +4,5 @@ export interface PaymentDto {
     category: string;
     accountingDate: string;
     description: string;
+    wallet: string;
 }
