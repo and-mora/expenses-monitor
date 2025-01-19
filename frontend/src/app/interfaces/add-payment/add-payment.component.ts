@@ -15,6 +15,7 @@ import { Observable, map } from 'rxjs';
 import { PaymentDto } from '../../model/payment';
 import { ApiService } from '../../services/api.service';
 import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component';
+import { WalletDto } from '../../model/wallet';
 
 @Component({
   selector: 'app-add-payment',
@@ -31,6 +32,8 @@ export class AddPaymentComponent implements OnInit {
   errorMessage: string = '';
   categories: string[] = [];
   filteredCategories!: Observable<string[]>;
+  wallets: WalletDto[] = [];
+  filteredWallets!: Observable<string[]>;
 
   addPaymentForm = this.formBuilder.group({
     merchantName: ['', Validators.required],
@@ -38,7 +41,8 @@ export class AddPaymentComponent implements OnInit {
     type: ['-1', Validators.required],
     category: ['', Validators.required],
     accountingDate: [new Date(), Validators.required],
-    description: ['']
+    description: [''],
+    wallet: ['', Validators.required]
   });
 
   constructor(private formBuilder: FormBuilder, private apiService: ApiService, private dialog: MatDialog,
@@ -63,12 +67,40 @@ export class AddPaymentComponent implements OnInit {
         map(value => {
           return this._filter(value || "");
         }));
+    // retrieve wallets from the backend
+    this.apiService.getWallets()
+      .subscribe({
+        next: a => {
+          console.log("wallets", a);
+          this.wallets = a;
+        },
+        complete: () => {
+          // workaround to make it refresh the filteredCategories at component startup
+          this.addPaymentForm.get('wallet')?.setValue('');
+        }
+      });
+    // filter the wallets to show based on what the user types in the form
+    this.filteredWallets = this.addPaymentForm.get('wallet')!
+      .valueChanges
+      .pipe(
+        map(value => {
+          console.log("value", value);
+          return this._filterWallets(value || "");
+      }));
   }
 
   private _filter(value: string): string[] {
     const filterValue = value.toLowerCase();
 
     return this.categories.filter(cat => cat.toLowerCase().includes(filterValue));
+  }
+
+  private _filterWallets(value: string): string[] {
+    const filterValue = value.toLowerCase();
+
+    return this.wallets
+      .map(wallet => wallet.name)
+      .filter(walletName => walletName.toLowerCase().includes(filterValue))
   }
 
   onSubmit(): void {
@@ -114,7 +146,8 @@ export class AddPaymentComponent implements OnInit {
       amountInCents: parsedAmount,
       category: parsedCategory,
       accountingDate: fixedDate.toISOString(),
-      description: this.addPaymentForm.get('description')?.getRawValue()
+      description: this.addPaymentForm.get('description')?.getRawValue(),
+      wallet: this.addPaymentForm.get('wallet')?.getRawValue(),
     };
   }
 
