@@ -17,4 +17,8 @@
     <sqlFile path="db/migrations/003_add_wallet_field.sql" />
   </changeSet>
 
+  <changeSet id="4" author="andmora">
+    <sqlFile path="db/migrations/004_grant_select_on_wallets.sql" />
+  </changeSet>
+
 </databaseChangeLog>
