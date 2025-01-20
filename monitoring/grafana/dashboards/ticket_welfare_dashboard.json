@@ -36,7 +36,7 @@
     },
     {
       "datasource": {
-        "type": "postgres",
+        "type": "grafana-postgresql-datasource",
         "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
       },
       "fieldConfig": {
@@ -96,7 +96,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'ticket'\ngroup by category",
+          "rawSql": "select wallet_id, sum(amount)/100 from payments p\nWHERE wallet_id = (select id from wallets w where name = 'ticket')\ngroup by wallet_id",
           "refId": "A",
           "sql": {
             "columns": [
@@ -122,7 +122,7 @@
     },
     {
       "datasource": {
-        "type": "postgres",
+        "type": "grafana-postgresql-datasource",
         "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
       },
       "fieldConfig": {
@@ -206,7 +206,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select DATE_TRUNC('month',accounting_date) AS time, sum(amount)/100 as bilancio\nfrom expenses.payments\nwhere $__timeFilter(accounting_date) and category = 'ticket'\nGROUP BY DATE_TRUNC('month', accounting_date)\norder by time",
+          "rawSql": "select DATE_TRUNC('month',accounting_date) AS time, sum(amount)/100 as bilancio\nfrom expenses.payments\nwhere $__timeFilter(accounting_date) and wallet_id = (select id from wallets where name = 'ticket')\nGROUP BY DATE_TRUNC('month', accounting_date)\norder by time",
           "refId": "A",
           "sql": {
             "columns": [
@@ -232,7 +232,7 @@
     },
     {
       "datasource": {
-        "type": "postgres",
+        "type": "grafana-postgresql-datasource",
         "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
       },
       "fieldConfig": {
@@ -292,7 +292,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select merchant_name, sum(amount)/-100 as co\nfrom payments \nwhere $__timeFilter(accounting_date) and category = 'ticket' and amount < 0\ngroup by merchant_name",
+          "rawSql": "select merchant_name, sum(amount)/-100 as co\nfrom payments \nwhere $__timeFilter(accounting_date) and wallet_id = (select id from wallets where name = 'ticket') and amount < 0\ngroup by merchant_name",
           "refId": "A",
           "sql": {
             "columns": [
@@ -411,7 +411,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "select DATE_TRUNC('month',accounting_date) as time, 'entrate', sum(amount)/100 as ticket\nfrom payments \nwhere category = 'ticket' and $__timeFilter(accounting_date) and amount > 0\ngroup by category, DATE_TRUNC('month',accounting_date)\nUNION\nselect DATE_TRUNC('month',accounting_date) as time, 'uscite', sum(amount)/100 as entrate\nfrom payments \nwhere category = 'ticket' and $__timeFilter(accounting_date) and amount < 0\ngroup by category, DATE_TRUNC('month',accounting_date)\norder by time",
+          "rawSql": "select DATE_TRUNC('month',accounting_date) as time, 'entrate', sum(amount)/100 as ticket\nfrom payments \nwhere wallet_id = (select id from wallets where name = 'ticket') and $__timeFilter(accounting_date) and amount > 0\ngroup by wallet_id, DATE_TRUNC('month',accounting_date)\nUNION\nselect DATE_TRUNC('month',accounting_date) as time, 'uscite', sum(amount)/100 as entrate\nfrom payments \nwhere wallet_id = (select id from wallets where name = 'ticket') and $__timeFilter(accounting_date) and amount < 0\ngroup by wallet_id, DATE_TRUNC('month',accounting_date)\norder by time",
           "refId": "A",
           "sql": {
             "columns": [
@@ -447,7 +447,7 @@
       "panels": [
         {
           "datasource": {
-            "type": "postgres",
+            "type": "grafana-postgresql-datasource",
             "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
           },
           "fieldConfig": {
@@ -471,7 +471,7 @@
           },
           "gridPos": {
             "h": 6,
-            "w": 4,
+            "w": 6,
             "x": 0,
             "y": 23
           },
@@ -502,7 +502,7 @@
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'welfare' and amount > 0\ngroup by category",
+              "rawSql": "select wallet_id, sum(amount)/100 from payments\nWHERE wallet_id = (select id from wallets where name = 'welfare22') and amount > 0\ngroup by wallet_id",
               "refId": "A",
               "sql": {
                 "columns": [
@@ -528,7 +528,7 @@
         },
         {
           "datasource": {
-            "type": "postgres",
+            "type": "grafana-postgresql-datasource",
             "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
           },
           "fieldConfig": {
@@ -555,7 +555,7 @@
           "gridPos": {
             "h": 6,
             "w": 4,
-            "x": 4,
+            "x": 6,
             "y": 23
           },
           "id": 10,
@@ -585,7 +585,7 @@
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'welfare' and merchant_name = 'Tezenis'\ngroup by category",
+              "rawSql": "select wallet_id, sum(amount)/100 from payments\nWHERE wallet_id = (select id from wallets where name = 'welfare22') and merchant_name = 'Tezenis'\ngroup by wallet_id",
               "refId": "A",
               "sql": {
                 "columns": [
@@ -611,7 +611,7 @@
         },
         {
           "datasource": {
-            "type": "postgres",
+            "type": "grafana-postgresql-datasource",
             "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
           },
           "fieldConfig": {
@@ -638,7 +638,7 @@
           "gridPos": {
             "h": 6,
             "w": 4,
-            "x": 8,
+            "x": 10,
             "y": 23
           },
           "id": 11,
@@ -668,7 +668,7 @@
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'welfare' and merchant_name = 'H&M'\ngroup by category",
+              "rawSql": "select wallet_id, sum(amount)/100 from payments\nWHERE wallet_id = (select id from wallets where name = 'welfare22') and merchant_name = 'H&M'\ngroup by wallet_id",
               "refId": "A",
               "sql": {
                 "columns": [
@@ -694,7 +694,7 @@
         },
         {
           "datasource": {
-            "type": "postgres",
+            "type": "grafana-postgresql-datasource",
             "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
           },
           "fieldConfig": {
@@ -721,7 +721,7 @@
           "gridPos": {
             "h": 6,
             "w": 4,
-            "x": 12,
+            "x": 14,
             "y": 23
           },
           "id": 12,
@@ -751,7 +751,7 @@
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'welfare' and merchant_name not in('Tezenis', 'H&M')\ngroup by category",
+              "rawSql": "select wallet_id, sum(amount)/100 from payments\nWHERE wallet_id = (select id from wallets where name = 'welfare22') and merchant_name not in('Tezenis', 'H&M')\ngroup by wallet_id",
               "refId": "A",
               "sql": {
                 "columns": [
@@ -777,7 +777,7 @@
         },
         {
           "datasource": {
-            "type": "postgres",
+            "type": "grafana-postgresql-datasource",
             "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
           },
           "fieldConfig": {
@@ -803,8 +803,8 @@
           },
           "gridPos": {
             "h": 6,
-            "w": 4,
-            "x": 16,
+            "w": 6,
+            "x": 18,
             "y": 23
           },
           "id": 8,
@@ -833,7 +833,7 @@
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "select sum(amount)/100 as bilancio\nfrom expenses.payments\nwhere category = 'welfare'",
+              "rawSql": "select sum(amount)/100 as bilancio\nfrom expenses.payments\nwhere wallet_id = (select id from wallets where name = 'welfare22')",
               "refId": "A",
               "sql": {
                 "columns": [
@@ -859,7 +859,7 @@
         },
         {
           "datasource": {
-            "type": "postgres",
+            "type": "grafana-postgresql-datasource",
             "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
           },
           "fieldConfig": {
@@ -919,7 +919,7 @@
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "select merchant_name, sum(amount)/-100 as co\nfrom payments \nwhere $__timeFilter(accounting_date) and category = 'welfare' and amount < 0\ngroup by merchant_name\n",
+              "rawSql": "select merchant_name, sum(amount)/-100 as co\nfrom payments \nwhere $__timeFilter(accounting_date) and wallet_id = (select id from wallets where name = 'welfare22') and amount < 0\ngroup by merchant_name\n",
               "refId": "A",
               "sql": {
                 "columns": [
@@ -959,7 +959,7 @@
       "panels": [
         {
           "datasource": {
-            "type": "postgres",
+            "type": "grafana-postgresql-datasource",
             "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
           },
           "fieldConfig": {
@@ -1014,7 +1014,7 @@
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "select category, sum(amount)/100.0 as amount\nfrom payments\nWHERE category in ('welfare23', 'welfare23-servizi') and amount > 0\ngroup by category",
+              "rawSql": "select wallet_id, sum(amount)/100.0 as amount\nfrom payments\nWHERE wallet_id = (select id from wallets where name = 'welfare23') and amount > 0\ngroup by wallet_id",
               "refId": "A",
               "sql": {
                 "columns": [
@@ -1040,7 +1040,7 @@
         },
         {
           "datasource": {
-            "type": "postgres",
+            "type": "grafana-postgresql-datasource",
             "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
           },
           "fieldConfig": {
@@ -1066,7 +1066,7 @@
           },
           "gridPos": {
             "h": 6,
-            "w": 4,
+            "w": 6,
             "x": 4,
             "y": 24
           },
@@ -1097,7 +1097,7 @@
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "select category, sum(amount)/100 from payments\nWHERE category = 'welfare23' and merchant_name not in('Tezenis', 'H&M')\ngroup by category",
+              "rawSql": "select wallet_id, sum(amount)/100 from payments\nWHERE wallet_id = (select id from wallets where name = 'welfare23') and merchant_name not in('Tezenis', 'H&M')\ngroup by wallet_id",
               "refId": "A",
               "sql": {
                 "columns": [
@@ -1123,89 +1123,7 @@
         },
         {
           "datasource": {
-            "type": "postgres",
-            "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "continuous-RdYlGr"
-              },
-              "mappings": [],
-              "max": 241,
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "red",
-                    "value": null
-                  }
-                ]
-              },
-              "unit": "currencyEUR"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 6,
-            "w": 4,
-            "x": 8,
-            "y": 24
-          },
-          "id": 16,
-          "options": {
-            "minVizHeight": 75,
-            "minVizWidth": 75,
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "sum"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "showThresholdLabels": true,
-            "showThresholdMarkers": true,
-            "sizing": "auto"
-          },
-          "pluginVersion": "11.1.4",
-          "targets": [
-            {
-              "datasource": {
-                "type": "postgres",
-                "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
-              },
-              "editorMode": "code",
-              "format": "table",
-              "rawQuery": true,
-              "rawSql": "select sum(amount)/100 as bilancio\nfrom expenses.payments\nwhere category = 'welfare23-servizi'",
-              "refId": "A",
-              "sql": {
-                "columns": [
-                  {
-                    "parameters": [],
-                    "type": "function"
-                  }
-                ],
-                "groupBy": [
-                  {
-                    "property": {
-                      "type": "string"
-                    },
-                    "type": "groupBy"
-                  }
-                ],
-                "limit": 50
-              }
-            }
-          ],
-          "title": "saldo servizi",
-          "type": "gauge"
-        },
-        {
-          "datasource": {
-            "type": "postgres",
+            "type": "grafana-postgresql-datasource",
             "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
           },
           "fieldConfig": {
@@ -1231,8 +1149,8 @@
           },
           "gridPos": {
             "h": 6,
-            "w": 4,
-            "x": 12,
+            "w": 6,
+            "x": 10,
             "y": 24
           },
           "id": 18,
@@ -1261,7 +1179,7 @@
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "select sum(amount)/100.0 as bilancio\nfrom expenses.payments\nwhere category in ('welfare23', 'welfare23-servizi')",
+              "rawSql": "select sum(amount)/100.0 as bilancio\nfrom expenses.payments\nwhere wallet_id = (select id from wallets where name = 'welfare23')",
               "refId": "A",
               "sql": {
                 "columns": [
@@ -1287,7 +1205,7 @@
         },
         {
           "datasource": {
-            "type": "postgres",
+            "type": "grafana-postgresql-datasource",
             "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
           },
           "fieldConfig": {
@@ -1313,7 +1231,7 @@
           },
           "gridPos": {
             "h": 6,
-            "w": 4,
+            "w": 7,
             "x": 16,
             "y": 24
           },
@@ -1344,7 +1262,7 @@
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "select category, sum(amount)/100.0 as amount\nfrom payments\nWHERE category = 'bonus-carburante23'\ngroup by category",
+              "rawSql": "select wallet_id, sum(amount)/100.0 as amount\nfrom payments\nWHERE wallet_id = (select id from wallets where name = 'bonus-carburante23')\ngroup by wallet_id",
               "refId": "A",
               "sql": {
                 "columns": [
@@ -1370,7 +1288,7 @@
         },
         {
           "datasource": {
-            "type": "postgres",
+            "type": "grafana-postgresql-datasource",
             "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
           },
           "fieldConfig": {
@@ -1430,7 +1348,7 @@
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "select merchant_name, sum(amount)/-100 as co\nfrom payments \nwhere category in ('welfare23', 'welfare23-servizi') and amount < 0\ngroup by merchant_name\n",
+              "rawSql": "select merchant_name, sum(amount)/-100 as co\nfrom payments \nwhere wallet_id = (select id from wallets where name = 'welfare23') and amount < 0\ngroup by merchant_name\n",
               "refId": "A",
               "sql": {
                 "columns": [
@@ -1530,7 +1448,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select category, sum(amount)/100.0 as amount\nfrom payments\nWHERE category in ('welfare24') and amount > 0\ngroup by category",
+          "rawSql": "select wallet_id, sum(amount)/100.0 as amount\nfrom payments\nWHERE wallet_id = (select id from wallets where name = 'welfare24') and amount > 0\ngroup by wallet_id",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1612,7 +1530,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select sum(amount)/100.0 as bilancio\nfrom expenses.payments\nwhere category in ('welfare24')",
+          "rawSql": "select sum(amount)/100.0 as bilancio\nfrom expenses.payments\nwhere wallet_id = (select id from wallets where name = 'welfare24')",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1698,7 +1616,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select merchant_name, sum(amount)/-100 as co\nfrom payments \nwhere category in ('welfare24') and amount < 0\ngroup by merchant_name\n",
+          "rawSql": "select merchant_name, sum(amount)/-100 as co\nfrom payments \nwhere wallet_id = (select id from wallets where name = 'welfare24') and amount < 0\ngroup by merchant_name\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1737,6 +1655,6 @@
   "timezone": "",
   "title": "Ticket & welfare",
   "uid": "dc691aa8-bf4e-4b81-9e05-ad2a47959615",
-  "version": 22,
+  "version": 23,
   "weekStart": ""
 }
