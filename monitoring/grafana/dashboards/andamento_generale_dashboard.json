@@ -714,6 +714,19 @@
       "type": "piechart"
     },
     {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 48
+      },
+      "id": 11,
+      "panels": [],
+      "title": "aggregati",
+      "type": "row"
+    },
+    {
       "datasource": {
         "type": "postgres",
         "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
@@ -783,10 +796,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 9,
-        "w": 24,
+        "h": 18,
+        "w": 12,
         "x": 0,
-        "y": 48
+        "y": 49
       },
       "id": 6,
       "options": {
@@ -839,19 +852,6 @@
       ],
       "title": "Bilancio mensile",
       "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 57
-      },
-      "id": 11,
-      "panels": [],
-      "title": "aggregati",
-      "type": "row"
     },
     {
       "datasource": {
@@ -921,10 +921,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 9,
-        "w": 24,
-        "x": 0,
-        "y": 58
+        "h": 18,
+        "w": 12,
+        "x": 12,
+        "y": 49
       },
       "id": 13,
       "options": {
@@ -1342,6 +1342,6 @@
   "timezone": "",
   "title": "Andamento generale",
   "uid": "c110264f-054a-407c-952c-e9abab86c9ff",
-  "version": 9,
+  "version": 10,
   "weekStart": ""
 }
