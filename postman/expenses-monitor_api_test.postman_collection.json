@@ -126,8 +126,25 @@
 							"    // retrieve payment id",
 							"    paymentId = pm.response.json().id;",
 							"});",
+							"var walletName = pm.environment.get(\"walletName\");",
 							"",
-							"_.deletePayment(pm, paymentId);"
+							"_.deletePayment(pm, paymentId);",
+							"_.deleteWallet(pm, walletName);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var walletId;",
+							"var walletCreated = _.addWallet(pm, \"testWallet\");",
+							"",
+							"walletId = walletCreated.json().id;",
+							"",
+							"pm.environment.set(\"walletName\", `\"${walletId}\"`);"
 						],
 						"type": "text/javascript",
 						"packages": {}
@@ -139,7 +156,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"description\": \"spesa\",\n    \"amount\": -63,\n    \"merchantName\": \"Poli\",\n    \"accountingDate\": \"2023-11-13T00:00:00.000\",\n    \"wallet\": \"wallet1\"\n}",
+					"raw": "{\n    \"description\": \"spesa\",\n    \"amount\": -63,\n    \"merchantName\": \"Poli\",\n    \"accountingDate\": \"2023-11-13T00:00:00.000\",\n    \"wallet\": \"testWallet\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -224,7 +241,29 @@
 					"        url: `${pm.environment.get('host_name')}/api/wallets/${walletId}`,",
 					"        method: 'DELETE'",
 					"    });",
-					"};"
+					"};",
+					"",
+					"Object.prototype.addWallet = (that, name) => {",
+					"    return that.sendRequest({",
+					"        url: `${pm.environment.get('host_name')}/api/wallets`,",
+					"        method: 'POST',",
+					"        header: {",
+					"            'Content-Type': 'application/json'",
+					"        },",
+					"        body: {",
+					"            mode: 'raw',",
+					"            raw: JSON.stringify({",
+					"                name: `\"${name}\"`",
+					"            })",
+					"        }",
+					"    }, function (err, res) {",
+					"        // Validate the response",
+					"        pm.test(\"Status code is 200\", function () {",
+					"            pm.response.to.have.status(200);",
+					"        });",
+					"    });",
+					"};",
+					""
 				]
 			}
 		},
