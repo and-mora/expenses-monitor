@@ -21,4 +21,8 @@
     <sqlFile path="db/migrations/004_grant_select_on_wallets.sql" />
   </changeSet>
 
+  <changeSet id="5" author="andmora">
+    <sqlFile path="db/migrations/005_tags_feature.sql" />
+  </changeSet>
+
 </databaseChangeLog>
