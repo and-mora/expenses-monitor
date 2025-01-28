@@ -1,6 +1,7 @@
 package it.andmora.expensesmonitor.backend.domain.model;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.UUID;
 import lombok.Builder;
 
@@ -15,7 +16,8 @@ public record Payment(UUID id,
                       String merchantName,
                       LocalDateTime accountingDate,
                       String category,
-                      Wallet wallet) {
+                      Wallet wallet,
+                      Collection<Tag> tags) {
 
   public Payment toPaymentWithWallet(Wallet wallet) {
     return Payment.builder()
@@ -26,6 +28,7 @@ public record Payment(UUID id,
         .accountingDate(this.accountingDate)
         .category(this.category)
         .wallet(wallet)
+        .tags(this.tags)
         .build();
   }
 
