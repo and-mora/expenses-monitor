@@ -1,7 +1,6 @@
 # Expenses Monitor
-![Release](https://img.shields.io/github/v/release/and-mora/expenses-monitor?label=grafana-release&sort=semver&filter=*-grafana)
+![Release](https://img.shields.io/github/v/release/and-mora/expenses-monitor?label=monitoring-stack-release&sort=semver&filter=*-monitoring)
 ![Release](https://img.shields.io/github/v/release/and-mora/expenses-monitor?label=backend-release&sort=semver&filter=*-backend&color=blue)
-![Release](https://img.shields.io/github/v/release/and-mora/expenses-monitor?label=client-release&sort=semver&filter=*-client)
 ![Release](https://img.shields.io/github/v/release/and-mora/expenses-monitor?label=frontend-release&sort=semver&filter=*-frontend&color=red)
 
 [![Trivy scan](https://github.com/and-mora/expenses-monitor/actions/workflows/trivy.yml/badge.svg?branch=master)](https://github.com/and-mora/expenses-monitor/actions/workflows/trivy.yml)
@@ -13,10 +12,16 @@ The idea is to make an application to monitor the personal finance.
 I will work on it on best effort.
 
 ### Stack
-![Grafana](https://img.shields.io/badge/grafana-%23F46800.svg?style=for-the-badge&logo=grafana&logoColor=white)
 ![Angular](https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white)
 ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white)
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
+
+![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=Prometheus&logoColor=white)
+![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-FFFFFF?&style=for-the-badge&logo=opentelemetry&logoColor=black)
+![Grafana](https://img.shields.io/badge/grafana-%23F46800.svg?style=for-the-badge&logo=grafana&logoColor=white)
+![Loki](https://img.shields.io/badge/Loki-%23F46800?style=for-the-badge&logo=grafana&logoColor=white)
+![Tempo](https://img.shields.io/badge/Tempo-%23F46800?style=for-the-badge&logo=grafana&logoColor=white)
+
 
 I will experiment Gradle, Spring Webflux.
 
@@ -56,7 +61,7 @@ Form login with session token.
 
 ### Deploy
 - the database, see [here](database/README.md)
-- grafana server, see [here](grafana/README.md)
+- grafana server, see [here](monitoring/README.md)
 - backend, see [here](backend/README.md)
 
 > **Work In Progress**
