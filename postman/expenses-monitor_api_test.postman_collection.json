@@ -120,16 +120,18 @@
 					"listen": "test",
 					"script": {
 						"exec": [
+							"const _ = require('lodash');",
+							"",
 							"var paymentId;",
 							"pm.test('02. Add a payment', () => {",
 							"    pm.response.to.have.status(200);",
 							"    // retrieve payment id",
 							"    paymentId = pm.response.json().id;",
 							"});",
-							"var walletName = pm.environment.get(\"walletName\");",
+							"var walletId = pm.environment.get(\"volatileWalletId\");",
 							"",
 							"_.deletePayment(pm, paymentId);",
-							"_.deleteWallet(pm, walletName);"
+							"_.deleteWallet(pm, walletId);"
 						],
 						"type": "text/javascript",
 						"packages": {}
@@ -139,12 +141,14 @@
 					"listen": "prerequest",
 					"script": {
 						"exec": [
-							"var walletId;",
-							"var walletCreated = _.addWallet(pm, \"testWallet\");",
+							"const _ = require('lodash');",
 							"",
-							"walletId = walletCreated.json().id;",
+							"_.addWallet(pm, \"testWallet\", function(res) {",
+							"    var walletId = res.json().id;",
+							"    pm.environment.set(\"volatileWalletId\", walletId);",
+							"});",
 							"",
-							"pm.environment.set(\"walletName\", `\"${walletId}\"`);"
+							""
 						],
 						"type": "text/javascript",
 						"packages": {}
@@ -183,6 +187,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
+							"const _ = require('lodash');",
+							"",
 							"var walletId;",
 							"pm.test('03. Add a wallet', () => {",
 							"    pm.response.to.have.status(200);",
@@ -243,7 +249,7 @@
 					"    });",
 					"};",
 					"",
-					"Object.prototype.addWallet = (that, name) => {",
+					"Object.prototype.addWallet = (that, name, callback) => {",
 					"    return that.sendRequest({",
 					"        url: `${pm.environment.get('host_name')}/api/wallets`,",
 					"        method: 'POST',",
@@ -253,14 +259,13 @@
 					"        body: {",
 					"            mode: 'raw',",
 					"            raw: JSON.stringify({",
-					"                name: `\"${name}\"`",
+					"                name: `${name}`",
 					"            })",
 					"        }",
 					"    }, function (err, res) {",
-					"        // Validate the response",
-					"        pm.test(\"Status code is 200\", function () {",
-					"            pm.response.to.have.status(200);",
-					"        });",
+					"        if (callback) {",
+					"            callback(res);",
+					"        }",
 					"    });",
 					"};",
 					""
