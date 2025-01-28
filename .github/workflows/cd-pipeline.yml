@@ -55,26 +55,6 @@ jobs:
           major_pattern: "breaking"
           minor_pattern: "feat"
 
-      - name: Grafana Version
-        id: grafana-versioning
-        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
-        with:
-          change_path: "/grafana"
-          # Named version, will be used as suffix for name version tag
-          namespace: grafana
-          major_pattern: "breaking"
-          minor_pattern: "feat"
-
-      - name: Client Version
-        id: client-versioning
-        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
-        with:
-          change_path: "client"
-          # Named version, will be used as suffix for name version tag
-          namespace: client
-          major_pattern: "breaking"
-          minor_pattern: "feat"
-
       - name: Frontend Version
         id: frontend-versioning
         uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
@@ -90,15 +70,6 @@ jobs:
         with:
           change_path: "database"
           namespace: database
-          major_pattern: "breaking"
-          minor_pattern: "feat"
-
-      - name: Prometheus Version
-        id: prometheus-versioning
-        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
-        with:
-          change_path: "prometheus"
-          namespace: prometheus
           major_pattern: "breaking"
           minor_pattern: "feat"
 
@@ -173,22 +144,6 @@ jobs:
       enabled: ${{needs.SemanticVersioning.outputs.database_changed}}
     secrets: inherit
 
-  GrafanaRelease:
-    needs: SemanticVersioning
-    uses: ./.github/workflows/release.yml
-    with:
-      tag: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.grafana_changed}}
-
-  GrafanaDeploy:
-    needs: [SemanticVersioning, GrafanaRelease]
-    uses: ./.github/workflows/build-push-workflow.yml
-    with:
-      version: ${{needs.SemanticVersioning.outputs.grafana_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.grafana_changed}}
-      folder: grafana
-    secrets: inherit
-
   FrontendRelease:
     needs: SemanticVersioning
     uses: ./.github/workflows/release.yml
@@ -211,22 +166,6 @@ jobs:
     with:
       version: ${{needs.SemanticVersioning.outputs.frontend_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.frontend_changed}}
-    secrets: inherit
-
-  PrometheusRelease:
-    needs: SemanticVersioning
-    uses: ./.github/workflows/release.yml
-    with:
-      tag: ${{needs.SemanticVersioning.outputs.prometheus_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.prometheus_changed}}
-
-  PrometheusDeploy:
-    needs: [ SemanticVersioning, PrometheusRelease ]
-    uses: ./.github/workflows/build-push-workflow.yml
-    with:
-      version: ${{needs.SemanticVersioning.outputs.prometheus_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.prometheus_changed}}
-      folder: prometheus
     secrets: inherit
 
   MonitoringRelease:
