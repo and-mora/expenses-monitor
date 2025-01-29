@@ -25,4 +25,8 @@
     <sqlFile path="db/migrations/005_tags_feature.sql" />
   </changeSet>
 
+  <changeSet id="6" author="andmora">
+    <sqlFile path="db/migrations/006_tags_feature.sql" />
+  </changeSet>
+
 </databaseChangeLog>
