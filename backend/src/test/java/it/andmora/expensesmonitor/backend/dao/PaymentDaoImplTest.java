@@ -4,7 +4,9 @@ import static org.mockito.ArgumentMatchers.any;
 
 import it.andmora.expensesmonitor.backend.dao.dbmodel.PaymentDbEntity;
 import it.andmora.expensesmonitor.backend.dao.mapper.PaymentDbMapper;
+import it.andmora.expensesmonitor.backend.dao.mapper.PaymentTagDbMapper;
 import it.andmora.expensesmonitor.backend.dao.persistance.PaymentPostgresRepository;
+import it.andmora.expensesmonitor.backend.dao.persistance.PaymentTagRepository;
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
 import it.andmora.expensesmonitor.backend.domain.model.Wallet;
 import java.time.LocalDateTime;
@@ -24,6 +26,8 @@ class PaymentDaoImplTest {
 
   @Mock
   PaymentPostgresRepository repository;
+  @Mock
+  PaymentTagRepository paymentTagRepository;
   PaymentDaoImpl paymentDao;
   AutoCloseable autoCloseable;
   LocalDateTime dateInjected = LocalDateTime.now();
@@ -32,7 +36,8 @@ class PaymentDaoImplTest {
   @BeforeEach
   void setup() {
     autoCloseable = MockitoAnnotations.openMocks(this);
-    paymentDao = new PaymentDaoImpl(repository, Mappers.getMapper(PaymentDbMapper.class));
+    paymentDao = new PaymentDaoImpl(repository, paymentTagRepository,
+        Mappers.getMapper(PaymentDbMapper.class), Mappers.getMapper(PaymentTagDbMapper.class));
   }
 
   @AfterEach
@@ -158,7 +163,7 @@ class PaymentDaoImplTest {
         .merchantName("H&M")
         .amountInCents(1000)
         .accountingDate(dateInjected)
-        .wallet(injectedUUID)
+        .walletId(injectedUUID)
         .build());
   }
 
