@@ -1,8 +1,11 @@
 package it.andmora.expensesmonitor.backend.dao;
 
 import it.andmora.expensesmonitor.backend.dao.dbmodel.PaymentDbEntity;
+import it.andmora.expensesmonitor.backend.dao.dbmodel.PaymentTagDbEntity;
 import it.andmora.expensesmonitor.backend.dao.mapper.PaymentDbMapper;
+import it.andmora.expensesmonitor.backend.dao.mapper.PaymentTagDbMapper;
 import it.andmora.expensesmonitor.backend.dao.persistance.PaymentPostgresRepository;
+import it.andmora.expensesmonitor.backend.dao.persistance.PaymentTagRepository;
 import it.andmora.expensesmonitor.backend.domain.PaymentDao;
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
 import java.util.UUID;
@@ -21,11 +24,23 @@ import reactor.core.publisher.Mono;
 class PaymentDaoImpl implements PaymentDao {
 
   private final PaymentPostgresRepository repository;
+  private final PaymentTagRepository paymentTagRepository;
   private final PaymentDbMapper paymentMapper;
+  private final PaymentTagDbMapper tagMapper;
 
   @Override
   public Mono<Payment> savePayment(Payment payment) {
     return repository.save(paymentMapper.domainToDbEntity(payment))
+        .flatMap(paymentDbEntity ->
+            Flux.fromIterable(payment.tags().stream()
+                    .map(tag -> PaymentTagDbEntity.builder()
+                        .paymentId(paymentDbEntity.getId())
+                        .key(tag.key())
+                        .value(tag.value())
+                        .build())
+                    .toList())
+                .flatMap(paymentTagRepository::save)
+                .then(Mono.just(paymentDbEntity)))
         .map(paymentMapper::dbEntityToDomain);
   }
 
