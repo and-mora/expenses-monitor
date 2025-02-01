@@ -1,5 +1,5 @@
-DROP TABLE expenses.payment_tags;
-DROP TABLE expenses.tags;
+DROP TABLE IF EXISTS expenses.payment_tags;
+DROP TABLE IF EXISTS expenses.tags;
 
 CREATE TABLE expenses.payments_tags (
   id uuid DEFAULT gen_random_uuid(),
