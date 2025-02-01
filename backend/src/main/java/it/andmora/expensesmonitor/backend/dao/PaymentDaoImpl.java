@@ -42,7 +42,7 @@ class PaymentDaoImpl implements PaymentDao {
                         .build())
                     .toList())
                 .flatMap(paymentTagRepository::save)
-                // add tags to domain payment and add them to the payment
+                // add tags to domain payment object and return it
                 .reduceWith(() -> paymentSaved,
                     (paymentIn, tag) -> paymentIn.addTag(tagMapper.dbEntityToDomain(tag)))
         );
