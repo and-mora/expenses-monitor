@@ -4,6 +4,6 @@ import java.util.UUID;
 import lombok.Builder;
 
 @Builder
-public record Wallet(UUID id, String name) {
+public record Tag (UUID id, String key, String value) {
 
 }

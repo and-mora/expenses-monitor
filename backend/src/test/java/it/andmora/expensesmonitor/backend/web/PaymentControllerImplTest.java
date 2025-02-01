@@ -6,14 +6,19 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 
 import it.andmora.expensesmonitor.backend.domain.WalletNotFoundException;
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
+import it.andmora.expensesmonitor.backend.domain.model.Tag;
 import it.andmora.expensesmonitor.backend.domain.model.Wallet;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCategoriesRetriever;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCreator;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentDeleter;
 import it.andmora.expensesmonitor.backend.web.dto.ErrorDto;
 import it.andmora.expensesmonitor.backend.web.dto.PaymentDto;
+import it.andmora.expensesmonitor.backend.web.dto.TagDto;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -70,6 +75,9 @@ class PaymentControllerImplTest {
       assertThat(payment).extracting(PaymentDto::merchantName).isEqualTo("H&M");
       assertThat(payment).extracting(PaymentDto::amountInCents).isEqualTo(1000);
       assertThat(payment).extracting(PaymentDto::accountingDate).isEqualTo(dateInjected);
+      assertThat(payment).extracting(PaymentDto::wallet).isEqualTo("wallet");
+      assertThat(payment).extracting(PaymentDto::tags).asInstanceOf(InstanceOfAssertFactories.LIST)
+          .hasSize(2);
     });
   }
 
@@ -187,7 +195,8 @@ class PaymentControllerImplTest {
         "shopping",
         1000,
         "H&M",
-        dateInjected, null, "wallet");
+        dateInjected, null, "wallet",
+        Collections.singletonList(new TagDto(UUID.randomUUID(), "key", "value")));
   }
 
   Payment createDefaultPayment() {
@@ -196,6 +205,9 @@ class PaymentControllerImplTest {
         .merchantName("H&M")
         .amountInCents(1000)
         .accountingDate(dateInjected)
+        .wallet(Wallet.builder().id(UUID.randomUUID()).name("wallet").build())
+        .tags(List.of(Tag.builder().id(UUID.randomUUID()).key("key").value("value").build(),
+            Tag.builder().id(UUID.randomUUID()).key("chiave").value("valore").build()))
         .build();
   }
 

@@ -1,13 +1,13 @@
 spring:
   r2dbc:
-    url: ${DB_CONNECTION_URI:r2dbc:postgresql://localhost:5432/postgres}
+    url: ${DB_CONNECTION_URI:r2dbc:postgresql://localhost:5432/expenses-monitor}
     schema: ${DB_SCHEMA:expenses}
     username: ${DB_BACKEND_USER:postgres}
     password: ${DB_BACKEND_PASSWORD:postgres}
     pool.validation-query: SELECT 1
   liquibase:
     change-log: db/changelog/db.changelog-master.xml
-    url: ${DB_CONNECTION_URI_JDBC:jdbc:postgresql://localhost:5432/postgres}
+    url: ${DB_CONNECTION_URI_JDBC:jdbc:postgresql://localhost:5432/expenses-monitor}
     user: ${DB_BACKEND_USER:postgres}
     password: ${DB_BACKEND_PASSWORD:postgres}
 

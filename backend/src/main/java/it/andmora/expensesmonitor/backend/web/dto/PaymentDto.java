@@ -1,6 +1,7 @@
 package it.andmora.expensesmonitor.backend.web.dto;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.UUID;
 
 /**
@@ -12,6 +13,7 @@ public record PaymentDto(UUID id,
                          String merchantName,
                          LocalDateTime accountingDate,
                          String category,
-                         String wallet) {
+                         String wallet,
+                         Collection<TagDto> tags) {
 
 }

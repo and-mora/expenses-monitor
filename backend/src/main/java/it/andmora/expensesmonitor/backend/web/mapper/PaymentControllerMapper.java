@@ -11,6 +11,6 @@ public interface PaymentControllerMapper {
   @Mapping(target = "wallet.name", source = "wallet")
   Payment dtoToEntity(PaymentDto paymentDto);
 
-  @Mapping(target = "wallet", source = "wallet.name")
+  @Mapping(target = "wallet", source = "wallet.id")
   PaymentDto entityToDto(Payment payment);
 }
