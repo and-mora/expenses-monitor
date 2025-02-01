@@ -31,17 +31,21 @@ class PaymentDaoImpl implements PaymentDao {
   @Override
   public Mono<Payment> savePayment(Payment payment) {
     return repository.save(paymentMapper.domainToDbEntity(payment))
-        .flatMap(paymentDbEntity ->
+        .map(paymentMapper::dbEntityToDomain)
+        .flatMap(paymentSaved ->
+            // convert tags to db entities and save them
             Flux.fromIterable(payment.tags().stream()
                     .map(tag -> PaymentTagDbEntity.builder()
-                        .paymentId(paymentDbEntity.getId())
+                        .paymentId(paymentSaved.id())
                         .key(tag.key())
                         .value(tag.value())
                         .build())
                     .toList())
                 .flatMap(paymentTagRepository::save)
-                .then(Mono.just(paymentDbEntity)))
-        .map(paymentMapper::dbEntityToDomain);
+                // add tags to domain payment and add them to the payment
+                .reduceWith(() -> paymentSaved,
+                    (paymentIn, tag) -> paymentIn.addTag(tagMapper.dbEntityToDomain(tag)))
+        );
   }
 
   @Override
