@@ -1,5 +1,9 @@
 package it.andmora.expensesmonitor.backend.domain.model;
 
-public record Tag (String key, String value) {
+import java.util.UUID;
+import lombok.Builder;
+
+@Builder
+public record Tag (UUID id, String key, String value) {
 
 }
