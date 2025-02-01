@@ -12,7 +12,9 @@ import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCreator;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentDeleter;
 import it.andmora.expensesmonitor.backend.web.dto.ErrorDto;
 import it.andmora.expensesmonitor.backend.web.dto.PaymentDto;
+import it.andmora.expensesmonitor.backend.web.dto.TagDto;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -187,7 +189,8 @@ class PaymentControllerImplTest {
         "shopping",
         1000,
         "H&M",
-        dateInjected, null, "wallet");
+        dateInjected, null, "wallet",
+        Collections.singletonList(new TagDto("key", "value")));
   }
 
   Payment createDefaultPayment() {
