@@ -1,13 +1,6 @@
 DROP TABLE expenses.payment_tags;
 DROP TABLE expenses.tags;
 
-CREATE TABLE expenses.tags (
-  id uuid DEFAULT gen_random_uuid(),
-  "key" varchar NOT NULL,
-	"value" varchar NOT NULL,
-	CONSTRAINT tags_pk PRIMARY KEY (id)
-);
-
 CREATE TABLE expenses.payment_tags (
   id uuid DEFAULT gen_random_uuid(),
 	"key" varchar NOT NULL,
