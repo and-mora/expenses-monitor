@@ -23,13 +23,13 @@ class PaymentCreatorImpl implements PaymentCreator {
   public Mono<Payment> createPayment(Payment payment) {
 
     // check if the wallet exists
-    return walletDao.findByName(payment.wallet().getName())
+    return walletDao.findByName(payment.wallet().name())
         .switchIfEmpty(Mono.error(new WalletNotFoundException(payment.wallet())))
         // retrieve wallet id and set it in the payment
         .map(payment::toPaymentWithWallet)
         .flatMap(paymentDao::savePayment)
         .doOnError(WalletNotFoundException.class,
-            a -> log.info("Wallet {} not found in the database", payment.wallet().getName()))
+            a -> log.info("Wallet {} not found in the database", payment.wallet().name()))
         .doOnSuccess(p -> log.info("Payment {} created", p.id()));
   }
 }
