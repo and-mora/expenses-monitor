@@ -8,7 +8,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Table("payment_tags")
+@Table("payments_tags")
 @Builder
 @Data
 public class PaymentTagDbEntity {

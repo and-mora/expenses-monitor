@@ -1,7 +1,7 @@
 DROP TABLE expenses.payment_tags;
 DROP TABLE expenses.tags;
 
-CREATE TABLE expenses.payment_tags (
+CREATE TABLE expenses.payments_tags (
   id uuid DEFAULT gen_random_uuid(),
 	"key" varchar NOT NULL,
 	"value" varchar NOT NULL,
