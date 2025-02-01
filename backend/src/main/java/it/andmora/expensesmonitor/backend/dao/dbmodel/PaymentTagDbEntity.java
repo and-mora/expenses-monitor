@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Table("payment_tags")
@@ -12,6 +13,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Data
 public class PaymentTagDbEntity {
 
+  @Id
   private UUID id;
   private String key;
   private String value;
