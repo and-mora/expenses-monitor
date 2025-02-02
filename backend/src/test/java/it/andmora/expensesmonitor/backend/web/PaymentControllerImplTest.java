@@ -23,10 +23,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -35,11 +35,11 @@ import reactor.test.StepVerifier;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class PaymentControllerImplTest {
 
-  @MockBean
+  @MockitoBean
   PaymentCreator paymentCreator;
-  @MockBean
+  @MockitoBean
   PaymentDeleter paymentDeleter;
-  @MockBean
+  @MockitoBean
   PaymentCategoriesRetriever categoriesRetriever;
   @Autowired
   PaymentController paymentController;
