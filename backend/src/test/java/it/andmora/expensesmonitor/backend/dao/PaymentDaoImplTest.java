@@ -132,6 +132,34 @@ class PaymentDaoImplTest {
   }
 
   @Test
+  void givenAPaymentWithoutTagsWhenSaveItThenGoesOk() {
+
+    var inputPayment = createDefaultPaymentWithoutTags();
+    var expectedPayment = Payment.builder()
+        .id(injectedUUID)
+        .description("shopping")
+        .merchantName("H&M")
+        .amountInCents(1000)
+        .accountingDate(dateInjected)
+        .wallet(Wallet.builder().id(injectedUUID).build())
+        .tags(List.of())
+        .build();
+    Mockito.when(repository.save(any())).thenReturn(getSavedEntity());
+    Mockito.when(paymentTagRepository.save(any())).thenReturn(Mono.empty());
+
+    var paymentSaved = paymentDao.savePayment(inputPayment);
+
+    StepVerifier
+        .create(paymentSaved)
+        .expectNext(expectedPayment)
+        .expectComplete()
+        .verify();
+
+    verify(repository, times(1)).save(any());
+    verify(paymentTagRepository, times(0)).save(any());
+  }
+
+  @Test
   void givenAPaymentWhenDeleteItThenGoesOk() {
     Mockito.when(repository.deleteById(any(UUID.class))).thenReturn(Mono.empty());
 
@@ -193,6 +221,17 @@ class PaymentDaoImplTest {
         .wallet(Wallet.builder().name("wallet").build())
         .tags(List.of(Tag.builder().key("key").value("value").build(),
             Tag.builder().key("chiave").value("valore").build()))
+        .build();
+  }
+
+  Payment createDefaultPaymentWithoutTags() {
+    return Payment.builder()
+        .description("shopping")
+        .merchantName("H&M")
+        .amountInCents(1000)
+        .accountingDate(dateInjected)
+        .wallet(Wallet.builder().name("wallet").build())
+        .tags(List.of())
         .build();
   }
 }
