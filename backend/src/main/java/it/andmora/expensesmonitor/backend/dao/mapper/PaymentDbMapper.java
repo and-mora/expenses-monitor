@@ -12,6 +12,7 @@ public interface PaymentDbMapper {
   PaymentDbEntity domainToDbEntity(Payment payment);
 
   @Mapping(target = "wallet.id", source = "walletId")
+  @Mapping(target = "tags", expression = "java(java.util.Collections.emptyList())")
   Payment dbEntityToDomain(PaymentDbEntity paymentDbEntity);
 
 }

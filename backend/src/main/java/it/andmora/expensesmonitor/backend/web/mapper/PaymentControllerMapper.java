@@ -9,6 +9,7 @@ import org.mapstruct.Mapping;
 public interface PaymentControllerMapper {
 
   @Mapping(target = "wallet.name", source = "wallet")
+  @Mapping(target = "tags", source = "tags", defaultExpression = "java(java.util.Collections.emptyList())")
   Payment dtoToEntity(PaymentDto paymentDto);
 
   @Mapping(target = "wallet", source = "wallet.id")

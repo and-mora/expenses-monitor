@@ -15,7 +15,6 @@ import it.andmora.expensesmonitor.backend.web.dto.ErrorDto;
 import it.andmora.expensesmonitor.backend.web.dto.PaymentDto;
 import it.andmora.expensesmonitor.backend.web.dto.TagDto;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.assertj.core.api.InstanceOfAssertFactories;
@@ -78,6 +77,23 @@ class PaymentControllerImplTest {
       assertThat(payment).extracting(PaymentDto::wallet).isEqualTo("wallet");
       assertThat(payment).extracting(PaymentDto::tags).asInstanceOf(InstanceOfAssertFactories.LIST)
           .hasSize(2);
+    });
+  }
+
+  @Test
+  void whenCreatePaymentWithoutTagsThenReturnExpectedFields() {
+    Mockito.when(paymentCreator.createPayment(any()))
+        .thenReturn(Mono.just(createDefaultPaymentWithoutTags()));
+    PaymentDto paymentDto = createPaymentDtoWithoutTags();
+
+    Mono<PaymentDto> paymentResponse = paymentController.createPayment(paymentDto);
+
+    paymentResponse.subscribe(payment -> {
+      assertThat(payment).extracting(PaymentDto::description).isEqualTo("shopping");
+      assertThat(payment).extracting(PaymentDto::merchantName).isEqualTo("H&M");
+      assertThat(payment).extracting(PaymentDto::amountInCents).isEqualTo(1000);
+      assertThat(payment).extracting(PaymentDto::accountingDate).isEqualTo(dateInjected);
+      assertThat(payment).extracting(PaymentDto::wallet).isEqualTo("wallet");
     });
   }
 
@@ -195,8 +211,22 @@ class PaymentControllerImplTest {
         "shopping",
         1000,
         "H&M",
-        dateInjected, null, "wallet",
-        Collections.singletonList(new TagDto(UUID.randomUUID(), "key", "value")));
+        dateInjected,
+        null,
+        "wallet",
+        List.of(new TagDto(UUID.randomUUID(), "key", "value"),
+            new TagDto(UUID.randomUUID(), "key", "value")));
+  }
+
+  PaymentDto createPaymentDtoWithoutTags() {
+    return new PaymentDto(UUID.randomUUID(),
+        "shopping",
+        1000,
+        "H&M",
+        dateInjected,
+        null,
+        "wallet",
+        null);
   }
 
   Payment createDefaultPayment() {
@@ -208,6 +238,16 @@ class PaymentControllerImplTest {
         .wallet(Wallet.builder().id(UUID.randomUUID()).name("wallet").build())
         .tags(List.of(Tag.builder().id(UUID.randomUUID()).key("key").value("value").build(),
             Tag.builder().id(UUID.randomUUID()).key("chiave").value("valore").build()))
+        .build();
+  }
+
+  Payment createDefaultPaymentWithoutTags() {
+    return Payment.builder()
+        .description("shopping")
+        .merchantName("H&M")
+        .amountInCents(1000)
+        .accountingDate(dateInjected)
+        .wallet(Wallet.builder().id(UUID.randomUUID()).name("wallet").build())
         .build();
   }
 
