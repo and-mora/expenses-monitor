@@ -1,0 +1,1 @@
+GRANT SELECT ON ALL TABLES IN SCHEMA expenses TO read_only;

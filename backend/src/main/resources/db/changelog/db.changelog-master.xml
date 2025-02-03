@@ -29,4 +29,8 @@
     <sqlFile path="db/migrations/006_tags_feature.sql" />
   </changeSet>
 
+  <changeSet id="7" author="andmora">
+    <sqlFile path="db/migrations/007_grant_select_on_tags.sql" />
+  </changeSet>
+
 </databaseChangeLog>
