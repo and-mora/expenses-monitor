@@ -18,18 +18,16 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 69,
   "links": [],
   "panels": [
     {
-      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
         "y": 0
       },
-      "id": 3,
+      "id": 8,
       "panels": [],
       "repeat": "viaggi",
       "repeatDirection": "h",
@@ -68,7 +66,7 @@
         "x": 0,
         "y": 1
       },
-      "id": 1,
+      "id": 9,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -96,7 +94,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select amount::float/100 from expenses.payments where category = $viaggi",
+          "rawSql": "select amount::float/100 from expenses.payments_tags pt \njoin expenses.payments p on p.id = pt.payment_id \nwhere pt.value = $viaggi;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -149,7 +147,7 @@
         "x": 12,
         "y": 1
       },
-      "id": 2,
+      "id": 10,
       "options": {
         "displayLabels": [],
         "legend": {
@@ -184,7 +182,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "select accounting_date as time, merchant_name, sum(abs(amount))::float/100 as spesa\nfrom expenses.payments\nwhere category = $viaggi\ngroup by accounting_date, merchant_name\norder by time",
+          "rawSql": "select accounting_date as time, merchant_name, sum(abs(amount))::float/100 as spesa\nfrom expenses.payments p\njoin expenses.payments_tags pt on p.id = pt.payment_id \nwhere pt.value = $viaggi\ngroup by accounting_date, merchant_name\norder by time",
           "refId": "A",
           "sql": {
             "columns": [
@@ -214,9 +212,8 @@
   "templating": {
     "list": [
       {
-        "allValue": "",
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
             "All"
           ],
@@ -228,13 +225,13 @@
           "type": "grafana-postgresql-datasource",
           "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
         },
-        "definition": "select category from expenses.payments where starts_with(category, 'viaggio')",
+        "definition": "select value from expenses.payments_tags pt where pt.key = 'viaggio'",
         "hide": 0,
         "includeAll": true,
         "multi": true,
         "name": "viaggi",
         "options": [],
-        "query": "select category from expenses.payments where starts_with(category, 'viaggio')",
+        "query": "select value from expenses.payments_tags pt where pt.key = 'viaggio'",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -251,6 +248,6 @@
   "timezone": "browser",
   "title": "Viaggi",
   "uid": "fe02zmq0m9jb4f",
-  "version": 12,
+  "version": 1,
   "weekStart": ""
 }
