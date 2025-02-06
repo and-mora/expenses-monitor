@@ -15,12 +15,11 @@ import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component'
 import { DialogSuccessComponent } from '../dialog-success/dialog-success.component';
 
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.css',
-  standalone: true,
-  imports: [NgIf, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule,
-    MatCardModule, MatProgressSpinnerModule]
+    selector: 'app-login',
+    templateUrl: './login.component.html',
+    styleUrl: './login.component.css',
+    imports: [NgIf, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule,
+        MatCardModule, MatProgressSpinnerModule]
 })
 export class LoginComponent {
   loginForm = this.formBuilder.group({

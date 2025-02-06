@@ -9,12 +9,11 @@ import { HeaderComponent } from './interfaces/header/header.component';
 
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css',
-  standalone: true,
-  imports: [HeaderComponent, RouterOutlet, RouterLink, MatSidenavModule, MatListModule,
-    MatToolbarModule, MatButtonModule, MatIconModule]
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrl: './app.component.css',
+    imports: [HeaderComponent, RouterOutlet, RouterLink, MatSidenavModule, MatListModule,
+        MatToolbarModule, MatButtonModule, MatIconModule]
 })
 export class AppComponent {
   title = 'frontend';

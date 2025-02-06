@@ -18,15 +18,14 @@ import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component'
 import { WalletDto } from '../../model/wallet';
 
 @Component({
-  selector: 'app-add-payment',
-  templateUrl: './add-payment.component.html',
-  styleUrl: './add-payment.component.css',
-  standalone: true,
-  providers: [provideNativeDateAdapter(),
-  { provide: MAT_DATE_LOCALE, useValue: 'it-IT' }
-  ],
-  imports: [AsyncPipe, NgIf, ReactiveFormsModule, MatFormFieldModule, MatButtonModule, MatDatepickerModule, MatInputModule,
-    MatCardModule, MatRadioModule, MatAutocompleteModule]
+    selector: 'app-add-payment',
+    templateUrl: './add-payment.component.html',
+    styleUrl: './add-payment.component.css',
+    providers: [provideNativeDateAdapter(),
+        { provide: MAT_DATE_LOCALE, useValue: 'it-IT' }
+    ],
+    imports: [AsyncPipe, NgIf, ReactiveFormsModule, MatFormFieldModule, MatButtonModule, MatDatepickerModule, MatInputModule,
+        MatCardModule, MatRadioModule, MatAutocompleteModule]
 })
 export class AddPaymentComponent implements OnInit {
   errorMessage: string = '';
