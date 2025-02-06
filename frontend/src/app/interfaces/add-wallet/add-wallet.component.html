@@ -1,0 +1,21 @@
+<div class="container">
+  <h2>Aggiungi un nuovo Wallet</h2>
+  <form (ngSubmit)="onSubmit()" #walletForm="ngForm">
+    <div class="form-group">
+      <label for="name">Nome</label>
+      <input type="text" id="name" required [(ngModel)]="wallet.name" name="name" class="form-control">
+    </div>
+    <div class="form-group">
+      <label for="balance">Saldo</label>
+      <input type="number" id="balance" required [(ngModel)]="wallet.balance" name="balance" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-primary" [disabled]="!walletForm.form.valid">Aggiungi Wallet</button>
+  </form>
+
+  <h2>Wallet Esistenti</h2>
+  <ul class="list-group">
+    <li class="list-group-item" *ngFor="let wallet of wallets">
+      {{ wallet.name }} - {{ wallet.balance | currency }}
+    </li>
+  </ul>
+</div>
