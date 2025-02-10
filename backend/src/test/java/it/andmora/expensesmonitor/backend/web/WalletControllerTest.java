@@ -66,14 +66,15 @@ class WalletControllerTest {
   @Test
   @WithMockUser
   void whenDeleteWalletThenReturns422() {
+    var uuid = UUID.randomUUID();
     Mockito.when(walletService.deleteWallet(any()))
-        .thenReturn(Mono.error(new WalletNotEmptyException(UUID.randomUUID())));
+        .thenReturn(Mono.error(new WalletNotEmptyException(uuid)));
 
     webTestClient
         .mutate().build()
         .delete()
         .uri(uriBuilder -> uriBuilder.path(POST_WALLET_ENDPOINT)
-            .pathSegment(UUID.randomUUID().toString()).build())
+            .pathSegment(uuid.toString()).build())
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
         .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
