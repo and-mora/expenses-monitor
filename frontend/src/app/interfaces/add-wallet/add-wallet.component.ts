@@ -67,8 +67,8 @@ export class AddWalletComponent implements OnInit {
           duration: 1500
         });
       },
-      error: () => {
-        this.errorMessage = "Error in inserting a wallet.";
+      error: (error) => {
+        this.errorMessage = error.detail ? error.detail : "Error in inserting a wallet.";
         loaderDialog.close();
       }
     });

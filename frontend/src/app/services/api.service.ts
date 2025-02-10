@@ -74,12 +74,15 @@ export class ApiService {
     return this.http.get<WalletDto[]>(this.baseUrl + this.walletUrl);
   }
 
-  addWallet(wallet: WalletDto): Observable<Object> {
-    return this.http.post(this.baseUrl + this.walletUrl, JSON.stringify(wallet), {
+  addWallet(wallet: WalletDto): Observable<WalletDto | ErrorDto> {
+    return this.http.post<WalletDto>(this.baseUrl + this.walletUrl, JSON.stringify(wallet), {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
+      .pipe(
+        catchError(err => this.convertToErrorDto(err))
+      );
   }
 
   deleteWallet(walletId: string): Observable<void | ErrorDto> {
