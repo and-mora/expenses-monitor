@@ -7,6 +7,7 @@ import it.andmora.expensesmonitor.backend.domain.errors.WalletNotEmptyException;
 import it.andmora.expensesmonitor.backend.domain.model.Wallet;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -40,7 +41,8 @@ class WalletDaoImpl implements WalletDao {
   @Override
   public Mono<Void> deleteWallet(UUID walletId) {
     return repository
-        .deleteById(walletId);
+        .deleteById(walletId)
+        .onErrorMap(DataIntegrityViolationException.class, e -> new WalletNotEmptyException());
   }
 
   @Override

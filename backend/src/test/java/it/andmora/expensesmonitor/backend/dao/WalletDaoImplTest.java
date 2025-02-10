@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -80,6 +81,19 @@ class WalletDaoImplTest {
 
     StepVerifier.create(result)
         .expectComplete()
+        .verify();
+
+    verify(repository).deleteById(walletId);
+  }
+
+  @Test
+  void whenDeleteWalletThenGetError() {
+    when(repository.deleteById(walletId)).thenReturn(Mono.error(new DataIntegrityViolationException("Error in deleting wallet")));
+
+    Mono<Void> result = walletDao.deleteWallet(walletId);
+
+    StepVerifier.create(result)
+        .expectError(WalletNotEmptyException.class)
         .verify();
 
     verify(repository).deleteById(walletId);
