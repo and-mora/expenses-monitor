@@ -72,4 +72,12 @@ export class ApiService {
   getWallets(): Observable<WalletDto[]> {
     return this.http.get<WalletDto[]>(this.baseUrl + this.walletUrl);
   }
+
+  addWallet(wallet: WalletDto): Observable<Object> {
+    return this.http.post(this.baseUrl + this.walletUrl, JSON.stringify(wallet), {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  }
 }
