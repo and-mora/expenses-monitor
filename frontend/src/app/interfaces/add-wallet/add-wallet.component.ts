@@ -73,11 +73,6 @@ export class AddWalletComponent implements OnInit {
     });
   }
 
-  editWallet(wallet: WalletDto): void {
-    // Implement the logic to edit the wallet
-    console.log('Edit wallet:', wallet);
-  }
-
   deleteWallet(wallet: WalletDto): void {
     console.log('Delete wallet:', wallet);
     this.apiService.deleteWallet(wallet.id).subscribe({
