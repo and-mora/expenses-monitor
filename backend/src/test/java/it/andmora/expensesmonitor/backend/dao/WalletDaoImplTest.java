@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import it.andmora.expensesmonitor.backend.dao.dbmodel.WalletDbEntity;
 import it.andmora.expensesmonitor.backend.dao.mapper.WalletDbMapper;
 import it.andmora.expensesmonitor.backend.dao.persistance.WalletRepository;
+import it.andmora.expensesmonitor.backend.domain.errors.WalletAlreadyPresent;
 import it.andmora.expensesmonitor.backend.domain.errors.WalletNotEmptyException;
 import it.andmora.expensesmonitor.backend.domain.model.Wallet;
 import java.util.UUID;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -52,6 +54,21 @@ class WalletDaoImplTest {
     StepVerifier.create(result)
         .expectNext(wallet)
         .expectComplete()
+        .verify();
+
+    verify(repository).save(any(WalletDbEntity.class));
+  }
+
+  @Test
+  void whenSaveWalletThenReturnError() {
+    when(walletMapper.domainToDbEntity(any(Wallet.class))).thenReturn(WalletDbEntity.builder()
+        .build());
+    when(repository.save(any(WalletDbEntity.class))).thenReturn(Mono.error(new DuplicateKeyException("Error in saving wallet")));
+
+    Mono<Wallet> result = walletDao.saveWallet(wallet);
+
+    StepVerifier.create(result)
+        .expectError(WalletAlreadyPresent.class)
         .verify();
 
     verify(repository).save(any(WalletDbEntity.class));
