@@ -9,11 +9,10 @@ import { Observable } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
-  selector: 'app-header',
-  templateUrl: './header.component.html',
-  styleUrl: './header.component.css',
-  standalone: true,
-  imports: [RouterLink, AsyncPipe, NgIf, MatToolbarModule, MatButtonModule, MatIconModule, MatSidenavModule]
+    selector: 'app-header',
+    templateUrl: './header.component.html',
+    styleUrl: './header.component.css',
+    imports: [RouterLink, AsyncPipe, NgIf, MatToolbarModule, MatButtonModule, MatIconModule, MatSidenavModule]
 })
 export class HeaderComponent {
   @Input() inputSideNav!: MatSidenav;
