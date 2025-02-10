@@ -16,31 +16,34 @@
         <mat-card-actions>
           <button mat-raised-button color="primary" type="submit" [disabled]="!addWalletForm.valid">Aggiungi</button>
         </mat-card-actions>
+        <mat-error class="centered-text" *ngIf="errorMessage">{{ errorMessage }}</mat-error>
       </mat-card>
     </form>
 
   </div>
   <mat-divider></mat-divider>
-  <mat-card>
-    <mat-card-header>
-      <mat-card-title>Wallet Esistenti</mat-card-title>
-    </mat-card-header>
-    <mat-card-content class="wallet-list-card-content">
-      <mat-list>
-        <mat-list-item *ngFor="let wallet of wallets">
-          <div class="wallet-item">
-            <span class="wallet-name">{{ wallet.name }}</span>
-            <div class="wallet-actions">
-              <button mat-icon-button color="primary" (click)="editWallet(wallet)">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button mat-icon-button color="warn" (click)="deleteWallet(wallet)">
-                <mat-icon>delete</mat-icon>
-              </button>
+  <div class="wallet-list">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Wallet Esistenti</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="wallet-list-card-content">
+        <mat-list>
+          <mat-list-item *ngFor="let wallet of wallets | async">
+            <div class="wallet-item">
+              <span class="wallet-name">{{ wallet.name }}</span>
+              <div class="wallet-actions">
+                <button mat-icon-button color="primary" (click)="editWallet(wallet)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="deleteWallet(wallet)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
             </div>
-          </div>
-        </mat-list-item>
-      </mat-list>
-    </mat-card-content>
-  </mat-card>
+          </mat-list-item>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+  </div>
 </div>

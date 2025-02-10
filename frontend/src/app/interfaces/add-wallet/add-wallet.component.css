@@ -16,10 +16,7 @@
 }
 
 mat-card {
-    width: 100%;
-    margin-bottom: 20px;
     align-items: center;
-    max-width: 400px;
 }
 
 .wallet-list-card-content {
@@ -28,9 +25,13 @@ mat-card {
 
 mat-list-item {
     display: flex;
-    /* justify-content: space-between; */
-    /* align-items: center; */
     width: 100%;
+}
+
+.wallet-list {
+    width: 100%;
+    margin-bottom: 20px;
+    max-width: 400px;
 }
 
 .wallet-item {
