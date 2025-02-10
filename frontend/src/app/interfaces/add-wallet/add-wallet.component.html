@@ -44,6 +44,7 @@
           </mat-list-item>
         </mat-list>
       </mat-card-content>
+      <mat-error class="centered-text" *ngIf="errorMessageWalletList">{{ errorMessageWalletList }}</mat-error>
     </mat-card>
   </div>
 </div>

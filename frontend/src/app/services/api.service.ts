@@ -80,4 +80,8 @@ export class ApiService {
       }
     });
   }
+
+  deleteWallet(walletId: string): Observable<Object> {
+    return this.http.delete(this.baseUrl + this.walletUrl + '/' + walletId);
+  }
 }

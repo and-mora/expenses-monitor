@@ -27,6 +27,7 @@ import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component'
 export class AddWalletComponent implements OnInit {
   wallets: Observable<WalletDto[]> = new Observable<WalletDto[]>();
   errorMessage: string = '';
+  errorMessageWalletList: string = '';
 
   addWalletForm = this.formBuilder.group({
     name: ['', Validators.required],
@@ -61,7 +62,6 @@ export class AddWalletComponent implements OnInit {
         loaderDialog.close();
         this.loadWallets();
 
-
         this.snackBar.open('Pagamento inserito con successo.', undefined, {
           duration: 1500
         });
@@ -80,9 +80,18 @@ export class AddWalletComponent implements OnInit {
 
   deleteWallet(wallet: WalletDto): void {
     console.log('Delete wallet:', wallet);
-    // this.apiService.deleteWallet(wallet.id).subscribe(() => {
-    //   this.loadWallets();
-    // });
+    this.apiService.deleteWallet(wallet.id).subscribe({
+      next: () => {
+        this.snackBar.open('Wallet cancellato con successo.', undefined, {
+          duration: 1500
+        });
+        this.loadWallets();
+      },
+      error: () => {
+        this.errorMessageWalletList = "Error in deleting a wallet.";
+        
+      }
+    });
   }
 
   hasError(field: string, error: string) {
