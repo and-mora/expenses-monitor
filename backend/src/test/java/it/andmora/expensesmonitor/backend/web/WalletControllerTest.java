@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
 
+import it.andmora.expensesmonitor.backend.domain.errors.WalletNotEmptyException;
 import it.andmora.expensesmonitor.backend.domain.model.Wallet;
 import it.andmora.expensesmonitor.backend.domain.usecase.WalletService;
 import it.andmora.expensesmonitor.backend.web.dto.WalletDto;

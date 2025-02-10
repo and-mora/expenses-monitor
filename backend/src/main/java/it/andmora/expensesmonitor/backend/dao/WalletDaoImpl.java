@@ -3,6 +3,7 @@ package it.andmora.expensesmonitor.backend.dao;
 import it.andmora.expensesmonitor.backend.dao.mapper.WalletDbMapper;
 import it.andmora.expensesmonitor.backend.dao.persistance.WalletRepository;
 import it.andmora.expensesmonitor.backend.domain.WalletDao;
+import it.andmora.expensesmonitor.backend.domain.errors.WalletNotEmptyException;
 import it.andmora.expensesmonitor.backend.domain.model.Wallet;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

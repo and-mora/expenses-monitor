@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import it.andmora.expensesmonitor.backend.dao.dbmodel.WalletDbEntity;
 import it.andmora.expensesmonitor.backend.dao.mapper.WalletDbMapper;
 import it.andmora.expensesmonitor.backend.dao.persistance.WalletRepository;
+import it.andmora.expensesmonitor.backend.domain.errors.WalletNotEmptyException;
 import it.andmora.expensesmonitor.backend.domain.model.Wallet;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
