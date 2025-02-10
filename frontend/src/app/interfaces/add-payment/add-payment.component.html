@@ -31,9 +31,7 @@
                         <input matInput placeholder="Pick one" formControlName="category" [matAutocomplete]="catAuto">
                         <mat-error *ngIf="hasError('category', 'required')">Campo obbligatorio.</mat-error>
                         <mat-autocomplete autoActiveFirstOption #catAuto="matAutocomplete">
-                            @for (option of filteredCategories | async; track option) {
-                            <mat-option [value]="option">{{option}}</mat-option>
-                            }
+                            <mat-option *ngFor="let option of filteredCategories | async" [value]="option">{{option}}</mat-option>
                         </mat-autocomplete>
                     </mat-form-field>
                     <mat-form-field appearance="outline">
@@ -41,9 +39,7 @@
                       <input matInput placeholder="Pick one" formControlName="wallet" [matAutocomplete]="walAuto">
                       <mat-error *ngIf="hasError('wallet', 'required')">Campo obbligatorio.</mat-error>
                       <mat-autocomplete autoActiveFirstOption #walAuto="matAutocomplete">
-                        @for (option of filteredWallets | async; track option) {
-                        <mat-option [value]="option">{{option}}</mat-option>
-                        }
+                        <mat-option *ngFor="let option of filteredWallets | async" [value]="option">{{option}}</mat-option>
                       </mat-autocomplete>
                     </mat-form-field>
                     <mat-form-field appearance="outline">
@@ -58,6 +54,22 @@
                         <mat-label>Descrizione</mat-label>
                         <textarea matInput formControlName="description"></textarea>
                     </mat-form-field>
+                    <div formArrayName="tags">
+                        <div *ngFor="let tag of tags.controls; let i=index" [formGroupName]="i" class="tag-item">
+                            <mat-form-field appearance="outline">
+                                <mat-label>Key</mat-label>
+                                <input matInput formControlName="key">
+                            </mat-form-field>
+                            <mat-form-field appearance="outline">
+                                <mat-label>Value</mat-label>
+                                <input matInput formControlName="value">
+                            </mat-form-field>
+                            <button mat-icon-button color="warn" (click)="removeTag(i)">
+                                <mat-icon>delete</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                    <button mat-raised-button color="primary" type="button" (click)="addTag()">Aggiungi Tag</button>
                 </mat-card-content>
                 <mat-card-actions>
                     <button mat-raised-button color="primary" type="submit"

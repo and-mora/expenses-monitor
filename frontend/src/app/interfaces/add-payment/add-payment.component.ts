@@ -1,6 +1,6 @@
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -8,24 +8,25 @@ import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/cor
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Observable, map } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { PaymentDto } from '../../model/payment';
+import { WalletDto } from '../../model/wallet';
 import { ApiService } from '../../services/api.service';
 import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component';
-import { WalletDto } from '../../model/wallet';
 
 @Component({
-    selector: 'app-add-payment',
-    templateUrl: './add-payment.component.html',
-    styleUrl: './add-payment.component.css',
-    providers: [provideNativeDateAdapter(),
-        { provide: MAT_DATE_LOCALE, useValue: 'it-IT' }
-    ],
-    imports: [AsyncPipe, NgIf, ReactiveFormsModule, MatFormFieldModule, MatButtonModule, MatDatepickerModule, MatInputModule,
-        MatCardModule, MatRadioModule, MatAutocompleteModule]
+  selector: 'app-add-payment',
+  templateUrl: './add-payment.component.html',
+  styleUrls: ['./add-payment.component.css'],
+  providers: [provideNativeDateAdapter(),
+  { provide: MAT_DATE_LOCALE, useValue: 'it-IT' }
+  ],
+  imports: [AsyncPipe, NgIf, NgFor, ReactiveFormsModule, MatFormFieldModule, MatButtonModule, MatDatepickerModule, MatInputModule,
+    MatCardModule, MatRadioModule, MatAutocompleteModule, MatIconModule]
 })
 export class AddPaymentComponent implements OnInit {
   errorMessage: string = '';
@@ -34,18 +35,21 @@ export class AddPaymentComponent implements OnInit {
   wallets: WalletDto[] = [];
   filteredWallets!: Observable<string[]>;
 
-  addPaymentForm = this.formBuilder.group({
-    merchantName: ['', Validators.required],
-    amount: ['', [Validators.required, Validators.min(0)]],
-    type: ['-1', Validators.required],
-    category: ['', Validators.required],
-    accountingDate: [new Date(), Validators.required],
-    description: [''],
-    wallet: ['', Validators.required]
-  });
+  addPaymentForm: FormGroup;
 
-  constructor(private formBuilder: FormBuilder, private apiService: ApiService, private dialog: MatDialog,
-    private snackBar: MatSnackBar) { }
+  constructor(private fb: FormBuilder, private apiService: ApiService, private dialog: MatDialog,
+    private snackBar: MatSnackBar) {
+    this.addPaymentForm = this.fb.group({
+      merchantName: ['', Validators.required],
+      amount: ['', [Validators.required, Validators.min(0.01)]],
+      type: ['', Validators.required],
+      category: ['', Validators.required],
+      wallet: ['', Validators.required],
+      accountingDate: ['', Validators.required],
+      description: [''],
+      tags: this.fb.array([])
+    });
+  }
 
   ngOnInit(): void {
     // retrieve categories from the backend
@@ -83,9 +87,8 @@ export class AddPaymentComponent implements OnInit {
       .valueChanges
       .pipe(
         map(value => {
-          console.log("value", value);
           return this._filterWallets(value || "");
-      }));
+        }));
   }
 
   private _filter(value: string): string[] {
@@ -100,6 +103,21 @@ export class AddPaymentComponent implements OnInit {
     return this.wallets
       .map(wallet => wallet.name)
       .filter(walletName => walletName.toLowerCase().includes(filterValue))
+  }
+
+  get tags(): FormArray {
+    return this.addPaymentForm.get('tags') as FormArray;
+  }
+
+  addTag(): void {
+    this.tags.push(this.fb.group({
+      key: ['', Validators.required],
+      value: ['', Validators.required]
+    }));
+  }
+
+  removeTag(index: number): void {
+    this.tags.removeAt(index);
   }
 
   onSubmit(): void {
