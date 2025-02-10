@@ -85,13 +85,15 @@ export class ApiService {
   deleteWallet(walletId: string): Observable<void | ErrorDto> {
     return this.http.delete<void>(`${this.baseUrl + this.walletUrl}/${walletId}`)
       .pipe(
-        catchError((err: HttpErrorResponse) => {
-          const errorDto: ErrorDto = {
-            code: err.error.code,
-            detail: err.error.detail,
-          };
-          return throwError(() => errorDto);
-        })
+        catchError(err => this.convertToErrorDto(err))
       );
+  }
+
+  private convertToErrorDto(error: HttpErrorResponse): Observable<ErrorDto> {
+    const errorDto: ErrorDto = {
+      code: error.error.code,
+      detail: error.error.detail,
+    };
+    return throwError(() => errorDto);
   }
 }
