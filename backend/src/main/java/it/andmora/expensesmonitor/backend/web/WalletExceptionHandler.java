@@ -1,6 +1,7 @@
 package it.andmora.expensesmonitor.backend.web;
 
 
+import it.andmora.expensesmonitor.backend.domain.errors.WalletAlreadyPresent;
 import it.andmora.expensesmonitor.backend.domain.errors.WalletNotEmptyException;
 import it.andmora.expensesmonitor.backend.web.dto.ErrorDto;
 import org.springframework.http.HttpStatus;
@@ -17,5 +18,12 @@ public class WalletExceptionHandler {
   public ResponseEntity<ErrorDto> handleWalletNotEmpty(WalletNotEmptyException ex) {
     ErrorDto errorDto = new ErrorDto("WALLET_NOT_EMPTY", ex.getMessage());
     return ResponseEntity.unprocessableEntity().body(errorDto);
+  }
+
+  @ExceptionHandler(WalletAlreadyPresent.class)
+  @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+  public ResponseEntity<ErrorDto> handleWalletAlreadyPresent(WalletAlreadyPresent ex) {
+    ErrorDto errorDto = new ErrorDto("WALLET_ALREADY_PRESENT", ex.getMessage());
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(errorDto);
   }
 }

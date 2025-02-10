@@ -1,6 +1,8 @@
 package it.andmora.expensesmonitor.backend.domain.usecase;
 
 import it.andmora.expensesmonitor.backend.domain.WalletDao;
+import it.andmora.expensesmonitor.backend.domain.errors.WalletAlreadyPresent;
+import it.andmora.expensesmonitor.backend.domain.errors.WalletNotEmptyException;
 import it.andmora.expensesmonitor.backend.domain.model.Wallet;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +20,10 @@ public class WalletService {
 
   public Mono<Wallet> createWallet(String name) {
     return walletDao.saveWallet(Wallet.builder()
-        .name(name)
-        .build());
+            .name(name)
+            .build())
+        .doOnError(WalletAlreadyPresent.class,
+            exception -> log.info("Wallet with name {} already present.", name));
   }
 
   public Flux<Wallet> getWallets() {
@@ -27,6 +31,10 @@ public class WalletService {
   }
 
   public Mono<Void> deleteWallet(UUID walletId) {
-    return walletDao.deleteWallet(walletId);
+    return walletDao.deleteWallet(walletId)
+        .doOnError(WalletNotEmptyException.class,
+            exception -> log.info(
+                "Wallet with id {} cannot be deleted because there are payments associated.",
+                walletId));
   }
 }

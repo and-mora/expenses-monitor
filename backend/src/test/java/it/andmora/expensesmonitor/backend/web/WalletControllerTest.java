@@ -4,9 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
 
+import it.andmora.expensesmonitor.backend.domain.errors.WalletAlreadyPresent;
 import it.andmora.expensesmonitor.backend.domain.errors.WalletNotEmptyException;
 import it.andmora.expensesmonitor.backend.domain.model.Wallet;
 import it.andmora.expensesmonitor.backend.domain.usecase.WalletService;
+import it.andmora.expensesmonitor.backend.web.dto.ErrorDto;
 import it.andmora.expensesmonitor.backend.web.dto.WalletDto;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -80,6 +82,29 @@ class WalletControllerTest {
         .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 
     Mockito.verify(walletService).deleteWallet(any());
+  }
+
+  @Test
+  @WithMockUser
+  void whenAddWalletAlreadyPresentThenReturns409() {
+    Mockito.when(walletService.createWallet(any()))
+        .thenReturn(Mono.error(new WalletAlreadyPresent("test")));
+    WalletDto walletDto = createWalletDto();
+
+    webTestClient
+        .mutate().build()
+        .post()
+        .uri(POST_WALLET_ENDPOINT)
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(walletDto)
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.CONFLICT)
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody(ErrorDto.class)
+        .value(error -> assertThat(error.code()).isEqualTo("WALLET_ALREADY_PRESENT"));
+
+    Mockito.verify(walletService).createWallet(any());
   }
 
   @Test
