@@ -77,6 +77,7 @@ export class AddWalletComponent implements OnInit {
     console.log('Delete wallet:', wallet);
     this.apiService.deleteWallet(wallet.id).subscribe({
       next: () => {
+        this.errorMessageWalletList = '';
         this.snackBar.open('Wallet cancellato con successo.', undefined, {
           duration: 1500
         });
@@ -84,7 +85,6 @@ export class AddWalletComponent implements OnInit {
       },
       error: () => {
         this.errorMessageWalletList = "Error in deleting a wallet.";
-        
       }
     });
   }
