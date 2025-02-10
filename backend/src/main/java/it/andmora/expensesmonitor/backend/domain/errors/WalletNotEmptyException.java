@@ -1,7 +1,10 @@
 package it.andmora.expensesmonitor.backend.domain.errors;
 
-public class WalletNotEmptyException extends Throwable {
-    public WalletNotEmptyException() {
-        super("Cannot delete wallet with payments");
-    }
+import java.util.UUID;
+
+public class WalletNotEmptyException extends RuntimeException {
+
+  public WalletNotEmptyException(UUID walletId) {
+    super("Cannot delete wallet " + walletId + ". Remove all transactions first.");
+  }
 }

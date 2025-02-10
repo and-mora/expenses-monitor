@@ -42,7 +42,8 @@ class WalletDaoImpl implements WalletDao {
   public Mono<Void> deleteWallet(UUID walletId) {
     return repository
         .deleteById(walletId)
-        .onErrorMap(DataIntegrityViolationException.class, e -> new WalletNotEmptyException());
+        .onErrorMap(DataIntegrityViolationException.class,
+            e -> new WalletNotEmptyException(walletId));
   }
 
   @Override

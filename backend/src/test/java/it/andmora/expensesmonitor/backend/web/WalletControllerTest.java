@@ -16,6 +16,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -60,6 +61,24 @@ class WalletControllerTest {
         .create(paymentResponse)
         .expectComplete()
         .verify();
+  }
+
+  @Test
+  @WithMockUser
+  void whenDeleteWalletThenReturns422() {
+    Mockito.when(walletService.deleteWallet(any()))
+        .thenReturn(Mono.error(new WalletNotEmptyException(UUID.randomUUID())));
+
+    webTestClient
+        .mutate().build()
+        .delete()
+        .uri(uriBuilder -> uriBuilder.path(POST_WALLET_ENDPOINT)
+            .pathSegment(UUID.randomUUID().toString()).build())
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+
+    Mockito.verify(walletService).deleteWallet(any());
   }
 
   @Test
