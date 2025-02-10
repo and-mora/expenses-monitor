@@ -1,7 +1,7 @@
 package it.andmora.expensesmonitor.backend.web;
 
 
-import it.andmora.expensesmonitor.backend.domain.WalletNotFoundException;
+import it.andmora.expensesmonitor.backend.domain.errors.WalletNotFoundException;
 import it.andmora.expensesmonitor.backend.web.dto.ErrorDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

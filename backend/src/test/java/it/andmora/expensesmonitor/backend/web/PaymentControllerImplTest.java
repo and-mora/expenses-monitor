@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
 
-import it.andmora.expensesmonitor.backend.domain.WalletNotFoundException;
+import it.andmora.expensesmonitor.backend.domain.errors.WalletNotFoundException;
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
 import it.andmora.expensesmonitor.backend.domain.model.Tag;
 import it.andmora.expensesmonitor.backend.domain.model.Wallet;
