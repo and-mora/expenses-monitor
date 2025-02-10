@@ -12,6 +12,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { Observable } from 'rxjs';
+import { ErrorDto } from '../../model/errorDto';
 import { WalletDto } from '../../model/wallet';
 import { ApiService } from '../../services/api.service';
 import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component';
@@ -83,8 +84,8 @@ export class AddWalletComponent implements OnInit {
         });
         this.loadWallets();
       },
-      error: () => {
-        this.errorMessageWalletList = "Error in deleting a wallet.";
+      error: (error: ErrorDto) => {
+        this.errorMessageWalletList = error.detail;
       }
     });
   }

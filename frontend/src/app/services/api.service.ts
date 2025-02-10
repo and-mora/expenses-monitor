@@ -1,7 +1,8 @@
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { catchError, Observable, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Observable } from 'rxjs';
+import { ErrorDto } from '../model/errorDto';
 import { PaymentDto } from '../model/payment';
 import { WalletDto } from '../model/wallet';
 
@@ -81,7 +82,16 @@ export class ApiService {
     });
   }
 
-  deleteWallet(walletId: string): Observable<Object> {
-    return this.http.delete(this.baseUrl + this.walletUrl + '/' + walletId);
+  deleteWallet(walletId: string): Observable<void | ErrorDto> {
+    return this.http.delete<void>(`${this.baseUrl + this.walletUrl}/${walletId}`)
+      .pipe(
+        catchError((err: HttpErrorResponse) => {
+          const errorDto: ErrorDto = {
+            code: err.error.code,
+            detail: err.error.detail,
+          };
+          return throwError(() => errorDto);
+        })
+      );
   }
 }
