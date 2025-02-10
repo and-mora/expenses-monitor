@@ -21,7 +21,7 @@ spec:
             name: frontend-nginx-config
           name: nginx-config
       containers:
-        - image: ghcr.io/and-mora/expenses-monitor:v0.6.0-frontend
+        - image: ghcr.io/and-mora/expenses-monitor:v0.7.1-frontend
           name: frontend
           volumeMounts:
             - mountPath: "/etc/nginx/conf.d"
