@@ -15,6 +15,7 @@
 
 mat-card {
     width: 100%;
+    align-items: center;
 }
 
 mat-form-field {
