@@ -1,4 +1,4 @@
-package it.andmora.expensesmonitor.backend.domain;
+package it.andmora.expensesmonitor.backend.domain.errors;
 
 import it.andmora.expensesmonitor.backend.domain.model.Wallet;
 

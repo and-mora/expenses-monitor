@@ -4,7 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 
 import it.andmora.expensesmonitor.backend.domain.PaymentDao;
 import it.andmora.expensesmonitor.backend.domain.WalletDao;
-import it.andmora.expensesmonitor.backend.domain.WalletNotFoundException;
+import it.andmora.expensesmonitor.backend.domain.errors.WalletNotFoundException;
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
 import it.andmora.expensesmonitor.backend.domain.model.Wallet;
 import java.time.LocalDateTime;

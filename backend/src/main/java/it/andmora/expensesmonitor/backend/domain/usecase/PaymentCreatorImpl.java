@@ -2,7 +2,7 @@ package it.andmora.expensesmonitor.backend.domain.usecase;
 
 import it.andmora.expensesmonitor.backend.domain.PaymentDao;
 import it.andmora.expensesmonitor.backend.domain.WalletDao;
-import it.andmora.expensesmonitor.backend.domain.WalletNotFoundException;
+import it.andmora.expensesmonitor.backend.domain.errors.WalletNotFoundException;
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

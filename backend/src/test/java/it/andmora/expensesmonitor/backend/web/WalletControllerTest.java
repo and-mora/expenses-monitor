@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
 
+import it.andmora.expensesmonitor.backend.domain.errors.WalletNotEmptyException;
 import it.andmora.expensesmonitor.backend.domain.model.Wallet;
 import it.andmora.expensesmonitor.backend.domain.usecase.WalletService;
 import it.andmora.expensesmonitor.backend.web.dto.WalletDto;
@@ -15,6 +16,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -59,6 +61,25 @@ class WalletControllerTest {
         .create(paymentResponse)
         .expectComplete()
         .verify();
+  }
+
+  @Test
+  @WithMockUser
+  void whenDeleteWalletThenReturns422() {
+    var uuid = UUID.randomUUID();
+    Mockito.when(walletService.deleteWallet(any()))
+        .thenReturn(Mono.error(new WalletNotEmptyException(uuid)));
+
+    webTestClient
+        .mutate().build()
+        .delete()
+        .uri(uriBuilder -> uriBuilder.path(POST_WALLET_ENDPOINT)
+            .pathSegment(uuid.toString()).build())
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+
+    Mockito.verify(walletService).deleteWallet(any());
   }
 
   @Test

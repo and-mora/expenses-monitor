@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import it.andmora.expensesmonitor.backend.dao.dbmodel.WalletDbEntity;
 import it.andmora.expensesmonitor.backend.dao.mapper.WalletDbMapper;
 import it.andmora.expensesmonitor.backend.dao.persistance.WalletRepository;
+import it.andmora.expensesmonitor.backend.domain.errors.WalletNotEmptyException;
 import it.andmora.expensesmonitor.backend.domain.model.Wallet;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -79,6 +81,19 @@ class WalletDaoImplTest {
 
     StepVerifier.create(result)
         .expectComplete()
+        .verify();
+
+    verify(repository).deleteById(walletId);
+  }
+
+  @Test
+  void whenDeleteWalletThenGetError() {
+    when(repository.deleteById(walletId)).thenReturn(Mono.error(new DataIntegrityViolationException("Error in deleting wallet")));
+
+    Mono<Void> result = walletDao.deleteWallet(walletId);
+
+    StepVerifier.create(result)
+        .expectError(WalletNotEmptyException.class)
         .verify();
 
     verify(repository).deleteById(walletId);

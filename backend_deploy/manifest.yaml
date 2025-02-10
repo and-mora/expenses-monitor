@@ -19,7 +19,7 @@ spec:
         app: backend
     spec:
       containers:
-        - image: 'ghcr.io/and-mora/expenses-monitor:v0.13.4-backend'
+        - image: 'ghcr.io/and-mora/expenses-monitor:v0.13.5-backend'
           name: backend-java
           env:
             - name: DB_CONNECTION_URI
@@ -54,6 +54,8 @@ spec:
                   key: user-username
             - name: FRONTEND_ORIGIN_URL
               value: "https://expmonitor.freeddns.org"
+            - name: LIQUIBASE_DB_SCHEMA
+              value: "expenses"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               valueFrom:
                 configMapKeyRef:
@@ -91,7 +93,7 @@ spec:
                   key: OTEL_TRACES_SAMPLER
           resources:
             requests:
-              memory: "512Mi"
+              memory: "756Mi"
               cpu: "50m"
             limits:
               memory: "756Mi"
