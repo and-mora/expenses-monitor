@@ -59,10 +59,11 @@
                 </form>
             </div>
         </mat-step>
+
         <mat-step [stepControl]="tagsForm" optional>
             <div class="form">
                 <ng-template matStepLabel>Aggiungi tag</ng-template>
-                <button mat-stroked-button color="primary" type="button" (click)="addTag()">
+                <button mat-fab extended type="button" (click)="addTag()">
                     <mat-icon>add</mat-icon>
                     Tag
                 </button>
@@ -88,10 +89,10 @@
                         <button mat-raised-button (click)="onSubmit()" matStepperNext color="primary" type="submit" 
                             [disabled]="!addPaymentForm.valid || !tagsForm.valid">Aggiungi pagamento</button>
                     </div>
-                    
                 </form>
             </div>
         </mat-step>
+
         <mat-step>
             <ng-template matStepLabel>Completato</ng-template>
             <div class="centered-text">
