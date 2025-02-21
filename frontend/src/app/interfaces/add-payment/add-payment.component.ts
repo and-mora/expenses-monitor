@@ -12,6 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatStepperModule } from '@angular/material/stepper';
 import { map, Observable } from 'rxjs';
 import { PaymentDto } from '../../model/payment';
 import { WalletDto } from '../../model/wallet';
@@ -26,7 +27,7 @@ import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component'
   { provide: MAT_DATE_LOCALE, useValue: 'it-IT' }
   ],
   imports: [AsyncPipe, NgIf, NgFor, ReactiveFormsModule, MatFormFieldModule, MatButtonModule, MatDatepickerModule, MatInputModule,
-    MatCardModule, MatRadioModule, MatAutocompleteModule, MatIconModule]
+    MatCardModule, MatRadioModule, MatAutocompleteModule, MatIconModule, MatStepperModule]
 })
 export class AddPaymentComponent implements OnInit {
   errorMessage: string = '';
@@ -36,17 +37,20 @@ export class AddPaymentComponent implements OnInit {
   filteredWallets!: Observable<string[]>;
 
   addPaymentForm: FormGroup;
+  tagsForm: FormGroup;
 
   constructor(private fb: FormBuilder, private apiService: ApiService, private dialog: MatDialog,
     private snackBar: MatSnackBar) {
     this.addPaymentForm = this.fb.group({
       merchantName: ['', Validators.required],
       amount: ['', [Validators.required, Validators.min(0.01)]],
-      type: ['', Validators.required],
+      type: ['-1', Validators.required],
       category: ['', Validators.required],
       wallet: ['', Validators.required],
       accountingDate: ['', Validators.required],
-      description: [''],
+      description: ['']
+    });
+    this.tagsForm = this.fb.group({
       tags: this.fb.array([])
     });
   }
@@ -106,7 +110,7 @@ export class AddPaymentComponent implements OnInit {
   }
 
   get tags(): FormArray {
-    return this.addPaymentForm.get('tags') as FormArray;
+    return this.tagsForm.get('tags') as FormArray;
   }
 
   addTag(): void {
@@ -121,6 +125,7 @@ export class AddPaymentComponent implements OnInit {
   }
 
   onSubmit(): void {
+    this.errorMessage = '';
     console.log("add payment form submitted!", this.addPaymentForm.value);
 
     // loader dialog
@@ -165,6 +170,7 @@ export class AddPaymentComponent implements OnInit {
       accountingDate: fixedDate.toISOString(),
       description: this.addPaymentForm.get('description')?.getRawValue(),
       wallet: this.addPaymentForm.get('wallet')?.getRawValue(),
+      tags: this.tags.getRawValue()
     };
   }
 
