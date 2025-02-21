@@ -22,14 +22,22 @@ mat-form-field {
     width: 100%;
 }
 
-button {
-    width: 100%;
-}
-
 .mat-mdc-radio-button~.mat-mdc-radio-button {
     margin-left: 16px;
 }
 
 .centered-text {
     align-self: center;
+}
+
+.tag-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.tag-item mat-form-field {
+    flex: 1;
+    margin-right: 8px;
+    width: 10px; /* This is a hack to make the input field take up the remaining space */
 }

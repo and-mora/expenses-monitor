@@ -1,3 +1,5 @@
+import { Tag } from "./tag";
+
 export interface PaymentDto {
     merchantName: string;
     amountInCents: number;
@@ -5,4 +7,5 @@ export interface PaymentDto {
     accountingDate: string;
     description: string;
     wallet: string;
+    tags: Tag[];
 }
