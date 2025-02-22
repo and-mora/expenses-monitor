@@ -39,7 +39,8 @@ mat-form-field {
 .tag-item mat-form-field {
     flex: 1;
     margin-right: 8px;
-    width: 10px; /* This is a hack to make the input field take up the remaining space */
+    /* This is a hack to make the input field take up the remaining space */
+    width: 10px;
 }
 
 .no-tags-message {
@@ -69,4 +70,13 @@ mat-form-field {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+}
+
+.select-placeholder-container {
+    display: flex;
+    align-items: center;
+}
+
+.select-placeholder-container>span {
+    flex: 1;
 }

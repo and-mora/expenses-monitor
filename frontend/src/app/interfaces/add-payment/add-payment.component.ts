@@ -1,4 +1,4 @@
-import { AsyncPipe, NgFor, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -10,7 +10,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { map, Observable } from 'rxjs';
@@ -26,8 +28,7 @@ import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component'
   providers: [provideNativeDateAdapter(),
   { provide: MAT_DATE_LOCALE, useValue: 'it-IT' }
   ],
-  imports: [AsyncPipe, NgIf, NgFor, ReactiveFormsModule, MatFormFieldModule, MatButtonModule, MatDatepickerModule, MatInputModule,
-    MatCardModule, MatRadioModule, MatAutocompleteModule, MatIconModule, MatStepperModule]
+  imports: [AsyncPipe, ReactiveFormsModule, MatFormFieldModule, MatButtonModule, MatDatepickerModule, MatInputModule, MatCardModule, MatRadioModule, MatAutocompleteModule, MatIconModule, MatStepperModule, MatProgressSpinnerModule, MatSelectModule]
 })
 export class AddPaymentComponent implements OnInit {
   errorMessage: string = '';
@@ -35,6 +36,8 @@ export class AddPaymentComponent implements OnInit {
   filteredCategories!: Observable<string[]>;
   wallets: WalletDto[] = [];
   filteredWallets!: Observable<string[]>;
+  isWalletLoading: boolean = false;
+  isCategoriesLoading: boolean = false;
 
   addPaymentForm: FormGroup;
   tagsForm: FormGroup;
@@ -57,6 +60,7 @@ export class AddPaymentComponent implements OnInit {
 
   ngOnInit(): void {
     // retrieve categories from the backend
+    this.isCategoriesLoading = true;
     this.apiService.getCategories()
       .subscribe({
         next: a => {
@@ -65,6 +69,7 @@ export class AddPaymentComponent implements OnInit {
         complete: () => {
           // workaround to make it refresh the filteredCategories at component startup
           this.addPaymentForm.get('category')?.setValue('');
+          this.isCategoriesLoading = false;
         }
       });
     // filter the categories to show based on what the user types in the form
@@ -75,11 +80,13 @@ export class AddPaymentComponent implements OnInit {
           return this._filter(value || "");
         }));
     // retrieve wallets from the backend
+    this.isWalletLoading = true;
     this.apiService.getWallets()
       .subscribe({
         next: a => {
           console.log("wallets", a);
           this.wallets = a;
+          this.isWalletLoading = false;
         },
         complete: () => {
           // workaround to make it refresh the filteredCategories at component startup
