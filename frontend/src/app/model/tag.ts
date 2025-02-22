@@ -1,4 +1,4 @@
-export interface Tag {
+export interface TagDto {
     key: string;
     value: string;
 }
