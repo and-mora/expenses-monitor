@@ -38,7 +38,8 @@
                         @else {
                         <mat-label>Categoria</mat-label>
                         }
-                        <input matInput placeholder="Scegli una categoria" formControlName="category" [matAutocomplete]="catAuto">
+                        <input matInput placeholder="Scegli una categoria" formControlName="category"
+                            [matAutocomplete]="catAuto">
                         @if (hasError('category', 'required')) {
                         <mat-error>Campo obbligatorio.</mat-error>
                         }
@@ -62,8 +63,8 @@
                         }
 
                         <mat-select formControlName="wallet" placeholder="Scegli un Wallet">
-                            @for (wallet of wallets; track wallet) {
-                            <mat-option [value]="wallet">{{wallet.name}}</mat-option>
+                            @for (wallet of wallets; track wallet.name) {
+                            <mat-option [value]="wallet.name">{{wallet.name}}</mat-option>
                             }
                         </mat-select>
                         @if (hasError('wallet', 'required')) {
@@ -100,11 +101,6 @@
                     Tag
                 </button>
                 <form [formGroup]="tagsForm" class="form">
-                    @if (tags.length === 0) {
-                    <div class="no-tags-message">
-                        <span>Nessun tag inserito</span>
-                    </div>
-                    }
                     <div formArrayName="tags">
                         @for (tag of tags.controls; track tag; let i = $index) {
                         <div [formGroupName]="i" class="tag-item">
@@ -119,6 +115,11 @@
                             <button mat-icon-button color="warn" (click)="removeTag(i)">
                                 <mat-icon>delete</mat-icon>
                             </button>
+                        </div>
+                        }
+                        @empty {
+                        <div class="no-tags-message">
+                            <span>Nessun tag inserito</span>
                         </div>
                         }
                     </div>
