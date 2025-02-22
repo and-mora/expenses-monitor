@@ -1,4 +1,4 @@
-import { Tag } from "./tag";
+import { TagDto } from "./tag";
 
 export interface PaymentDto {
     merchantName: string;
@@ -7,5 +7,5 @@ export interface PaymentDto {
     accountingDate: string;
     description: string;
     wallet: string;
-    tags: Tag[];
+    tags: TagDto[];
 }

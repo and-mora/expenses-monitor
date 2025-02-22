@@ -1,4 +1,4 @@
-import { NgIf } from '@angular/common';
+
 import { Component } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,8 +18,7 @@ import { DialogSuccessComponent } from '../dialog-success/dialog-success.compone
     selector: 'app-login',
     templateUrl: './login.component.html',
     styleUrl: './login.component.css',
-    imports: [NgIf, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule,
-        MatCardModule, MatProgressSpinnerModule]
+    imports: [ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule, MatCardModule, MatProgressSpinnerModule]
 })
 export class LoginComponent {
   loginForm = this.formBuilder.group({

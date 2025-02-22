@@ -1,4 +1,4 @@
-import { AsyncPipe, NgFor, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -22,8 +22,7 @@ import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component'
   selector: 'app-add-wallet',
   templateUrl: './add-wallet.component.html',
   styleUrls: ['./add-wallet.component.css'],
-  imports: [AsyncPipe, NgIf, NgFor, ReactiveFormsModule, MatFormFieldModule, MatButtonModule, MatInputModule,
-    MatCardModule, MatTableModule, MatDividerModule, MatListModule, MatIconModule]
+  imports: [AsyncPipe, ReactiveFormsModule, MatFormFieldModule, MatButtonModule, MatInputModule, MatCardModule, MatTableModule, MatDividerModule, MatListModule, MatIconModule]
 })
 export class AddWalletComponent implements OnInit {
   wallets: Observable<WalletDto[]> = new Observable<WalletDto[]>();

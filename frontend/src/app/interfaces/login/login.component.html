@@ -16,9 +16,11 @@
       </mat-card-content>
       <mat-card-actions>
         <button mat-raised-button type="submit" color="primary" (click)="login()" [disabled]="isButtonDisabled || !loginForm.valid">
-          Login</button>
+        Login</button>
       </mat-card-actions>
-      <mat-error class="centered-text" *ngIf="errorMessage">{{ errorMessage }}</mat-error>
+      @if (errorMessage) {
+        <mat-error class="centered-text">{{ errorMessage }}</mat-error>
+      }
     </mat-card>
   </form>
 </div>

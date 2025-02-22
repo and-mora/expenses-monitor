@@ -1,4 +1,4 @@
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,7 +12,7 @@ import { AuthService } from '../../services/auth.service';
     selector: 'app-header',
     templateUrl: './header.component.html',
     styleUrl: './header.component.css',
-    imports: [RouterLink, AsyncPipe, NgIf, MatToolbarModule, MatButtonModule, MatIconModule, MatSidenavModule]
+    imports: [RouterLink, AsyncPipe, MatToolbarModule, MatButtonModule, MatIconModule, MatSidenavModule]
 })
 export class HeaderComponent {
   @Input() inputSideNav!: MatSidenav;

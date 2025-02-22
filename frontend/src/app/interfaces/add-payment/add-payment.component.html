@@ -7,38 +7,68 @@
                     <mat-form-field appearance="outline">
                         <mat-label>Esercente</mat-label>
                         <input matInput formControlName="merchantName">
-                        <mat-error *ngIf="hasError('merchantName', 'required')">Campo obbligatorio.</mat-error>
+                        @if (hasError('merchantName', 'required')) {
+                        <mat-error>Campo obbligatorio.</mat-error>
+                        }
                     </mat-form-field>
                     <mat-form-field appearance="outline" floatLabel="always">
                         <mat-label>Importo</mat-label>
                         <input matInput type="number" class="right-align" placeholder="0,00" formControlName="amount">
                         <span matTextPrefix>€&nbsp;</span>
-                        <mat-error *ngIf="hasError('amount', 'required')">Campo obbligatorio.</mat-error>
-                        <mat-error *ngIf="hasError('amount', 'min')">
-                            Numero positivo richiesto.
-                        </mat-error>
+                        @if (hasError('amount', 'required')) {
+                        <mat-error>Campo obbligatorio.</mat-error>
+                        }
+                        @if (hasError('amount', 'min')) {
+                        <mat-error>Numero positivo richiesto.</mat-error>
+                        }
                     </mat-form-field>
                     <mat-radio-group aria-label="Select an option" formControlName="type">
                         <mat-radio-button value="1">Income</mat-radio-button>
                         <mat-radio-button value="-1">Outcome</mat-radio-button>
                     </mat-radio-group>
                     <mat-form-field appearance="outline">
+                        @if (isCategoriesLoading) {
+                        <mat-label>
+                            <div class="select-placeholder-container">
+                                <span>Loading... </span>
+                                <mat-spinner diameter="24"></mat-spinner>
+                            </div>
+                        </mat-label>
+                        }
+                        @else {
                         <mat-label>Categoria</mat-label>
-                        <input matInput placeholder="Pick one" formControlName="category" [matAutocomplete]="catAuto">
-                        <mat-error *ngIf="hasError('category', 'required')">Campo obbligatorio.</mat-error>
+                        }
+                        <input matInput placeholder="Scegli una categoria" formControlName="category" [matAutocomplete]="catAuto">
+                        @if (hasError('category', 'required')) {
+                        <mat-error>Campo obbligatorio.</mat-error>
+                        }
                         <mat-autocomplete autoActiveFirstOption #catAuto="matAutocomplete">
-                            <mat-option *ngFor="let option of filteredCategories | async"
-                                [value]="option">{{option}}</mat-option>
+                            @for (option of filteredCategories | async; track option) {
+                            <mat-option [value]="option">{{option}}</mat-option>
+                            }
                         </mat-autocomplete>
                     </mat-form-field>
                     <mat-form-field appearance="outline">
+                        @if (isWalletLoading) {
+                        <mat-label>
+                            <div class="select-placeholder-container">
+                                <span>Loading... </span>
+                                <mat-spinner diameter="24"></mat-spinner>
+                            </div>
+                        </mat-label>
+                        }
+                        @else {
                         <mat-label>Wallet</mat-label>
-                        <input matInput placeholder="Pick one" formControlName="wallet" [matAutocomplete]="walAuto">
-                        <mat-error *ngIf="hasError('wallet', 'required')">Campo obbligatorio.</mat-error>
-                        <mat-autocomplete autoActiveFirstOption #walAuto="matAutocomplete">
-                            <mat-option *ngFor="let option of filteredWallets | async"
-                                [value]="option">{{option}}</mat-option>
-                        </mat-autocomplete>
+                        }
+
+                        <mat-select formControlName="wallet" placeholder="Scegli un Wallet">
+                            @for (wallet of wallets; track wallet) {
+                            <mat-option [value]="wallet">{{wallet.name}}</mat-option>
+                            }
+                        </mat-select>
+                        @if (hasError('wallet', 'required')) {
+                        <mat-error>Campo obbligatorio</mat-error>
+                        }
                     </mat-form-field>
                     <mat-form-field appearance="outline">
                         <mat-label>Data esecuzione</mat-label>
@@ -46,15 +76,17 @@
                         <mat-hint>DD/MM/YYYY</mat-hint>
                         <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
                         <mat-datepicker #picker></mat-datepicker>
-                        <mat-error *ngIf="hasError('accountingDate', 'required')">Campo
+                        @if (hasError('accountingDate', 'required')) {
+                        <mat-error>Campo
                             obbligatorio.</mat-error>
+                        }
                     </mat-form-field>
                     <mat-form-field appearance="outline">
                         <mat-label>Descrizione</mat-label>
                         <textarea matInput formControlName="description"></textarea>
                     </mat-form-field>
                     <div>
-                        <button mat-button matStepperNext>Avanti</button>
+                        <button mat-raised-button matStepperNext>Avanti</button>
                     </div>
                 </form>
             </div>
@@ -68,8 +100,14 @@
                     Tag
                 </button>
                 <form [formGroup]="tagsForm" class="form">
+                    @if (tags.length === 0) {
+                    <div class="no-tags-message">
+                        <span>Nessun tag inserito</span>
+                    </div>
+                    }
                     <div formArrayName="tags">
-                        <div *ngFor="let tag of tags.controls; let i=index" [formGroupName]="i" class="tag-item">
+                        @for (tag of tags.controls; track tag; let i = $index) {
+                        <div [formGroupName]="i" class="tag-item">
                             <mat-form-field appearance="outline">
                                 <mat-label>Key</mat-label>
                                 <input matInput formControlName="key">
@@ -82,11 +120,12 @@
                                 <mat-icon>delete</mat-icon>
                             </button>
                         </div>
+                        }
                     </div>
-                    <div>
-                        <button mat-button matStepperPrevious>Back</button>
-                        <button mat-button (click)="stepper.reset()">Reset</button>
-                        <button mat-raised-button (click)="onSubmit()" matStepperNext color="primary" type="submit" 
+                    <div class="tags-form-buttons">
+                        <button mat-raised-button matStepperPrevious>Back</button>
+                        <button mat-raised-button (click)="stepper.reset()">Reset</button>
+                        <button mat-raised-button (click)="onSubmit(stepper)" color="primary" type="submit"
                             [disabled]="!addPaymentForm.valid || !tagsForm.valid">Aggiungi pagamento</button>
                     </div>
                 </form>
@@ -96,10 +135,17 @@
         <mat-step>
             <ng-template matStepLabel>Completato</ng-template>
             <div class="centered-text">
-                <h1 *ngIf="!errorMessage">Il pagamento è stato inserito con successo!</h1>
-                <mat-error class="centered-text" *ngIf="errorMessage">{{ errorMessage }}</mat-error>
+                @if (!errorMessage) {
+                <h1 class="success-message">
+                    Il pagamento è stato inserito con successo!
+                    <mat-icon class="green-icon">done</mat-icon>
+                </h1>
+                }
+                @if (errorMessage) {
+                <mat-error class="centered-text">{{ errorMessage }}</mat-error>
+                }
                 <button mat-raised-button color="primary" (click)="stepper.reset()">Aggiungi un altro pagamento</button>
             </div>
-        </mat-step> 
+        </mat-step>
     </mat-stepper>
 </div>

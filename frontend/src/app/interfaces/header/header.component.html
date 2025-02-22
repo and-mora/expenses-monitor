@@ -13,14 +13,15 @@
   <button mat-icon-button routerLink="/" class="example-icon favorite-icon" aria-label="Homepage" matTooltip="Homepage">
     <mat-icon>home</mat-icon>
   </button>
-  <div *ngIf="isLoggedIn$ | async; else notLoggedIn">
-    <button mat-icon-button (click)="logout()">
-      <mat-icon>logout</mat-icon>
-    </button>
-  </div>
-  <ng-template #notLoggedIn>
+  @if (isLoggedIn$ | async) {
+    <div>
+      <button mat-icon-button (click)="logout()">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+  } @else {
     <button mat-icon-button routerLink="login" aria-label="Login">
       <mat-icon>login</mat-icon>
     </button>
-  </ng-template>
+  }
 </mat-toolbar>
