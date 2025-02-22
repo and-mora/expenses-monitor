@@ -33,7 +33,7 @@ It's a monorepo containing all the components involved in the application:
 - Frontend in Angular (overkill of course, but the most known and with materialUI)
 - Postgresql database
 - Prometheus for monitoring backend
-- Microk8s (started with Docker Swarm and upgraded later)
+- Microk8s (the project started with Docker Swarm and upgraded later to K8s)
 
 ![expenses-monitor-schema.png](docs/img/expenses-monitor-schema.png)
 
