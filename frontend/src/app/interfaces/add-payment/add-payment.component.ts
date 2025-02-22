@@ -12,7 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatStepperModule } from '@angular/material/stepper';
+import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { map, Observable } from 'rxjs';
 import { PaymentDto } from '../../model/payment';
 import { WalletDto } from '../../model/wallet';
@@ -124,7 +124,7 @@ export class AddPaymentComponent implements OnInit {
     this.tags.removeAt(index);
   }
 
-  onSubmit(): void {
+  onSubmit(stepper: MatStepper): void {
     this.errorMessage = '';
     console.log("add payment form submitted!", this.addPaymentForm.value);
 
@@ -139,12 +139,8 @@ export class AddPaymentComponent implements OnInit {
     this.apiService.addPayment(paymentDto).subscribe({
       next: response => {
         console.log("payment added.", response);
-        this.resetForm();
+        stepper.next();
         loaderDialog.close();
-
-        this.snackBar.open('Pagamento inserito con successo.', undefined, {
-          duration: 1500
-        });
       },
       error: () => {
         this.errorMessage = "Error in inserting a payment.";
@@ -178,17 +174,4 @@ export class AddPaymentComponent implements OnInit {
     return this.addPaymentForm.get(field)?.hasError(error);
   }
 
-  resetForm(): void {
-    // form.reset() does not work as expected
-    this.addPaymentForm.get('amount')?.reset();
-    this.addPaymentForm.get('amount')?.clearValidators();
-    this.addPaymentForm.get('amount')?.setValue('');
-    this.addPaymentForm.get('category')?.reset();
-    this.addPaymentForm.get('category')?.clearValidators();
-    this.addPaymentForm.get('category')?.setValue('');
-    this.addPaymentForm.get('merchantName')?.reset();
-    this.addPaymentForm.get('merchantName')?.clearValidators();
-    this.addPaymentForm.get('merchantName')?.setValue('');
-    this.addPaymentForm.get('description')?.setValue('');
-  }
 }

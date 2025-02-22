@@ -5,7 +5,7 @@
 }
 
 .form {
-    padding: 20px;
+    padding: 10px;
     max-width: 400px;
 }
 
@@ -40,4 +40,33 @@ mat-form-field {
     flex: 1;
     margin-right: 8px;
     width: 10px; /* This is a hack to make the input field take up the remaining space */
+}
+
+.no-tags-message {
+    color: lightgrey;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.tags-form-buttons {
+    margin: 10px;
+}
+
+.tags-form-buttons button {
+    margin: 10px 5px;
+}
+
+.green-icon {
+    color: green;
+    font-size: 48px;
+    font-weight: bold;
+    height: 48px;
+    width: 48px;
+}
+
+.success-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }

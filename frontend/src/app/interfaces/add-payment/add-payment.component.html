@@ -54,7 +54,7 @@
                         <textarea matInput formControlName="description"></textarea>
                     </mat-form-field>
                     <div>
-                        <button mat-button matStepperNext>Avanti</button>
+                        <button mat-raised-button matStepperNext>Avanti</button>
                     </div>
                 </form>
             </div>
@@ -68,6 +68,9 @@
                     Tag
                 </button>
                 <form [formGroup]="tagsForm" class="form">
+                    <div *ngIf="tags.length === 0" class="no-tags-message">
+                        <span>Nessun tag inserito</span>
+                    </div>
                     <div formArrayName="tags">
                         <div *ngFor="let tag of tags.controls; let i=index" [formGroupName]="i" class="tag-item">
                             <mat-form-field appearance="outline">
@@ -83,10 +86,10 @@
                             </button>
                         </div>
                     </div>
-                    <div>
-                        <button mat-button matStepperPrevious>Back</button>
-                        <button mat-button (click)="stepper.reset()">Reset</button>
-                        <button mat-raised-button (click)="onSubmit()" matStepperNext color="primary" type="submit" 
+                    <div class="tags-form-buttons">
+                        <button mat-raised-button matStepperPrevious>Back</button>
+                        <button mat-raised-button (click)="stepper.reset()">Reset</button>
+                        <button mat-raised-button (click)="onSubmit(stepper)" color="primary" type="submit"
                             [disabled]="!addPaymentForm.valid || !tagsForm.valid">Aggiungi pagamento</button>
                     </div>
                 </form>
@@ -96,10 +99,13 @@
         <mat-step>
             <ng-template matStepLabel>Completato</ng-template>
             <div class="centered-text">
-                <h1 *ngIf="!errorMessage">Il pagamento è stato inserito con successo!</h1>
+                <h1 class="success-message" *ngIf="!errorMessage">
+                    Il pagamento è stato inserito con successo!
+                    <mat-icon class="green-icon">done</mat-icon>
+                </h1>
                 <mat-error class="centered-text" *ngIf="errorMessage">{{ errorMessage }}</mat-error>
                 <button mat-raised-button color="primary" (click)="stepper.reset()">Aggiungi un altro pagamento</button>
             </div>
-        </mat-step> 
+        </mat-step>
     </mat-stepper>
 </div>
