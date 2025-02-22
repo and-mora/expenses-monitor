@@ -13,7 +13,6 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { map, Observable } from 'rxjs';
 import { PaymentDto } from '../../model/payment';
@@ -35,15 +34,13 @@ export class AddPaymentComponent implements OnInit {
   categories: string[] = [];
   filteredCategories!: Observable<string[]>;
   wallets: WalletDto[] = [];
-  filteredWallets!: Observable<string[]>;
   isWalletLoading: boolean = false;
   isCategoriesLoading: boolean = false;
 
   addPaymentForm: FormGroup;
   tagsForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private apiService: ApiService, private dialog: MatDialog,
-    private snackBar: MatSnackBar) {
+  constructor(private fb: FormBuilder, private apiService: ApiService, private dialog: MatDialog) {
     this.addPaymentForm = this.fb.group({
       merchantName: ['', Validators.required],
       amount: ['', [Validators.required, Validators.min(0.01)]],
@@ -93,13 +90,6 @@ export class AddPaymentComponent implements OnInit {
           this.addPaymentForm.get('wallet')?.setValue('');
         }
       });
-    // filter the wallets to show based on what the user types in the form
-    this.filteredWallets = this.addPaymentForm.get('wallet')!
-      .valueChanges
-      .pipe(
-        map(value => {
-          return this._filterWallets(value || "");
-        }));
   }
 
   private _filter(value: string): string[] {
