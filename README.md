@@ -22,6 +22,8 @@ I will work on it on best effort.
 ![Loki](https://img.shields.io/badge/Loki-%23F46800?style=for-the-badge&logo=grafana&logoColor=white)
 ![Tempo](https://img.shields.io/badge/Tempo-%23F46800?style=for-the-badge&logo=grafana&logoColor=white)
 
+![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)
+
 
 I will experiment Gradle, Spring Webflux.
 
@@ -30,7 +32,8 @@ It's a monorepo containing all the components involved in the application:
 - Backend server in Spring Boot
 - Frontend in Angular (overkill of course, but the most known and with materialUI)
 - Postgresql database
-- Prometheus for monitoring backend
+- A monitoring stack (deployed with helm, including Prometheus, Loki, Tempo and a OpenTelemetry collector)
+- Microk8s (the project started with Docker Swarm and upgraded later to K8s)
 
 ![expenses-monitor-schema.png](docs/img/expenses-monitor-schema.png)
 
