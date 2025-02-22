@@ -32,7 +32,7 @@ It's a monorepo containing all the components involved in the application:
 - Backend server in Spring Boot
 - Frontend in Angular (overkill of course, but the most known and with materialUI)
 - Postgresql database
-- Prometheus for monitoring backend
+- A monitoring stack (deployed with helm, including Prometheus, Loki, Tempo and a OpenTelemetry collector)
 - Microk8s (the project started with Docker Swarm and upgraded later to K8s)
 
 ![expenses-monitor-schema.png](docs/img/expenses-monitor-schema.png)
