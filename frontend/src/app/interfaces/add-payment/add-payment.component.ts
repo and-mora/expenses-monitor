@@ -141,6 +141,7 @@ export class AddPaymentComponent implements OnInit {
       },
       error: () => {
         this.errorMessage = "Error in inserting a payment.";
+        stepper.next();
         loaderDialog.close();
       }
     });
