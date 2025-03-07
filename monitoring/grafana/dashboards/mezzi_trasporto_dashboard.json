@@ -122,7 +122,7 @@
           "format": "table",
           "hide": false,
           "rawQuery": true,
-          "rawSql": "select sum(litri) as \"litri carburante\" from (\n  select (abs(p.amount)/100) /  (pt.value::numeric/1000) as litri\n  from payments_tags pt\n  join payments p on p.id = pt.payment_id\n  where pt.payment_id in (select p.id from payments p join payments_tags pt on p.id = pt.payment_id where pt.key = 'mezzo' and pt.value = $mezzo)\n  and pt.key = 'costo'\n  group by litri\n)",
+          "rawSql": "select sum(litri) as \"litri carburante\" from (\n  select (abs(p.amount)/100) /  (pt.value::numeric/1000) as litri\n  from payments_tags pt\n  join payments p on p.id = pt.payment_id\n  where pt.payment_id in (select p.id from payments p join payments_tags pt on p.id = pt.payment_id where pt.key = 'mezzo' and pt.value = $mezzo)\n  and pt.key = 'costo'\n)",
           "refId": "B",
           "sql": {
             "columns": [
@@ -674,13 +674,9 @@
     "list": [
       {
         "current": {
-          "selected": true,
-          "text": [
-            "All"
-          ],
-          "value": [
-            "$__all"
-          ]
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
         },
         "datasource": {
           "type": "grafana-postgresql-datasource",
@@ -710,6 +706,6 @@
   "timezone": "browser",
   "title": "Mezzi di trasporto",
   "uid": "cee0qqvlff9c0c",
-  "version": 7,
+  "version": 8,
   "weekStart": ""
 }
