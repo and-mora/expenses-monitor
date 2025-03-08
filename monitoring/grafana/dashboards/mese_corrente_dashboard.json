@@ -413,6 +413,27 @@
           "color": {
             "mode": "continuous-GrYlRd"
           },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "scheme",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
           "fieldMinMax": false,
           "mappings": [],
           "min": 0,
@@ -437,24 +458,29 @@
       },
       "id": 12,
       "options": {
-        "displayMode": "gradient",
-        "maxVizHeight": 78,
-        "minVizHeight": 23,
-        "minVizWidth": 8,
-        "namePlacement": "left",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "sum"
-          ],
-          "fields": "",
-          "limit": 10,
-          "values": true
+        "barRadius": 0.15,
+        "barWidth": 0.95,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
         },
-        "showUnfilled": true,
-        "sizing": "auto",
-        "text": {},
-        "valueMode": "color"
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "text": {
+          "valueSize": 30
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "category",
+        "xTickLabelRotation": 30,
+        "xTickLabelSpacing": 0
       },
       "pluginVersion": "11.1.4",
       "targets": [
@@ -488,8 +514,8 @@
           }
         }
       ],
-      "title": "Dettaglio spese - top 10",
-      "type": "bargauge"
+      "title": "Dettaglio spese per categoria",
+      "type": "barchart"
     },
     {
       "datasource": {
@@ -1175,8 +1201,8 @@
     "list": []
   },
   "time": {
-    "from": "now/M",
-    "to": "now/M"
+    "from": "now-1M/M",
+    "to": "now-1M/M"
   },
   "timepicker": {
     "hidden": false
