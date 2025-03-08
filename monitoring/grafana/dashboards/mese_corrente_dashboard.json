@@ -1029,7 +1029,7 @@
     },
     {
       "datasource": {
-        "type": "postgres",
+        "type": "grafana-postgresql-datasource",
         "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
       },
       "description": "",
@@ -1143,7 +1143,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select id, accounting_date, merchant_name, amount /100.0 as amount, category, description\r\nfrom payments\r\nWHERE $__timeFilter(accounting_date) \r\nORDER BY accounting_date asc\r\n",
+          "rawSql": "select p.id, accounting_date, merchant_name, amount /100.0 as amount, category, w.name, description\r\nfrom payments p\r\njoin wallets w on p.wallet_id = w.id\r\nWHERE $__timeFilter(accounting_date) \r\nORDER BY accounting_date asc\r\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1184,6 +1184,6 @@
   "timezone": "",
   "title": "Monitoraggio mese corrente",
   "uid": "d0a30598-95a5-4098-89cc-435d965df315",
-  "version": 3,
+  "version": 4,
   "weekStart": "monday"
 }
