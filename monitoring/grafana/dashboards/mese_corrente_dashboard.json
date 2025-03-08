@@ -1201,8 +1201,8 @@
     "list": []
   },
   "time": {
-    "from": "now-1M/M",
-    "to": "now-1M/M"
+    "from": "now/M",
+    "to": "now/M"
   },
   "timepicker": {
     "hidden": false
