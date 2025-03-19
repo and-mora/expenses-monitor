@@ -80,7 +80,7 @@ jobs:
             wget -O viaggi_dashboard.json https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/viaggi_dashboard.json
             wget -O container_metrics.json https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/metrics/container_metrics.json
             wget -O node_metrics.json https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/metrics/node_metrics.json
-            wget -O mezzi_trasporto_dashboard.json https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/metrics/mezzi_trasporto_dashboard.json
+            wget -O mezzi_trasporto_dashboard.json https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/mezzi_trasporto_dashboard.json
             kubectl create configmap monitoring-grafana-dashboard-and-gen --from-file andamento_generale_dashboard.json -n monitoring -o yaml --dry-run=client | kubectl apply -f -
             kubectl label configmap monitoring-grafana-dashboard-and-gen grafana_dashboard=1 -n monitoring
             kubectl annotate configmap monitoring-grafana-dashboard-and-gen grafana_folder='expenses-monitor' -n monitoring
