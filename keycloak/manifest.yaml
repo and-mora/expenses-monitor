@@ -90,7 +90,6 @@ spec:
               port: 9000
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
             runAsNonRoot: true
           resources:
             requests:
