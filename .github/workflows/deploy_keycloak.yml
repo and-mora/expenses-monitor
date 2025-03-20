@@ -1,0 +1,69 @@
+### Action to Deploy on VM
+
+name: Deploy Keycloak
+
+on:
+  workflow_dispatch:
+    inputs:
+      enabled:
+        required: false
+        type: string
+        description: 'Flag to enable the deploy'
+        default: 'true'
+      version:
+        description: 'Tag'
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      enabled:
+        required: true
+        type: string
+        default: false
+    secrets:
+      VM_HOST:
+        required: true
+      VM_USERNAME:
+        required: true
+      VM_PRIVATE_KEY:
+        required: true
+      VM_PORT:
+        required: true
+
+jobs:
+
+  Deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: prod
+    if: inputs.enabled == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.7
+
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 #v3.0.2
+        id: changed-path
+        with:
+          filters: |
+            readme:
+              - 'keycloak/README.md'
+
+      - name: 'Deploy on k8s'
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 #v1.0.3
+        if: steps.changed-path.outputs.readme == 'false'
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME }}
+          key: ${{ secrets.VM_PRIVATE_KEY }}
+          port: ${{ secrets.VM_PORT }}
+          fingerprint: ${{ secrets.HOST_FINGERPRINT }}
+          script: |
+            mkdir -p expenses-monitor/keycloak && cd expenses-monitor/keycloak
+            wget -O secrets.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/keycloak/secrets.yaml
+            wget -O manifest.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/keycloak/manifest.yaml
+            kubectl apply -f secrets.yaml
+            kubectl apply -f manifest.yaml
+            kubectl wait --for=condition=Ready pod -l app=keycloak --timeout=300s
