@@ -31,6 +31,8 @@ jobs:
       prometheus_version_tag: ${{ steps.prometheus-versioning.outputs.version_tag }}
       monitoring_changed: ${{ steps.monitoring-versioning.outputs.changed }}
       monitoring_version_tag: ${{ steps.monitoring-versioning.outputs.version_tag }}
+      keycloak_changed: ${{ steps.keycloak-versioning.outputs.changed }}
+      keycloak_version_tag: ${{ steps.keycloak-versioning.outputs.version_tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.7
@@ -79,6 +81,15 @@ jobs:
         with:
           change_path: "monitoring"
           namespace: monitoring
+          major_pattern: "breaking"
+          minor_pattern: "feat"
+
+      - name: Keycloak Version
+        id: keycloak-versioning
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
+        with:
+          change_path: "keycloak"
+          namespace: keycloak
           major_pattern: "breaking"
           minor_pattern: "feat"
 
@@ -182,4 +193,19 @@ jobs:
       version: ${{needs.SemanticVersioning.outputs.monitoring_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.monitoring_changed}}
       folder: monitoring
+    secrets: inherit
+
+  KeycloakRelease:
+    needs: SemanticVersioning
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{needs.SemanticVersioning.outputs.monitoring_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.monitoring_changed}}
+
+  KeycloakDeploy:
+    needs: [ SemanticVersioning, KeycloakRelease ]
+    uses: ./.github/workflows/deploy_keycloak.yml
+    with:
+      version: ${{needs.SemanticVersioning.outputs.keycloak_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.keycloak_changed}}
     secrets: inherit
