@@ -93,11 +93,11 @@ spec:
             runAsNonRoot: true
           resources:
             requests:
-              memory: "1Gi"
-              cpu: "50m"
+              memory: "1000Mi"
+              cpu: "100m"
             limits:
-              memory: "1Gi"
-              cpu: "200m"
+              memory: "1500Mi"
+              cpu: "400m"
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
