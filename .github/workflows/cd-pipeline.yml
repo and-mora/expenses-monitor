@@ -199,8 +199,8 @@ jobs:
     needs: SemanticVersioning
     uses: ./.github/workflows/release.yml
     with:
-      tag: ${{needs.SemanticVersioning.outputs.monitoring_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.monitoring_changed}}
+      tag: ${{needs.SemanticVersioning.outputs.keycloak_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.keycloak_changed}}
 
   KeycloakDeploy:
     needs: [ SemanticVersioning, KeycloakRelease ]
