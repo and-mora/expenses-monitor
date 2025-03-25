@@ -13,7 +13,7 @@
   <button mat-icon-button routerLink="/" class="example-icon favorite-icon" aria-label="Homepage" matTooltip="Homepage">
     <mat-icon>home</mat-icon>
   </button>
-  @if (isLoggedIn$ | async) {
+  @if (authenticated) {
     <div>
       <button mat-icon-button (click)="logout()">
         <mat-icon>logout</mat-icon>
