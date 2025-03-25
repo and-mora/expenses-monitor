@@ -1,4 +1,3 @@
-
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,22 +8,24 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router } from '@angular/router';
+import Keycloak from 'keycloak-js';
 import { LoginDto } from '../../model/login';
 import { AuthService } from '../../services/auth.service';
 import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component';
 import { DialogSuccessComponent } from '../dialog-success/dialog-success.component';
 
 @Component({
-    selector: 'app-login',
-    templateUrl: './login.component.html',
-    styleUrl: './login.component.css',
-    imports: [ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule, MatCardModule, MatProgressSpinnerModule]
+  selector: 'app-login',
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.css',
+  imports: [ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule, MatCardModule, MatProgressSpinnerModule]
 })
 export class LoginComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
   private formBuilder = inject(FormBuilder);
   private dialog = inject(MatDialog);
+  private readonly keycloak = inject(Keycloak);
 
   loginForm = this.formBuilder.group({
     username: ['', Validators.required],
@@ -33,45 +34,7 @@ export class LoginComponent {
   errorMessage: string = '';
   isButtonDisabled = false;
 
-  login(): void {
-    // loader dialog
-    const loaderDialog = this.dialog.open(DialogLoaderComponent, {
-      disableClose: true,
-      panelClass: 'transparent-dialog'
-    });
-    this.isButtonDisabled = true;
-
-    // api call
-    const loginData = this.loginForm.value as LoginDto;
-    this.authService.login(loginData).subscribe({
-      next: () => {
-        this.router.navigate(['/']);
-        console.log('Login successful');
-        this.isButtonDisabled = false;
-        loaderDialog.close();
-
-        // open success dialog and close it after 1 seconds
-        const successDialog = this.dialog.open(DialogSuccessComponent, {
-          panelClass: 'transparent-dialog'
-        });
-        setTimeout(() => {
-          successDialog.close();
-        }, 500);
-      },
-      error: () => {
-        // todo granular error management
-        this.errorMessage = 'Invalid username or password';
-        this.isButtonDisabled = false;
-        loaderDialog.close();
-
-        // open error dialog and close it after 1 seconds
-        // const errorDialog = this.dialog.open(DialogErrorComponent, {
-        //   panelClass: 'transparent-dialog'
-        // });
-        // setTimeout(() => {
-        //   errorDialog.close();
-        // }, 1000);
-      }
-    });
+  loginWithKeycloak() {
+    this.keycloak.login();
   }
 }
