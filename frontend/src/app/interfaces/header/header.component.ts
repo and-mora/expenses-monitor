@@ -1,5 +1,5 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
@@ -15,19 +15,24 @@ import { AuthService } from '../../services/auth.service';
     imports: [RouterLink, AsyncPipe, MatToolbarModule, MatButtonModule, MatIconModule, MatSidenavModule]
 })
 export class HeaderComponent {
+  private router = inject(Router);
+  private authService = inject(AuthService);
+
   @Input() inputSideNav!: MatSidenav;
   public isLoggedIn$: Observable<boolean>;
 
-  constructor(private router: Router, private authService: AuthService) {
+  constructor() {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
   }
 
   logout(): void {
-    this.authService.logout().subscribe({
-      next: () => {
-        this.router.navigate(['/login']);
-      }
-    });
+    // this.authService.logout().subscribe({
+    //   next: () => {
+    //     this.router.navigate(['/login']);
+    //   }
+    // });
+
+
   }
 
 }

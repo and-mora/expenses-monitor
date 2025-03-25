@@ -1,5 +1,5 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ErrorDto } from '../model/errorDto';
@@ -10,6 +10,7 @@ import { WalletDto } from '../model/wallet';
   providedIn: 'root'
 })
 export class ApiService {
+  private http = inject(HttpClient);
 
   private baseUrl = environment.apiUrl;
   private loginUrl = 'login';
@@ -18,8 +19,6 @@ export class ApiService {
   private paymentUrl = 'api/payment';
   private categoryUrl = 'api/payment/categories';
   private walletUrl = 'api/wallets';
-
-  constructor(private http: HttpClient) { }
 
   login(username: string, password: string): Observable<Object> {
     // compose urlencoded request body
@@ -55,7 +54,7 @@ export class ApiService {
     });
   }
 
-  getCategories(): Observable<string> {
+  getCategoriesStream(): Observable<string> {
     const eventSource = new EventSource(this.baseUrl + this.categoryUrl, { withCredentials: true });
 
     return new Observable(observer => {
@@ -67,6 +66,12 @@ export class ApiService {
         observer.complete();
         eventSource.close();
       }
+    });
+  }
+
+  getCategories(): Observable<string> {
+    return this.http.get(this.baseUrl + this.categoryUrl, {
+      responseType: 'text' // Specify that the response is plain text
     });
   }
 

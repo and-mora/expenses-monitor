@@ -1,5 +1,5 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -25,6 +25,11 @@ import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component'
   imports: [AsyncPipe, ReactiveFormsModule, MatFormFieldModule, MatButtonModule, MatInputModule, MatCardModule, MatTableModule, MatDividerModule, MatListModule, MatIconModule]
 })
 export class AddWalletComponent implements OnInit {
+  private formBuilder = inject(FormBuilder);
+  private apiService = inject(ApiService);
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
+
   wallets: Observable<WalletDto[]> = new Observable<WalletDto[]>();
   errorMessage: string = '';
   errorMessageWalletList: string = '';
@@ -32,9 +37,6 @@ export class AddWalletComponent implements OnInit {
   addWalletForm = this.formBuilder.group({
     name: ['', Validators.required],
   });
-
-  constructor(private formBuilder: FormBuilder, private apiService: ApiService, private dialog: MatDialog,
-    private snackBar: MatSnackBar) { }
 
   ngOnInit(): void {
     this.loadWallets();

@@ -1,17 +1,18 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable, OnInit } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable, catchError, map, of, throwError } from 'rxjs';
-import { ApiService } from './api.service';
 import { LoginDto } from '../model/login';
+import { ApiService } from './api.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private apiService = inject(ApiService);
+
   private isLoggedIn = new BehaviorSubject<boolean>(false);
   public isLoggedIn$ = this.isLoggedIn.asObservable();
 
-  constructor(private http: HttpClient, private apiService: ApiService) {
+  constructor() {
     // session cookie check on refresh or new page
     this.checkSessionAlive();
   }

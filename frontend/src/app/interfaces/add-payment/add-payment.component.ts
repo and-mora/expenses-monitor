@@ -1,5 +1,5 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
@@ -30,6 +30,10 @@ import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component'
   imports: [AsyncPipe, ReactiveFormsModule, MatFormFieldModule, MatButtonModule, MatDatepickerModule, MatInputModule, MatCardModule, MatRadioModule, MatAutocompleteModule, MatIconModule, MatStepperModule, MatProgressSpinnerModule, MatSelectModule]
 })
 export class AddPaymentComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private apiService = inject(ApiService);
+  private dialog = inject(MatDialog);
+
   errorMessage: string = '';
   categories: string[] = [];
   filteredCategories!: Observable<string[]>;
@@ -40,7 +44,7 @@ export class AddPaymentComponent implements OnInit {
   addPaymentForm: FormGroup;
   tagsForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private apiService: ApiService, private dialog: MatDialog) {
+  constructor() {
     this.addPaymentForm = this.fb.group({
       merchantName: ['', Validators.required],
       amount: ['', [Validators.required, Validators.min(0.01)]],
@@ -61,12 +65,14 @@ export class AddPaymentComponent implements OnInit {
     this.apiService.getCategories()
       .subscribe({
         next: a => {
-          this.categories.push(a);
+          console.log("current category ", a);
+          // this.categories = a;
+          this.isCategoriesLoading = false;
         },
         complete: () => {
+
           // workaround to make it refresh the filteredCategories at component startup
           this.addPaymentForm.get('category')?.setValue('');
-          this.isCategoriesLoading = false;
         }
       });
     // filter the categories to show based on what the user types in the form
@@ -81,7 +87,6 @@ export class AddPaymentComponent implements OnInit {
     this.apiService.getWallets()
       .subscribe({
         next: a => {
-          console.log("wallets", a);
           this.wallets = a;
           this.isWalletLoading = false;
         },

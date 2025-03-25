@@ -1,5 +1,5 @@
 
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -21,15 +21,17 @@ import { DialogSuccessComponent } from '../dialog-success/dialog-success.compone
     imports: [ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule, MatCardModule, MatProgressSpinnerModule]
 })
 export class LoginComponent {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private formBuilder = inject(FormBuilder);
+  private dialog = inject(MatDialog);
+
   loginForm = this.formBuilder.group({
     username: ['', Validators.required],
     password: ['', Validators.required]
   })
   errorMessage: string = '';
   isButtonDisabled = false;
-
-  constructor(private authService: AuthService, private router: Router,
-    private formBuilder: FormBuilder, private dialog: MatDialog) { }
 
   login(): void {
     // loader dialog
