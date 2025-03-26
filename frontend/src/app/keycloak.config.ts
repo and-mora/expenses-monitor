@@ -24,7 +24,6 @@ export const provideKeycloakAngular = () =>
     initOptions: {
       onLoad: 'login-required',
       checkLoginIframe: false, // Disable iframe checks if not needed
-      redirectUri: window.location.origin + '/login'
     },
     features: [
       withAutoRefreshToken({
