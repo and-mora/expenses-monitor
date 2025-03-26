@@ -15,12 +15,12 @@
   </button>
   @if (authenticated) {
     <div>
-      <button mat-icon-button (click)="logout()">
+      <button mat-icon-button (click)="logout()" matTooltip="Logout">
         <mat-icon>logout</mat-icon>
       </button>
     </div>
   } @else {
-    <button mat-icon-button routerLink="login" aria-label="Login">
+    <button mat-icon-button routerLink="login" aria-label="Login" matTooltip="Logout">
       <mat-icon>login</mat-icon>
     </button>
   }
