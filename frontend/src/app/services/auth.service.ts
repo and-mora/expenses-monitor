@@ -29,49 +29,4 @@ export class AuthService {
         }
       });
   }
-
-  // login(loginData: LoginDto): Observable<boolean> {
-  //   return this.apiService.login(loginData.username, loginData.password)
-  //     .pipe(
-  //       map(_ => {
-  //         this.isLoggedIn.next(true);
-  //         return true;
-  //       }),
-  //       catchError(err => {
-  //         this.isLoggedIn.next(false);
-  //         return throwError(() => new Error(err));
-  //       })
-  //     );
-  // }
-
-  // logout(): Observable<boolean> {
-  //   return this.apiService.logout()
-  //     .pipe(
-  //       map(_ => {
-  //         this.isLoggedIn.next(false);
-  //         return false;
-  //       }),
-  //       catchError(err => {
-  //         return throwError(() => new Error(err));
-  //       })
-  //     );
-  // }
-
-  // isAuthenticated(): Observable<boolean> {
-  //   if (!this.isLoggedIn.value) {
-  //     // additional runtime check on new page and refresh (can be removed if cause problems!)
-  //     console.log("not authenticated... checking better");
-
-  //     return this.apiService.checkSessionAlive()
-  //       .pipe(
-  //         map(() => {
-  //           console.log("checking auth");
-  //           this.isLoggedIn.next(true);
-  //           return true;
-  //         })
-  //       );
-  //   }
-
-  //   return of(true);
-  // }
 }

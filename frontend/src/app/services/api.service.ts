@@ -21,24 +21,6 @@ export class ApiService {
   private categoryUrl = '/api/payment/categories';
   private walletUrl = '/api/wallets';
 
-  // login(username: string, password: string): Observable<Object> {
-  //   // compose urlencoded request body
-  //   var formBody: string[] = [];
-  //   formBody.push(encodeURIComponent('username') + "=" + encodeURIComponent(username));
-  //   formBody.push(encodeURIComponent('password') + "=" + encodeURIComponent(password));
-  //   const body = formBody.join("&");
-
-  //   return this.http.post(this.baseUrl + this.loginUrl, body, {
-  //     headers: {
-  //       'Content-Type': 'application/x-www-form-urlencoded'
-  //     }
-  //   });
-  // }
-
-  // logout(): Observable<Object> {
-  //   return this.http.post(this.baseUrl + this.logoutUrl, null);
-  // }
-
   checkSessionAlive(): Observable<String> {
     return this.http.get(this.baseUrl + this.checkUrl,
       {
