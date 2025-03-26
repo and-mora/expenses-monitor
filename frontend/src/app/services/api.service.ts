@@ -1,5 +1,5 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ErrorDto } from '../model/errorDto';
@@ -13,30 +13,28 @@ export class ApiService {
   private http = inject(HttpClient);
 
   private baseUrl = environment.apiUrl;
-  private loginUrl = 'login';
-  private logoutUrl = 'logout';
   private checkUrl = 'greet';
   private paymentUrl = 'api/payment';
   private categoryUrl = 'api/payment/categories';
   private walletUrl = 'api/wallets';
 
-  login(username: string, password: string): Observable<Object> {
-    // compose urlencoded request body
-    var formBody: string[] = [];
-    formBody.push(encodeURIComponent('username') + "=" + encodeURIComponent(username));
-    formBody.push(encodeURIComponent('password') + "=" + encodeURIComponent(password));
-    const body = formBody.join("&");
+  // login(username: string, password: string): Observable<Object> {
+  //   // compose urlencoded request body
+  //   var formBody: string[] = [];
+  //   formBody.push(encodeURIComponent('username') + "=" + encodeURIComponent(username));
+  //   formBody.push(encodeURIComponent('password') + "=" + encodeURIComponent(password));
+  //   const body = formBody.join("&");
 
-    return this.http.post(this.baseUrl + this.loginUrl, body, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    });
-  }
+  //   return this.http.post(this.baseUrl + this.loginUrl, body, {
+  //     headers: {
+  //       'Content-Type': 'application/x-www-form-urlencoded'
+  //     }
+  //   });
+  // }
 
-  logout(): Observable<Object> {
-    return this.http.post(this.baseUrl + this.logoutUrl, null);
-  }
+  // logout(): Observable<Object> {
+  //   return this.http.post(this.baseUrl + this.logoutUrl, null);
+  // }
 
   checkSessionAlive(): Observable<String> {
     return this.http.get(this.baseUrl + this.checkUrl,
