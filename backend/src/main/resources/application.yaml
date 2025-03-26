@@ -11,10 +11,11 @@ spring:
     user: ${DB_BACKEND_USER:postgres}
     password: ${DB_BACKEND_PASSWORD:postgres}
     default-schema: ${LIQUIBASE_DB_SCHEMA:public}
-
-basic-auth:
-  username: ${BASIC_AUTH_USERNAME:user}
-  password: ${BASIC_AUTH_PASSWORD:{bcrypt}$2a$10$lnno9KSTgXgzXPidwsN0nudlqzMhd4Ls/9W122onLGQEgWUeydUmm} # "pwd" as default
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${AUTH_SERVER_ISSUER_URI:https://auth.expmonitor.freeddns.org/realms/expenses-monitor}
 
 frontend:
   origin: ${FRONTEND_ORIGIN_URL:http://localhost:4200}
