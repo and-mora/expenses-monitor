@@ -4,6 +4,11 @@ spring:
     schema: ${DB_SCHEMA:expenses}
     username: sa
     password:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: test
 
 basic-auth:
   username: ${BASIC_AUTH_USERNAME:user}

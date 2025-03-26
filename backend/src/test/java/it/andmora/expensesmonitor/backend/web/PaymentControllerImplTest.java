@@ -2,6 +2,7 @@ package it.andmora.expensesmonitor.backend.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockJwt;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
 
 import it.andmora.expensesmonitor.backend.domain.errors.WalletNotFoundException;
@@ -111,13 +112,12 @@ class PaymentControllerImplTest {
   }
 
   @Test
-  @WithMockUser
   void givenAuthWhenRestInterfaceIsCalledThen200() {
     Mockito.when(paymentCreator.createPayment(any())).thenReturn(Mono.just(createDefaultPayment()));
     PaymentDto paymentDto = createPaymentDto();
 
     webTestClient
-        .mutate().build()
+        .mutateWith(mockJwt())
         .post()
         .uri(POST_PAYMENT_ENDPOINT)
         .accept(MediaType.APPLICATION_JSON)
@@ -134,12 +134,11 @@ class PaymentControllerImplTest {
   }
 
   @Test
-  @WithMockUser
   void givenAuthWhenDeleteEndpointIsCalledThen200() {
     Mockito.when(paymentDeleter.deletePayment(any())).thenReturn(Mono.empty());
     var uuid = UUID.randomUUID();
     webTestClient
-        .mutate().build()
+        .mutateWith(mockJwt())
         .delete()
         .uri(uriBuilder -> uriBuilder
             .path(DELETE_PAYMENT_ENDPOINT)
@@ -151,12 +150,11 @@ class PaymentControllerImplTest {
   }
 
   @Test
-  @WithMockUser
   void whenGetCategoriesIsCalledThen200() {
     Mockito.when(categoriesRetriever.getCategories()).thenReturn(Flux.just("foo", "bar"));
 
     webTestClient
-        .mutate().build()
+        .mutateWith(mockJwt())
         .get()
         .uri(uriBuilder -> uriBuilder
             .path(GET_CATEGORIES_ENDPOINT)
