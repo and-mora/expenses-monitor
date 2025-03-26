@@ -5,17 +5,18 @@
     height: 80svh;
 }
 
-.login-form {
-    max-width: 400px;
-    padding: 20px;
-}
-
 mat-card {
-    width: 100%;
+    width: 400px;
+    padding: 20px;
 }
 
 mat-form-field {
     width: 100%;
+}
+
+mat-card-content {
+    display: flex;
+    justify-content: center
 }
 
 button {
@@ -24,4 +25,10 @@ button {
 
 .centered-text {
     align-self: center;
+}
+
+.mat-mdc-card-actions {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }

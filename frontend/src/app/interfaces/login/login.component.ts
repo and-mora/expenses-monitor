@@ -1,75 +1,73 @@
-
-import { Component } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, OnInit, effect, inject } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router } from '@angular/router';
-import { LoginDto } from '../../model/login';
-import { AuthService } from '../../services/auth.service';
-import { DialogLoaderComponent } from '../dialog-loader/dialog-loader.component';
-import { DialogSuccessComponent } from '../dialog-success/dialog-success.component';
+import { KEYCLOAK_EVENT_SIGNAL, KeycloakEventType, ReadyArgs, typeEventArgs } from 'keycloak-angular';
+import Keycloak from 'keycloak-js';
+import { interval, take } from 'rxjs';
 
 @Component({
-    selector: 'app-login',
-    templateUrl: './login.component.html',
-    styleUrl: './login.component.css',
-    imports: [ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule, MatCardModule, MatProgressSpinnerModule]
+  selector: 'app-login',
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.css',
+  imports: [ReactiveFormsModule, MatProgressBarModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule, MatCardModule, MatProgressSpinnerModule]
 })
-export class LoginComponent {
-  loginForm = this.formBuilder.group({
-    username: ['', Validators.required],
-    password: ['', Validators.required]
-  })
+export class LoginComponent implements OnInit {
+  private readonly keycloak = inject(Keycloak);
+  private readonly keycloakSignal = inject(KEYCLOAK_EVENT_SIGNAL);
+  private readonly router = inject(Router);
+
+  authenticated = false;
+  keycloakStatus: string | undefined;
+
   errorMessage: string = '';
-  isButtonDisabled = false;
 
-  constructor(private authService: AuthService, private router: Router,
-    private formBuilder: FormBuilder, private dialog: MatDialog) { }
+  progressbarValue = 0;
 
-  login(): void {
-    // loader dialog
-    const loaderDialog = this.dialog.open(DialogLoaderComponent, {
-      disableClose: true,
-      panelClass: 'transparent-dialog'
-    });
-    this.isButtonDisabled = true;
+  startTimer(seconds: number) {
+    const time = seconds;
+    const timer$ = interval(1000);
 
-    // api call
-    const loginData = this.loginForm.value as LoginDto;
-    this.authService.login(loginData).subscribe({
-      next: () => {
+    const sub = timer$.pipe(take(seconds)).subscribe((sec) => {
+      this.progressbarValue = (sec + 1) * 100 / seconds;
+
+      if (this.progressbarValue === 100) {
+        sub.unsubscribe();
         this.router.navigate(['/']);
-        console.log('Login successful');
-        this.isButtonDisabled = false;
-        loaderDialog.close();
-
-        // open success dialog and close it after 1 seconds
-        const successDialog = this.dialog.open(DialogSuccessComponent, {
-          panelClass: 'transparent-dialog'
-        });
-        setTimeout(() => {
-          successDialog.close();
-        }, 500);
-      },
-      error: () => {
-        // todo granular error management
-        this.errorMessage = 'Invalid username or password';
-        this.isButtonDisabled = false;
-        loaderDialog.close();
-
-        // open error dialog and close it after 1 seconds
-        // const errorDialog = this.dialog.open(DialogErrorComponent, {
-        //   panelClass: 'transparent-dialog'
-        // });
-        // setTimeout(() => {
-        //   errorDialog.close();
-        // }, 1000);
       }
     });
+  }
+
+  constructor() {
+    effect(() => {
+      const keycloakEvent = this.keycloakSignal();
+
+      this.keycloakStatus = keycloakEvent.type;
+
+      if (keycloakEvent.type === KeycloakEventType.Ready) {
+        this.authenticated = typeEventArgs<ReadyArgs>(keycloakEvent.args);
+      }
+
+      if (keycloakEvent.type === KeycloakEventType.AuthLogout) {
+        this.authenticated = false;
+      }
+      console.log("authenticated?", this.authenticated);
+    });
+  }
+
+  ngOnInit(): void {
+    console.log("timer started");
+    this.startTimer(3);
+  }
+
+
+  loginWithKeycloak() {
+    this.keycloak.login();
   }
 }
