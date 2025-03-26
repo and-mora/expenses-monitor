@@ -7,6 +7,7 @@ import {
   UserActivityService,
   withAutoRefreshToken
 } from 'keycloak-angular';
+import { environment } from '../environments/environment';
 
 const urlCondition = createInterceptorCondition<IncludeBearerTokenCondition>({
   urlPattern: /^(http:\/\/localhost:8080)(\/.*)?$/i,
@@ -16,9 +17,9 @@ const urlCondition = createInterceptorCondition<IncludeBearerTokenCondition>({
 export const provideKeycloakAngular = () =>
   provideKeycloak({
     config: {
-      url: 'https://auth.expmonitor.freeddns.org',
-      realm: 'expenses-monitor',
-      clientId: 'frontend'
+      url: environment.keycloakUrl,
+      realm: environment.keycloakRealm,
+      clientId: environment.keycloakClientId
     },
     initOptions: {
       onLoad: 'login-required',
@@ -28,7 +29,7 @@ export const provideKeycloakAngular = () =>
     features: [
       withAutoRefreshToken({
         onInactivityTimeout: 'logout',
-        sessionTimeout: 60000
+        sessionTimeout: 300000
       })
     ],
     providers: [
