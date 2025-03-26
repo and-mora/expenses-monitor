@@ -1,22 +1,6 @@
-import { provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
-import { importProvidersFrom } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { PreloadAllModules, provideRouter, withPreloading } from '@angular/router';
-import { ROUTES } from './app/app-routing';
+import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
-import { authInterceptor } from './app/interceptor/auth.interceptor';
-import { MAT_DATE_LOCALE } from '@angular/material/core';
+import { appConfig } from './app/app.config';
 
 
-bootstrapApplication(AppComponent, {
-    providers: [
-        importProvidersFrom(BrowserModule, FormsModule),
-        provideAnimationsAsync(),
-        provideHttpClient(withInterceptors([authInterceptor])),
-        provideHttpClient(withInterceptorsFromDi()),
-        provideRouter(ROUTES, withPreloading(PreloadAllModules))
-    ]
-})
-    .catch(err => console.error(err));
+bootstrapApplication(AppComponent, appConfig).catch(err => console.error(err));

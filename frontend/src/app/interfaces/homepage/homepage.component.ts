@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -8,8 +8,8 @@ import { AuthService } from '../../services/auth.service';
   standalone: true
 })
 export class HomepageComponent {
+  private authService = inject(AuthService);
 
-  constructor(private authService: AuthService) { }
 
   greet(): void {
     this.authService.checkSessionAlive();

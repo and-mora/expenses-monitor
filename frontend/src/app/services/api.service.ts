@@ -1,5 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
+import { EventSource } from 'eventsource';
+import Keycloak from 'keycloak-js';
 import { catchError, Observable, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ErrorDto } from '../model/errorDto';
@@ -10,34 +12,14 @@ import { WalletDto } from '../model/wallet';
   providedIn: 'root'
 })
 export class ApiService {
+  private http = inject(HttpClient);
+  private keycloak = inject(Keycloak);
 
   private baseUrl = environment.apiUrl;
-  private loginUrl = 'login';
-  private logoutUrl = 'logout';
-  private checkUrl = 'greet';
-  private paymentUrl = 'api/payment';
-  private categoryUrl = 'api/payment/categories';
-  private walletUrl = 'api/wallets';
-
-  constructor(private http: HttpClient) { }
-
-  login(username: string, password: string): Observable<Object> {
-    // compose urlencoded request body
-    var formBody: string[] = [];
-    formBody.push(encodeURIComponent('username') + "=" + encodeURIComponent(username));
-    formBody.push(encodeURIComponent('password') + "=" + encodeURIComponent(password));
-    const body = formBody.join("&");
-
-    return this.http.post(this.baseUrl + this.loginUrl, body, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    });
-  }
-
-  logout(): Observable<Object> {
-    return this.http.post(this.baseUrl + this.logoutUrl, null);
-  }
+  private checkUrl = '/greet';
+  private paymentUrl = '/api/payment';
+  private categoryUrl = '/api/payment/categories';
+  private walletUrl = '/api/wallets';
 
   checkSessionAlive(): Observable<String> {
     return this.http.get(this.baseUrl + this.checkUrl,
@@ -55,8 +37,13 @@ export class ApiService {
     });
   }
 
-  getCategories(): Observable<string> {
-    const eventSource = new EventSource(this.baseUrl + this.categoryUrl, { withCredentials: true });
+  getCategoriesStream(): Observable<string> {
+    const eventSource = new EventSource(this.baseUrl + this.categoryUrl, {
+      fetch: (input, init) => fetch(input, {
+        ...init,
+        headers: { ...(init?.headers || {}), Authorization: `Bearer ${this.keycloak.token}` },
+      }),
+    })
 
     return new Observable(observer => {
       eventSource.onmessage = event => {
@@ -67,6 +54,12 @@ export class ApiService {
         observer.complete();
         eventSource.close();
       }
+    });
+  }
+
+  getCategories(): Observable<string> {
+    return this.http.get(this.baseUrl + this.categoryUrl, {
+      responseType: 'text' // Specify that the response is plain text
     });
   }
 
