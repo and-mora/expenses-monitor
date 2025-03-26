@@ -1,5 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import { EventSource } from 'eventsource';
+import Keycloak from 'keycloak-js';
 import { catchError, Observable, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ErrorDto } from '../model/errorDto';
@@ -11,6 +13,7 @@ import { WalletDto } from '../model/wallet';
 })
 export class ApiService {
   private http = inject(HttpClient);
+  private keycloak = inject(Keycloak);
 
   private baseUrl = environment.apiUrl;
   private checkUrl = 'greet';
@@ -53,7 +56,12 @@ export class ApiService {
   }
 
   getCategoriesStream(): Observable<string> {
-    const eventSource = new EventSource(this.baseUrl + this.categoryUrl, { withCredentials: true });
+    const eventSource = new EventSource(this.baseUrl + this.categoryUrl, {
+      fetch: (input, init) => fetch(input, {
+        ...init,
+        headers: { ...(init?.headers || {}), Authorization: `Bearer ${this.keycloak.token}` },
+      }),
+    })
 
     return new Observable(observer => {
       eventSource.onmessage = event => {

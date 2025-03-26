@@ -62,17 +62,15 @@ export class AddPaymentComponent implements OnInit {
   ngOnInit(): void {
     // retrieve categories from the backend
     this.isCategoriesLoading = true;
-    this.apiService.getCategories()
+    this.apiService.getCategoriesStream()
       .subscribe({
         next: a => {
-          console.log("current category ", a);
-          // this.categories = a;
-          this.isCategoriesLoading = false;
+          this.categories.push(a);
         },
         complete: () => {
-
           // workaround to make it refresh the filteredCategories at component startup
           this.addPaymentForm.get('category')?.setValue('');
+          this.isCategoriesLoading = false;
         }
       });
     // filter the categories to show based on what the user types in the form
