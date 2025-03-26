@@ -16,10 +16,10 @@ export class ApiService {
   private keycloak = inject(Keycloak);
 
   private baseUrl = environment.apiUrl;
-  private checkUrl = 'greet';
-  private paymentUrl = 'api/payment';
-  private categoryUrl = 'api/payment/categories';
-  private walletUrl = 'api/wallets';
+  private checkUrl = '/greet';
+  private paymentUrl = '/api/payment';
+  private categoryUrl = '/api/payment/categories';
+  private walletUrl = '/api/wallets';
 
   // login(username: string, password: string): Observable<Object> {
   //   // compose urlencoded request body
