@@ -21,12 +21,6 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.head_ref }}
 
-#      - name: Setup Node.js
-#        uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
-#        with:
-#          node-version: 20
-#          scope: 'cycjimmy'
-
       - name: "Calculate new version"
         uses: cycjimmy/semantic-release-action@0a51e81a6baff2acad3ee88f4121c589c73d0f0e # v4.2.0
         id: versioning
