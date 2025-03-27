@@ -1,0 +1,47 @@
+### Action to build and run the unit tests of backend
+
+name: Update backend version
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'backend/**'
+
+jobs:
+  Build:
+    name: Versioning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 #v4.2.2
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      - name: "Calculate new version"
+        uses: cycjimmy/semantic-release-action@0a51e81a6baff2acad3ee88f4121c589c73d0f0e # v4.2.0
+        id: versioning
+        with:
+          dry_run: true
+          ci: true
+          working_directory: ./backend
+          tag_format: v${version}-backend
+          extra_plugins: |
+            semantic-release/git#3e934d45f97fd07a63617c0fc098c9ed3e67d97a
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Update of gradle.properties with the new version"
+        run: |
+          sed -i -e "s/version=.*/version=${{ steps.versioning.outputs.new_version }}/g" gradle.properties
+
+      - name: "STABLE - Push of gradle.properties with the new version"
+        run: |
+          git config user.name "GitHub Workflow"
+          git config user.email "<>"
+          git add gradle.properties
+          git commit -m "Updated with new version ${{ steps.versioning.outputs.new_version }}"
+          git push
