@@ -11,7 +11,7 @@ RUN adduser -D 472
 WORKDIR /app
 
 COPY --from=build /build/build/libs/*.jar /app/app.jar
-ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.7.0/opentelemetry-javaagent.jar /app/opentelemetry-javaagent.jar
+ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.14.0/opentelemetry-javaagent.jar /app/opentelemetry-javaagent.jar
 
 RUN chown -R 472:472 /app
 USER 472
