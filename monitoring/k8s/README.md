@@ -20,5 +20,3 @@ kubectl create secret generic grafana-user-credentials --from-literal=username=$
 ```
 
 Only Google SMTP is configured in grafana.ini
-
-To create the viewer user run the `init-users.sh` file on host machine (with proper k8s secrets initialization)
