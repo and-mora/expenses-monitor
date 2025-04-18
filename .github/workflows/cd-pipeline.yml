@@ -15,24 +15,22 @@ jobs:
     runs-on: ubuntu-latest
     environment: prod
     outputs:
-      grafana_changed: ${{ steps.grafana-versioning.outputs.changed }}
-      grafana_version_tag: ${{ steps.grafana-versioning.outputs.version_tag }}
+      grafana_changed: ${{ steps.grafana-versioning.outputs.new_release_published }}
+      grafana_version_tag: ${{ steps.grafana-versioning.outputs.new_release_version }}
       backend_changed: ${{ steps.backend-versioning.outputs.new_release_published }}
       backend_version_tag: ${{ steps.backend-versioning.outputs.new_release_version }}
-      backend_rust_changed: ${{ steps.backend-rust-versioning.outputs.changed }}
-      backend_rust_version_tag: ${{ steps.backend-rust-versioning.outputs.version_tag }}
-      client_changed: ${{ steps.client-versioning.outputs.changed }}
-      client_version_tag: ${{ steps.client-versioning.outputs.version_tag }}
-      frontend_changed: ${{ steps.frontend-versioning.outputs.changed }}
-      frontend_version_tag: ${{ steps.frontend-versioning.outputs.version_tag }}
-      database_changed: ${{ steps.database-versioning.outputs.changed }}
-      database_version_tag: ${{ steps.database-versioning.outputs.version_tag }}
-      prometheus_changed: ${{ steps.prometheus-versioning.outputs.changed }}
-      prometheus_version_tag: ${{ steps.prometheus-versioning.outputs.version_tag }}
-      monitoring_changed: ${{ steps.monitoring-versioning.outputs.changed }}
-      monitoring_version_tag: ${{ steps.monitoring-versioning.outputs.version_tag }}
-      keycloak_changed: ${{ steps.keycloak-versioning.outputs.changed }}
-      keycloak_version_tag: ${{ steps.keycloak-versioning.outputs.version_tag }}
+      backend_rust_changed: ${{ steps.backend-rust-versioning.outputs.new_release_published }}
+      backend_rust_version_tag: ${{ steps.backend-rust-versioning.outputs.new_release_version }}
+      client_changed: ${{ steps.client-versioning.outputs.new_release_published }}
+      client_version_tag: ${{ steps.client-versioning.outputs.new_release_version }}
+      frontend_changed: ${{ steps.frontend-versioning.outputs.new_release_published }}
+      frontend_version_tag: ${{ steps.frontend-versioning.outputs.new_release_version }}
+      database_changed: ${{ steps.database-versioning.outputs.new_release_published }}
+      database_version_tag: ${{ steps.database-versioning.outputs.new_release_version }}
+      monitoring_changed: ${{ steps.monitoring-versioning.outputs.new_release_published }}
+      monitoring_version_tag: ${{ steps.monitoring-versioning.outputs.new_release_version }}
+      keycloak_changed: ${{ steps.keycloak-versioning.outputs.new_release_published }}
+      keycloak_version_tag: ${{ steps.keycloak-versioning.outputs.new_release_version }}
     steps:
       - name: Checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.7
@@ -147,15 +145,8 @@ jobs:
     uses: ./.github/workflows/api_test.yml
     secrets: inherit
 
-  BackendRustRelease:
-    needs: SemanticVersioning
-    uses: ./.github/workflows/release.yml
-    with:
-      tag: ${{needs.SemanticVersioning.outputs.backend_rust_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.backend_rust_changed}}
-
   BackendRustBuildAndPush:
-    needs: [ SemanticVersioning, BackendRustRelease ]
+    needs: [ SemanticVersioning ]
     uses: ./.github/workflows/build-push-workflow.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.backend_rust_version_tag}}
@@ -168,30 +159,16 @@ jobs:
     uses: ./.github/workflows/deploy_backend_rust.yml
     secrets: inherit
 
-  DatabaseRelease:
-    needs: SemanticVersioning
-    uses: ./.github/workflows/release.yml
-    with:
-      tag: ${{needs.SemanticVersioning.outputs.database_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.database_changed}}
-
   DatabaseDeploy:
-    needs: [ SemanticVersioning, DatabaseRelease ]
+    needs: [ SemanticVersioning ]
     uses: ./.github/workflows/deploy_database.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.database_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.database_changed}}
     secrets: inherit
 
-  FrontendRelease:
-    needs: SemanticVersioning
-    uses: ./.github/workflows/release.yml
-    with:
-      tag: ${{needs.SemanticVersioning.outputs.frontend_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.frontend_changed}}
-
   FrontendBuildAndPush:
-    needs: [ SemanticVersioning, FrontendRelease ]
+    needs: [ SemanticVersioning ]
     uses: ./.github/workflows/build-push-workflow.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.frontend_version_tag}}
@@ -207,15 +184,8 @@ jobs:
       enabled: ${{needs.SemanticVersioning.outputs.frontend_changed}}
     secrets: inherit
 
-  MonitoringRelease:
-    needs: SemanticVersioning
-    uses: ./.github/workflows/release.yml
-    with:
-      tag: ${{needs.SemanticVersioning.outputs.monitoring_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.monitoring_changed}}
-
   MonitoringDeploy:
-    needs: [ SemanticVersioning, MonitoringRelease ]
+    needs: [ SemanticVersioning ]
     uses: ./.github/workflows/deploy_monitoring_stack.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.monitoring_version_tag}}
@@ -223,15 +193,8 @@ jobs:
       folder: monitoring
     secrets: inherit
 
-  KeycloakRelease:
-    needs: SemanticVersioning
-    uses: ./.github/workflows/release.yml
-    with:
-      tag: ${{needs.SemanticVersioning.outputs.keycloak_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.keycloak_changed}}
-
   KeycloakDeploy:
-    needs: [ SemanticVersioning, KeycloakRelease ]
+    needs: [ SemanticVersioning ]
     uses: ./.github/workflows/deploy_keycloak.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.keycloak_version_tag}}
