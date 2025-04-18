@@ -13,6 +13,7 @@ jobs:
   Build:
     name: Update Gradle version
     runs-on: ubuntu-latest
+    environment: prod
 
     steps:
       - name: Checkout
