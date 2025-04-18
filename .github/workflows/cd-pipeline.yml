@@ -15,14 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: prod
     outputs:
-      grafana_changed: ${{ steps.grafana-versioning.outputs.new_release_published }}
-      grafana_version_tag: ${{ steps.grafana-versioning.outputs.new_release_version }}
       backend_changed: ${{ steps.backend-versioning.outputs.new_release_published }}
       backend_version_tag: ${{ steps.backend-versioning.outputs.new_release_version }}
       backend_rust_changed: ${{ steps.backend-rust-versioning.outputs.new_release_published }}
       backend_rust_version_tag: ${{ steps.backend-rust-versioning.outputs.new_release_version }}
-      client_changed: ${{ steps.client-versioning.outputs.new_release_published }}
-      client_version_tag: ${{ steps.client-versioning.outputs.new_release_version }}
       frontend_changed: ${{ steps.frontend-versioning.outputs.new_release_published }}
       frontend_version_tag: ${{ steps.frontend-versioning.outputs.new_release_version }}
       database_changed: ${{ steps.database-versioning.outputs.new_release_published }}
@@ -53,11 +49,6 @@ jobs:
             semantic-release/git#3e934d45f97fd07a63617c0fc098c9ed3e67d97a
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: "Install Node"
-        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e #v4.3.0
-        with:
-          node-version: "20.18.0"
 
       - name: "Backend Rust Version"
         uses: cycjimmy/semantic-release-action@0a51e81a6baff2acad3ee88f4121c589c73d0f0e # v4.2.0
