@@ -61,7 +61,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 12,
+        "h": 9,
         "w": 9,
         "x": 0,
         "y": 1
@@ -142,7 +142,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 12,
+        "h": 9,
         "w": 8,
         "x": 9,
         "y": 1
@@ -230,7 +230,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 12,
+        "h": 9,
         "w": 7,
         "x": 17,
         "y": 1
@@ -336,6 +336,6 @@
   "timezone": "browser",
   "title": "Viaggi",
   "uid": "fe02zmq0m9jb4f",
-  "version": 3,
+  "version": 4,
   "weekStart": ""
 }
