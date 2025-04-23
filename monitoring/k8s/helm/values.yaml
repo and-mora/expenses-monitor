@@ -30,6 +30,17 @@ grafana:
       enable: externalServiceAccounts
     server:
       root_url: https://grafana.expmonitor.freeddns.org
+    auth.generic_oauth:
+      enabled: true
+      allow_sign_up: true
+      name: Keycloak
+      allow_org_create: false
+      client_id: $__file{/etc/secrets/grafana-oauth-client-credentials/client-id}
+      client_secret: $__file{/etc/secrets/grafana-oauth-client-credentials/client-secret}
+      auth_url: https://auth.expmonitor.freeddns.org/realms/grafana/protocol/openid-connect/auth
+      token_url: https://auth.expmonitor.freeddns.org/realms/grafana/protocol/openid-connect/token
+      api_url: https://auth.expmonitor.freeddns.org/realms/grafana/protocol/openid-connect/userinfo
+      scopes: openid
 
   extraConfigmapMounts:
     - name: grafana-plugin-reporter-config
@@ -37,6 +48,13 @@ grafana:
       configMap: grafana-plugin-reporter-config
       readOnly: true
       optional: false
+
+  extraSecretMounts:
+    - name: grafana-oauth-client-credentials
+      secretName: grafana-oauth-client-credentials
+      defaultMode: 0440
+      mountPath: /etc/secrets/grafana-oauth-client-credentials
+      readOnly: true
 
   smtp:
     # `existingSecret` is a reference to an existing secret containing the smtp configuration
