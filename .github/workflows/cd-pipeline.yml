@@ -41,6 +41,8 @@ jobs:
           namespace: backend
           major_pattern: "breaking"
           minor_pattern: "feat"
+          bump_each_commit: true
+          bump_each_commit_patch_pattern: "fix"
 
       - name: Backend Rust Version
         id: backend-rust-versioning
@@ -50,6 +52,8 @@ jobs:
           namespace: backend-rust
           major_pattern: "breaking"
           minor_pattern: "feat"
+          bump_each_commit: true
+          bump_each_commit_patch_pattern: "fix"
 
       - name: Frontend Version
         id: frontend-versioning
@@ -59,6 +63,8 @@ jobs:
           namespace: frontend
           major_pattern: "breaking"
           minor_pattern: "feat"
+          bump_each_commit: true
+          bump_each_commit_patch_pattern: "fix"
 
       - name: Database Version
         id: database-versioning
@@ -68,6 +74,8 @@ jobs:
           namespace: database
           major_pattern: "breaking"
           minor_pattern: "feat"
+          bump_each_commit: true
+          bump_each_commit_patch_pattern: "fix"
 
       - name: Monitoring Version
         id: monitoring-versioning
@@ -77,6 +85,8 @@ jobs:
           namespace: monitoring
           major_pattern: "breaking"
           minor_pattern: "feat"
+          bump_each_commit: true
+          bump_each_commit_patch_pattern: "fix"
 
       - name: Keycloak Version
         id: keycloak-versioning
@@ -86,6 +96,8 @@ jobs:
           namespace: keycloak
           major_pattern: "breaking"
           minor_pattern: "feat"
+          bump_each_commit: true
+          bump_each_commit_patch_pattern: "fix"
 
   BackendRelease:
     needs: SemanticVersioning
