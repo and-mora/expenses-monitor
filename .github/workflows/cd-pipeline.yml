@@ -15,110 +15,99 @@ jobs:
     runs-on: ubuntu-latest
     environment: prod
     outputs:
-      backend_changed: ${{ steps.backend-versioning.outputs.new_release_published }}
-      backend_version_tag: ${{ steps.backend-versioning.outputs.new_release_version }}
-      backend_rust_changed: ${{ steps.backend-rust-versioning.outputs.new_release_published }}
-      backend_rust_version_tag: ${{ steps.backend-rust-versioning.outputs.new_release_version }}
-      frontend_changed: ${{ steps.frontend-versioning.outputs.new_release_published }}
-      frontend_version_tag: ${{ steps.frontend-versioning.outputs.new_release_version }}
-      database_changed: ${{ steps.database-versioning.outputs.new_release_published }}
-      database_version_tag: ${{ steps.database-versioning.outputs.new_release_version }}
-      monitoring_changed: ${{ steps.monitoring-versioning.outputs.new_release_published }}
-      monitoring_version_tag: ${{ steps.monitoring-versioning.outputs.new_release_version }}
-      keycloak_changed: ${{ steps.keycloak-versioning.outputs.new_release_published }}
-      keycloak_version_tag: ${{ steps.keycloak-versioning.outputs.new_release_version }}
+      backend_changed: ${{ steps.backend-versioning.outputs.changed }}
+      backend_version_tag: ${{ steps.backend-versioning.outputs.version_tag }}
+      backend_rust_changed: ${{ steps.backend-rust-versioning.outputs.changed }}
+      backend_rust_version_tag: ${{ steps.backend-rust-versioning.outputs.version_tag }}
+      frontend_changed: ${{ steps.frontend-versioning.outputs.changed }}
+      frontend_version_tag: ${{ steps.frontend-versioning.outputs.version_tag }}
+      database_changed: ${{ steps.database-versioning.outputs.changed }}
+      database_version_tag: ${{ steps.database-versioning.outputs.version_tag }}
+      monitoring_changed: ${{ steps.monitoring-versioning.outputs.changed }}
+      monitoring_version_tag: ${{ steps.monitoring-versioning.outputs.version_tag }}
+      keycloak_changed: ${{ steps.keycloak-versioning.outputs.changed }}
+      keycloak_version_tag: ${{ steps.keycloak-versioning.outputs.version_tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.7
         with:
           fetch-depth: 0
 
-      - name: "Install Node"
-        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e #v4.3.0
-        with:
-          node-version: "20.18.0"
-
-      - name: "Backend Version"
-        uses: cycjimmy/semantic-release-action@0a51e81a6baff2acad3ee88f4121c589c73d0f0e # v4.2.0
+      - name: Backend Version
         id: backend-versioning
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
         with:
-          working_directory: ./backend
-          tag_format: v${version}-backend
-          extra_plugins: |
-            semantic-release/release-notes-generator#44c780c6f9c1bf2643fe48b6718bd9a84b820132
-            semantic-release/git#3e934d45f97fd07a63617c0fc098c9ed3e67d97a
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          change_path: "backend"
+          namespace: backend
+          major_pattern: "breaking"
+          minor_pattern: "feat"
+          bump_each_commit: true
+          bump_each_commit_patch_pattern: "fix"
 
-      - name: "Backend Rust Version"
-        uses: cycjimmy/semantic-release-action@0a51e81a6baff2acad3ee88f4121c589c73d0f0e # v4.2.0
+      - name: Backend Rust Version
         id: backend-rust-versioning
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
         with:
-          working_directory: ./backend-rust
-          tag_format: v${version}-backend-rust
-          extra_plugins: |
-            semantic-release/release-notes-generator#44c780c6f9c1bf2643fe48b6718bd9a84b820132
-            semantic-release/git#3e934d45f97fd07a63617c0fc098c9ed3e67d97a
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          change_path: "backend-rust"
+          namespace: backend-rust
+          major_pattern: "breaking"
+          minor_pattern: "feat"
+          bump_each_commit: true
+          bump_each_commit_patch_pattern: "fix"
 
-      - name: "Frontend Version"
-        uses: cycjimmy/semantic-release-action@0a51e81a6baff2acad3ee88f4121c589c73d0f0e # v4.2.0
+      - name: Frontend Version
         id: frontend-versioning
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
         with:
-          working_directory: ./frontend
-          tag_format: v${version}-frontend
-          extra_plugins: |
-            semantic-release/release-notes-generator#44c780c6f9c1bf2643fe48b6718bd9a84b820132
-            semantic-release/git#3e934d45f97fd07a63617c0fc098c9ed3e67d97a
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          change_path: "frontend"
+          namespace: frontend
+          major_pattern: "breaking"
+          minor_pattern: "feat"
+          bump_each_commit: true
+          bump_each_commit_patch_pattern: "fix"
 
-      - name: "Database Version"
-        uses: cycjimmy/semantic-release-action@0a51e81a6baff2acad3ee88f4121c589c73d0f0e # v4.2.0
+      - name: Database Version
         id: database-versioning
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
         with:
-          working_directory: ./database
-          tag_format: v${version}-database
-          extra_plugins: |
-            semantic-release/release-notes-generator#44c780c6f9c1bf2643fe48b6718bd9a84b820132
-            semantic-release/git#3e934d45f97fd07a63617c0fc098c9ed3e67d97a
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          change_path: "database"
+          namespace: database
+          major_pattern: "breaking"
+          minor_pattern: "feat"
+          bump_each_commit: true
+          bump_each_commit_patch_pattern: "fix"
 
-      - name: "Monitoring Version"
-        uses: cycjimmy/semantic-release-action@0a51e81a6baff2acad3ee88f4121c589c73d0f0e # v4.2.0
+      - name: Monitoring Version
         id: monitoring-versioning
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
         with:
-          working_directory: ./monitoring
-          tag_format: v${version}-monitoring
-          extra_plugins: |
-            semantic-release/release-notes-generator#44c780c6f9c1bf2643fe48b6718bd9a84b820132
-            semantic-release/git#3e934d45f97fd07a63617c0fc098c9ed3e67d97a
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          change_path: "monitoring"
+          namespace: monitoring
+          major_pattern: "breaking"
+          minor_pattern: "feat"
+          bump_each_commit: true
+          bump_each_commit_patch_pattern: "fix"
 
-      - name: "Keycloak Version"
-        uses: cycjimmy/semantic-release-action@0a51e81a6baff2acad3ee88f4121c589c73d0f0e # v4.2.0
+      - name: Keycloak Version
         id: keycloak-versioning
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
         with:
-          working_directory: ./keycloak
-          tag_format: v${version}-keycloak
-          extra_plugins: |
-            semantic-release/release-notes-generator#44c780c6f9c1bf2643fe48b6718bd9a84b820132
-            semantic-release/git#3e934d45f97fd07a63617c0fc098c9ed3e67d97a
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          change_path: "keycloak"
+          namespace: keycloak
+          major_pattern: "breaking"
+          minor_pattern: "feat"
+          bump_each_commit: true
+          bump_each_commit_patch_pattern: "fix"
 
-  BackendUpdateVersion:
-    needs: [SemanticVersioning]
-    uses: ./.github/workflows/update-version-be.yml
+  BackendRelease:
+    needs: SemanticVersioning
+    uses: ./.github/workflows/release.yml
     with:
-      version: ${{needs.SemanticVersioning.outputs.backend_version_tag}}
-    secrets: inherit
+      tag: ${{needs.SemanticVersioning.outputs.backend_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.backend_changed}}
 
   BackendBuildAndPush:
-    needs: [ SemanticVersioning, BackendUpdateVersion ]
+    needs: [ SemanticVersioning, BackendRelease ]
     uses: ./.github/workflows/build-push-workflow.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.backend_version_tag}}
@@ -136,8 +125,15 @@ jobs:
     uses: ./.github/workflows/api_test.yml
     secrets: inherit
 
+  BackendRustRelease:
+    needs: SemanticVersioning
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{needs.SemanticVersioning.outputs.backend_rust_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.backend_rust_changed}}
+
   BackendRustBuildAndPush:
-    needs: [ SemanticVersioning ]
+    needs: [ SemanticVersioning, BackendRustRelease ]
     uses: ./.github/workflows/build-push-workflow.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.backend_rust_version_tag}}
@@ -150,16 +146,30 @@ jobs:
     uses: ./.github/workflows/deploy_backend_rust.yml
     secrets: inherit
 
+  DatabaseRelease:
+    needs: SemanticVersioning
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{needs.SemanticVersioning.outputs.database_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.database_changed}}
+
   DatabaseDeploy:
-    needs: [ SemanticVersioning ]
+    needs: [ SemanticVersioning, DatabaseRelease ]
     uses: ./.github/workflows/deploy_database.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.database_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.database_changed}}
     secrets: inherit
 
+  FrontendRelease:
+    needs: SemanticVersioning
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{needs.SemanticVersioning.outputs.frontend_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.frontend_changed}}
+
   FrontendBuildAndPush:
-    needs: [ SemanticVersioning ]
+    needs: [ SemanticVersioning, FrontendRelease ]
     uses: ./.github/workflows/build-push-workflow.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.frontend_version_tag}}
@@ -175,8 +185,15 @@ jobs:
       enabled: ${{needs.SemanticVersioning.outputs.frontend_changed}}
     secrets: inherit
 
+  MonitoringRelease:
+    needs: SemanticVersioning
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{needs.SemanticVersioning.outputs.monitoring_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.monitoring_changed}}
+
   MonitoringDeploy:
-    needs: [ SemanticVersioning ]
+    needs: [ SemanticVersioning, MonitoringRelease ]
     uses: ./.github/workflows/deploy_monitoring_stack.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.monitoring_version_tag}}
@@ -184,8 +201,15 @@ jobs:
       folder: monitoring
     secrets: inherit
 
+  KeycloakRelease:
+    needs: SemanticVersioning
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{needs.SemanticVersioning.outputs.keycloak_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.keycloak_changed}}
+
   KeycloakDeploy:
-    needs: [ SemanticVersioning ]
+    needs: [ SemanticVersioning, KeycloakRelease ]
     uses: ./.github/workflows/deploy_keycloak.yml
     with:
       version: ${{needs.SemanticVersioning.outputs.keycloak_version_tag}}
