@@ -22,5 +22,8 @@ server:
       cert-manager.io/cluster-issuer: letsencrypt
     hostname: argocd.expmonitor.freeddns.org
     tls: true
+  metrics:
+    enabled: true
 
-
+redis.metrics.enabled: true
+controller.metrics.enabled: true
