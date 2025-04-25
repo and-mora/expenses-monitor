@@ -206,14 +206,6 @@ jobs:
       tag: ${{needs.SemanticVersioning.outputs.keycloak_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.keycloak_changed}}
 
-  KeycloakDeploy:
-    needs: [ SemanticVersioning, KeycloakRelease ]
-    uses: ./.github/workflows/deploy_keycloak.yml
-    with:
-      version: ${{needs.SemanticVersioning.outputs.keycloak_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.keycloak_changed}}
-    secrets: inherit
-
   ArgoCDDeploy:
     needs: SemanticVersioning
     uses: ./.github/workflows/deploy_argocd.yml
