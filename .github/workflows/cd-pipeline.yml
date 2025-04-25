@@ -27,6 +27,8 @@ jobs:
       monitoring_version_tag: ${{ steps.monitoring-versioning.outputs.version_tag }}
       keycloak_changed: ${{ steps.keycloak-versioning.outputs.changed }}
       keycloak_version_tag: ${{ steps.keycloak-versioning.outputs.version_tag }}
+      argocd_changed: ${{ steps.argocd-versioning.outputs.changed }}
+      argocd_version_tag: ${{ steps.argocd-versioning.outputs.version_tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.7
@@ -41,8 +43,6 @@ jobs:
           namespace: backend
           major_pattern: "breaking"
           minor_pattern: "feat"
-          bump_each_commit: true
-          bump_each_commit_patch_pattern: "fix"
 
       - name: Backend Rust Version
         id: backend-rust-versioning
@@ -52,8 +52,6 @@ jobs:
           namespace: backend-rust
           major_pattern: "breaking"
           minor_pattern: "feat"
-          bump_each_commit: true
-          bump_each_commit_patch_pattern: "fix"
 
       - name: Frontend Version
         id: frontend-versioning
@@ -63,8 +61,6 @@ jobs:
           namespace: frontend
           major_pattern: "breaking"
           minor_pattern: "feat"
-          bump_each_commit: true
-          bump_each_commit_patch_pattern: "fix"
 
       - name: Database Version
         id: database-versioning
@@ -74,8 +70,6 @@ jobs:
           namespace: database
           major_pattern: "breaking"
           minor_pattern: "feat"
-          bump_each_commit: true
-          bump_each_commit_patch_pattern: "fix"
 
       - name: Monitoring Version
         id: monitoring-versioning
@@ -85,8 +79,6 @@ jobs:
           namespace: monitoring
           major_pattern: "breaking"
           minor_pattern: "feat"
-          bump_each_commit: true
-          bump_each_commit_patch_pattern: "fix"
 
       - name: Keycloak Version
         id: keycloak-versioning
@@ -96,8 +88,15 @@ jobs:
           namespace: keycloak
           major_pattern: "breaking"
           minor_pattern: "feat"
-          bump_each_commit: true
-          bump_each_commit_patch_pattern: "fix"
+
+      - name: ArgoCD Version
+        id: argocd-versioning
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
+        with:
+          change_path: "manifest/argocd"
+          namespace: argocd
+          major_pattern: "breaking"
+          minor_pattern: "feat"
 
   BackendRelease:
     needs: SemanticVersioning
@@ -214,4 +213,19 @@ jobs:
     with:
       version: ${{needs.SemanticVersioning.outputs.keycloak_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.keycloak_changed}}
+    secrets: inherit
+
+  ArgoCDRelease:
+    needs: SemanticVersioning
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{needs.SemanticVersioning.outputs.argocd_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.argocd_changed}}
+
+  ArgoCDDeploy:
+    needs: [ SemanticVersioning, ArgoCDRelease ]
+    uses: ./.github/workflows/deploy_argocd.yml
+    with:
+      version: ${{needs.SemanticVersioning.outputs.argocd_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.argocd_changed}}
     secrets: inherit
