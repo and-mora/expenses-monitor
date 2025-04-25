@@ -1,0 +1,9 @@
+namespace: expenses-monitor
+resources:
+  - manifest.yaml
+configMapGenerator:
+  - name: frontend-nginx-config
+    files:
+      - default.conf
+generatorOptions:
+  disableNameSuffixHash: true
