@@ -128,11 +128,7 @@ jobs:
     uses: ./.github/workflows/deploy_loki.yml
     secrets: inherit
 
-  DeployTempo:
-    uses: ./.github/workflows/deploy_tempo.yml
-    secrets: inherit
-
   DeployOtelCollector:
-    needs: [ DeployLoki, DeployTempo ]
+    needs: DeployLoki
     uses: ./.github/workflows/deploy_otel_collector.yml
     secrets: inherit
