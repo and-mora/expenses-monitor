@@ -127,8 +127,3 @@ jobs:
   DeployLoki:
     uses: ./.github/workflows/deploy_loki.yml
     secrets: inherit
-
-  DeployOtelCollector:
-    needs: DeployLoki
-    uses: ./.github/workflows/deploy_otel_collector.yml
-    secrets: inherit
