@@ -1,0 +1,32 @@
+global:
+  domain: argocd.expmonitor.freeddns.org
+
+configs:
+  params:
+    server.insecure: true
+  cm:
+    oidc.config: |
+      name: Keycloak
+      issuer: https://auth.expmonitor.freeddns.org/realms/argocd
+      clientID: $argocd-client-credentials:oidc.keycloak.clientId
+      clientSecret: $argocd-client-credentials:oidc.keycloak.clientSecret
+      requestedScopes: ["openid"]
+  rbac:
+    policy.csv: |
+      g, ArgoCDAdmins, role:admin
+
+server:
+  ingress:
+    enabled: true
+    ingressClassName: public
+    annotations:
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+      cert-manager.io/cluster-issuer: letsencrypt
+    hostname: argocd.expmonitor.freeddns.org
+    tls: true
+  metrics:
+    enabled: true
+
+redis.metrics.enabled: true
+controller.metrics.enabled: true
