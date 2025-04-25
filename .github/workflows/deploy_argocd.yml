@@ -9,9 +9,6 @@ on:
         default: true
   workflow_call:
     inputs:
-      version:
-        required: true
-        type: string
       enabled:
         required: true
         type: string
