@@ -26,3 +26,12 @@ applications:
     destination:
       server: https://kubernetes.default.svc
       namespace: monitoring
+  otel-collector:
+    project: default
+    source:
+      repoURL: https://github.com/and-mora/expenses-monitor.git
+      path: manifest/otel-collector
+      targetRevision: HEAD
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: monitoring
