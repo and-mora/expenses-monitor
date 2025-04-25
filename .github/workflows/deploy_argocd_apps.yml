@@ -1,0 +1,46 @@
+name: Deploy ArgoCD-Apps
+
+on:
+  workflow_dispatch:
+    inputs:
+      enabled:
+        required: false
+        type: string
+        default: true
+  workflow_call:
+    inputs:
+      enabled:
+        required: true
+        type: string
+        default: false
+    secrets:
+      VM_HOST:
+        required: true
+      VM_USERNAME:
+        required: true
+      VM_PRIVATE_KEY:
+        required: true
+      VM_PORT:
+        required: true
+
+jobs:
+  k8sDeploy:
+    name: k8sDeploy
+    runs-on: ubuntu-latest
+    if: inputs.enabled == 'true'
+    environment: prod
+    steps:
+      - name: 'Deploy on k8s'
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 #v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME }}
+          key: ${{ secrets.VM_PRIVATE_KEY }}
+          port: ${{ secrets.VM_PORT }}
+          fingerprint: ${{ secrets.HOST_FINGERPRINT }}
+          script: |
+            mkdir -p expenses-monitor/argocd-apps && cd expenses-monitor/argocd-apps
+            wget -O values.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/manifest/argocd-apps/helm/values.yaml
+            wget -O Chart.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/manifest/argocd-apps/helm/Chart.yaml
+            helm dependency build
+            helm upgrade --install argocd-apps charts/* -f values.yaml --wait --timeout 300s -n argocd
