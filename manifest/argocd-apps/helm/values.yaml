@@ -1,0 +1,10 @@
+applications:
+  keycloak:
+    project: default
+    source:
+      repoURL: https://github.com/and-mora/expenses-monitor.git
+      path: manifest/keycloak
+      targetRevision: HEAD
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: default
