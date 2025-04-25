@@ -83,7 +83,7 @@ jobs:
         id: keycloak-versioning
         uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
         with:
-          change_path: "keycloak"
+          change_path: "manifest/keycloak"
           namespace: keycloak
           major_pattern: "breaking"
           minor_pattern: "feat"
