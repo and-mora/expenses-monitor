@@ -8,3 +8,21 @@ applications:
     destination:
       server: https://kubernetes.default.svc
       namespace: default
+  frontend:
+    project: default
+    source:
+      repoURL: https://github.com/and-mora/expenses-monitor.git
+      path: manifest/frontend
+      targetRevision: HEAD
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: expenses-monitor
+  tempo:
+    project: default
+    source:
+      repoURL: https://github.com/and-mora/expenses-monitor.git
+      path: manifest/tempo
+      targetRevision: HEAD
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: monitoring
