@@ -1,4 +1,4 @@
-name: Deploy ArgoCD
+name: Deploy ArgoCD-Apps
 
 on:
   workflow_dispatch:
@@ -39,8 +39,8 @@ jobs:
           port: ${{ secrets.VM_PORT }}
           fingerprint: ${{ secrets.HOST_FINGERPRINT }}
           script: |
-            mkdir -p expenses-monitor/argocd && cd expenses-monitor/argocd
-            wget -O values.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/manifest/argocd/helm/values.yaml
-            wget -O Chart.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/manifest/argocd/helm/Chart.yaml
+            mkdir -p expenses-monitor/argocd-apps && cd expenses-monitor/argocd-apps
+            wget -O values.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/manifest/argocd-apps/helm/values.yaml
+            wget -O Chart.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/manifest/argocd-apps/helm/Chart.yaml
             helm dependency build
-            helm upgrade --install argocd charts/* -f values.yaml --wait --timeout 300s -n argocd
+            helm upgrade --install argocd-apps charts/* -f values.yaml --wait --timeout 300s -n argocd
