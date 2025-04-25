@@ -11,6 +11,9 @@ configs:
       clientID: $argocd-client-credentials:oidc.keycloak.clientId
       clientSecret: $argocd-client-credentials:oidc.keycloak.clientSecret
       requestedScopes: ["openid"]
+  rbac:
+    policy.csv: |
+      g, ArgoCDAdmins, role:admin
 
 server:
   ingress:
