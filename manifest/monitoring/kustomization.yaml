@@ -1,0 +1,4 @@
+configMapGenerator:
+  - name: monitoring-grafana-dashboard-andamento-generale
+    files:
+      - ../../monitoring/grafana/dashboards/andamento_generale_dashboard.json
