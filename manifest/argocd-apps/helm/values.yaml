@@ -1,55 +1,56 @@
-applications:
-  keycloak:
-    project: default
-    source:
-      repoURL: https://github.com/and-mora/expenses-monitor.git
-      path: manifest/keycloak
-      targetRevision: HEAD
-    destination:
-      server: https://kubernetes.default.svc
-      namespace: default
-  frontend:
-    project: default
-    source:
-      repoURL: https://github.com/and-mora/expenses-monitor.git
-      path: manifest/frontend
-      targetRevision: HEAD
-    destination:
-      server: https://kubernetes.default.svc
-      namespace: expenses-monitor
-  tempo:
-    project: default
-    source:
-      repoURL: https://github.com/and-mora/expenses-monitor.git
-      path: manifest/tempo
-      targetRevision: HEAD
-    destination:
-      server: https://kubernetes.default.svc
-      namespace: monitoring
-  otel-collector:
-    project: default
-    source:
-      repoURL: https://github.com/and-mora/expenses-monitor.git
-      path: manifest/otel-collector
-      targetRevision: HEAD
-    destination:
-      server: https://kubernetes.default.svc
-      namespace: monitoring
-  loki:
-    project: default
-    source:
-      repoURL: https://github.com/and-mora/expenses-monitor.git
-      path: manifest/loki
-      targetRevision: HEAD
-    destination:
-      server: https://kubernetes.default.svc
-      namespace: monitoring
-  monitoring:
-    project: default
-    source:
-      repoURL: https://github.com/and-mora/expenses-monitor.git
-      path: manifest/monitoring
-      targetRevision: HEAD
-    destination:
-      server: https://kubernetes.default.svc
-      namespace: monitoring
+argocd-apps:
+  applications:
+    keycloak:
+      project: default
+      source:
+        repoURL: https://github.com/and-mora/expenses-monitor.git
+        path: manifest/keycloak
+        targetRevision: HEAD
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: default
+    frontend:
+      project: default
+      source:
+        repoURL: https://github.com/and-mora/expenses-monitor.git
+        path: manifest/frontend
+        targetRevision: HEAD
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: expenses-monitor
+    tempo:
+      project: default
+      source:
+        repoURL: https://github.com/and-mora/expenses-monitor.git
+        path: manifest/tempo
+        targetRevision: HEAD
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: monitoring
+    otel-collector:
+      project: default
+      source:
+        repoURL: https://github.com/and-mora/expenses-monitor.git
+        path: manifest/otel-collector
+        targetRevision: HEAD
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: monitoring
+    loki:
+      project: default
+      source:
+        repoURL: https://github.com/and-mora/expenses-monitor.git
+        path: manifest/loki
+        targetRevision: HEAD
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: monitoring
+    monitoring:
+      project: default
+      source:
+        repoURL: https://github.com/and-mora/expenses-monitor.git
+        path: manifest/monitoring
+        targetRevision: HEAD
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: monitoring
