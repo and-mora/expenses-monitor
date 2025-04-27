@@ -135,13 +135,53 @@ kube-prometheus-stack:
           - grafana.expmonitor.freeddns.org
           secretName: grafana-tls
 
-    # put dashboards on folder based on annotation
-    sidecar:
-      dashboards:
-        label: grafana_dashboard
-        folderAnnotation: grafana_folder
-        provider:
-          foldersFromFilesStructure: true
+    dashboardProviders:
+      dashboardbusinessproviders.yaml:
+        apiVersion: 1
+        providers:
+          - name: 'dashboard-business'
+            orgId: 1
+            folder: 'expenses-monitor'
+            type: file
+            disableDeletion: true
+            editable: true
+            options:
+              path: /var/lib/grafana/dashboards/dashboardbusiness
+
+      dashboardmetricsproviders.yaml:
+        apiVersion: 1
+        providers:
+          - name: 'dashboard-metrics'
+            orgId: 1
+            folder: 'metrics'
+            type: file
+            disableDeletion: true
+            editable: true
+            options:
+              path: /var/lib/grafana/dashboards/dashboardmetrics
+
+    dashboards:
+      dashboard-business:
+        andamento_generale_dashboard.json:
+          url: https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/andamento_generale_dashboard.json
+        mese_corrente_dashboard.json:
+          url: https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/mese_corrente_dashboard.json
+        mezzi_trasporto_dashboard.json:
+          url: https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/mezzi_trasporto_dashboard.json
+        ticket_welfare_dashboard.json:
+          url: https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/ticket_welfare_dashboard.json
+        viaggi_dashboard.json:
+          url: https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/viaggi_dashboard.json
+      dashboard-metrics:
+        container_metrics.json:
+          url: https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/metrics/container_metrics.json
+        node_metrics.json:
+          url: https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/metrics/node_metrics.json
+
+    dashboardsConfigMaps:
+      dashboard-metrics:
+        - 'monitoring-kube-prometheus-grafana-overview'
+        - 'monitoring-grafana-dashboard-business'
 
     # alerts
     alerting:
@@ -335,3 +375,5 @@ kube-prometheus-stack:
   prometheus:
     prometheusSpec:
       serviceMonitorSelectorNilUsesHelmValues: false
+ticket_welfare_dashboard:
+  json:
