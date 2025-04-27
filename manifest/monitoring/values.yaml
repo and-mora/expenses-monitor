@@ -179,9 +179,7 @@ kube-prometheus-stack:
           url: https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/metrics/node_metrics.json
 
     dashboardsConfigMaps:
-      dashboard-metrics:
-        - 'monitoring-kube-prometheus-grafana-overview'
-        - 'monitoring-grafana-dashboard-business'
+      dashboard-metrics: 'monitoring-kube-prometheus-grafana-overview'
 
     # alerts
     alerting:
@@ -375,5 +373,3 @@ kube-prometheus-stack:
   prometheus:
     prometheusSpec:
       serviceMonitorSelectorNilUsesHelmValues: false
-ticket_welfare_dashboard:
-  json:
