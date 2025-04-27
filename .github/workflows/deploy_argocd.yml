@@ -43,4 +43,4 @@ jobs:
             wget -O values.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/manifest/argocd/helm/values.yaml
             wget -O Chart.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/manifest/argocd/helm/Chart.yaml
             helm dependency build
-            helm upgrade --install argocd charts/* -f values.yaml --wait --timeout 300s -n argocd
+            helm upgrade --install argocd . -f values.yaml --wait --timeout 300s -n argocd

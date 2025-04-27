@@ -1,47 +1,33 @@
-global:
-  domain: argocd.expmonitor.freeddns.org
+argo-cd:
+  global:
+    domain: argocd.expmonitor.freeddns.org
 
-configs:
-  params:
-    server.insecure: true
-  cm:
-    oidc.config: |
-      name: Keycloak
-      issuer: https://auth.expmonitor.freeddns.org/realms/argocd
-      clientID: $argocd-client-credentials:oidc.keycloak.clientId
-      clientSecret: $argocd-client-credentials:oidc.keycloak.clientSecret
-      requestedScopes: ["openid"]
-  rbac:
-    policy.csv: |
-      g, ArgoCDAdmins, role:admin
+  configs:
+    params:
+      server.insecure: true
+    cm:
+      oidc.config: |
+        name: Keycloak
+        issuer: https://auth.expmonitor.freeddns.org/realms/argocd
+        clientID: $argocd-client-credentials:oidc.keycloak.clientId
+        clientSecret: $argocd-client-credentials:oidc.keycloak.clientSecret
+        requestedScopes: ["openid"]
+    rbac:
+      policy.csv: |
+        g, ArgoCDAdmins, role:admin
 
-server:
-  ingress:
-    enabled: true
-    ingressClassName: public
-    annotations:
-      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-      cert-manager.io/cluster-issuer: letsencrypt
-    hostname: argocd.expmonitor.freeddns.org
-    tls: true
-  metrics:
-    enabled: true
+  server:
+    ingress:
+      enabled: true
+      ingressClassName: public
+      annotations:
+        nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+        nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+        cert-manager.io/cluster-issuer: letsencrypt
+      hostname: argocd.expmonitor.freeddns.org
+      tls: true
+    metrics:
+      enabled: true
 
-redis.metrics.enabled: true
-controller.metrics.enabled: true
-
-extraObjects:
-  - apiVersion: bitnami.com/v1alpha1
-    kind: SealedSecret
-    metadata:
-      name: argocd-client-credentials
-    spec:
-      encryptedData:
-        oidc.keycloak.clientId: AgAsD2xsi5al0YMEnspcgHyzVob20jUzMkwC6qshdlP2luOwN24/jN5X2cY3AjhhyebP1yUXVrCsCRdAY1JgY8vid4V/c9vwxrCZYVHr39QXJeoDYyaUPcgVB9csqJvYoWN0UqnWoWi3uy+gt3qMxQsWXlQnwHv/34S48ONDmtv2MZpCLkYw40VfRsETdPhAFF9Wk5Rp44KSq0IPpC75Dyu4xHVQqWJOQcAbgDdLGCpx6n9XS+chVhintk1+eouTsDi5GQ3yJSzHjBhw4/AOZoFIATOMg5pZPf4LIYU/f0cyRpfaapsTPyqXEZdk3xsRG6S2AaBvbRiHinOOUMm8mR7H1tT3+Dx4c1hbuVV9RoqAZj4EEqV35VSjnZeIoMUiL49PuZX6mYUR5L3TLqw75kr5H8Z7G5xnc9WpUOf4GTCkIYuftDPxFI0DMHlzZy+ivA6giavg1+7WrXZtxNqGWqiFz/7FD0GI7cEv82ez/0VyXbzVTaUbdPNXUJWoQKcjEvWWo5PrbTWkQMXcvWQth1Ff6u0FJoFp6IU1RbSXvsB63I694ZCgMtXIBm7fWQsMIcqRLjiOmOBUKMD1HQ1iQJG1SucxURUux+7ov/ECodORto7AjxGZ7C++U2g8kj7EQEpRvFU2fLsbjjOG4lAumgufljyFhct+zWUScg+5auTf+KQBHcQAJLN2KE0TzLPQxwHRs0Cf6Xo=
-        oidc.keycloak.clientSecret: AgABsb5KKnxdKFmG2DPYetDNJGE23Q14N+p7ArTHCK86cGw8ZzczPKnorRBI9Cc/v93x3PaCNupvkQOZfBjDoe3fAnAnqeaRkRk8VfBs3AnsPg5pFyVQ3cSFgx15vAVIknfqszTTaMGbs/Qzcp6REZ1ZyDoFMLO24bIrP6iV+GAWpkt+2pknPwd0mqzLosJm/p92zjHB8nIyjzP3TKS8mW3DhYfzNtLKSVvtPorZ7oD2k1Bxc74xMBY9tceExysKd+yDNrMSPIFiSbPa31zC++9YsEd6gxy8LjHOMEKzUJYg9IaXl5e+7pIO7jAE9lTHgdzif3OemXtsVj82GtRvK31OI67a2sY2R1Q5xjgop0LqoKf2ebqYcZbuj+jgmLTJrUv+rgGGLVlEfluZRRgMpK72kIbfGmjvCrBLkjlkJkD7l/gaJZayM3v5vvuu3v75qAgJogRTOwmhuqvre10Xg6HYr95eqtw1eqU6rPYe4Go9PMRI+UBHb7dLOspcXenK01G3PRkY1qh1t5BmL5mjVK1XWm7UzGTucnYuAJifox+IBZsD6z6DggYo29N8mpLqhOMmdyuZPJ97qvCfM5a2RvIxL4etQyLNqf/VrGk9r4C8XqFYqa4OZWivozMC3EdyhC1W39rkvhnpfa0ypiFBv3iebPDvUzBJKdlB0AJQzQWJpwUfTnYCFv6Fc/j3lttqLrJjShLI7qdFczjg0xfO3FEfKTtTKboSOiyolKEcIIC24g==
-      template:
-        metadata:
-          name: argocd-client-credentials
-          labels:
-            app.kubernetes.io/part-of: argocd
+  redis.metrics.enabled: true
+  controller.metrics.enabled: true
