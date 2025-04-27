@@ -192,15 +192,6 @@ jobs:
       tag: ${{needs.SemanticVersioning.outputs.monitoring_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.monitoring_changed}}
 
-  MonitoringDeploy:
-    needs: [ SemanticVersioning, MonitoringRelease ]
-    uses: ./.github/workflows/deploy_monitoring_stack.yml
-    with:
-      version: ${{needs.SemanticVersioning.outputs.monitoring_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.monitoring_changed}}
-      folder: monitoring
-    secrets: inherit
-
   KeycloakRelease:
     needs: SemanticVersioning
     uses: ./.github/workflows/release.yml
