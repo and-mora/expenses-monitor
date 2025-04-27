@@ -146,7 +146,7 @@ kube-prometheus-stack:
             disableDeletion: true
             editable: true
             options:
-              path: /var/lib/grafana/dashboards/dashboardbusiness
+              path: /var/lib/grafana/dashboards/dashboard-business
 
       dashboardmetricsproviders.yaml:
         apiVersion: 1
@@ -158,7 +158,7 @@ kube-prometheus-stack:
             disableDeletion: true
             editable: true
             options:
-              path: /var/lib/grafana/dashboards/dashboardmetrics
+              path: /var/lib/grafana/dashboards/dashboard-metrics
 
     dashboards:
       dashboard-business:
