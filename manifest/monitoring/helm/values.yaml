@@ -1,0 +1,337 @@
+kube-prometheus-stack:
+  grafana:
+
+    image:
+      registry: ghcr.io
+      repository: and-mora/expenses-monitor
+      # Overrides the Grafana image tag whose default is the chart appVersion
+      tag: "grafana-11.1.4-chromium"
+      sha: "47e3c8ff73b079f42a24e14aa957f2223068ec043efad2408abee31e99ee33e4"
+      pullPolicy: IfNotPresent
+
+    admin:
+      ## Name of the secret. Can be templated.
+      existingSecret: "grafana-admin-credentials"
+      userKey: admin-user
+      passwordKey: admin-password
+
+    plugins:
+      - https://github.com/mahendrapaipuri/grafana-dashboard-reporter-app/releases/download/v1.3.0/mahendrapaipuri-dashboardreporter-app-1.3.0.zip;mahendrapaipuri-dashboardreporter-app
+
+    grafana.ini:
+      plugins:
+        allow_loading_unsigned_plugins: mahendrapaipuri-dashboardreporter-app
+      smtp:
+        enabled: true
+        host: smtp.gmail.com:465
+        skip_verify: false
+        from_address: grafana_alerting@gmail.com
+        from_name: Grafana
+      feature_toggles:
+        enable: externalServiceAccounts
+      server:
+        root_url: https://grafana.expmonitor.freeddns.org
+      auth.generic_oauth:
+        enabled: true
+        allow_sign_up: true
+        name: Keycloak
+        allow_org_create: false
+        client_id: $__file{/etc/secrets/grafana-oauth-client-credentials/client-id}
+        client_secret: $__file{/etc/secrets/grafana-oauth-client-credentials/client-secret}
+        auth_url: https://auth.expmonitor.freeddns.org/realms/grafana/protocol/openid-connect/auth
+        token_url: https://auth.expmonitor.freeddns.org/realms/grafana/protocol/openid-connect/token
+        api_url: https://auth.expmonitor.freeddns.org/realms/grafana/protocol/openid-connect/userinfo
+        scopes: openid
+
+    extraConfigmapMounts:
+      - name: grafana-plugin-reporter-config
+        mountPath: /etc/grafana/provisioning/plugins
+        configMap: grafana-plugin-reporter-config
+        readOnly: true
+        optional: false
+
+    extraSecretMounts:
+      - name: grafana-oauth-client-credentials
+        secretName: grafana-oauth-client-credentials
+        defaultMode: 0440
+        mountPath: /etc/secrets/grafana-oauth-client-credentials
+        readOnly: true
+
+    smtp:
+      # `existingSecret` is a reference to an existing secret containing the smtp configuration
+      # for Grafana.
+      existingSecret: "grafana-smtp-credentials"
+      userKey: "username"
+      passwordKey: "password"
+
+    persistence:
+      enabled: true
+
+    datasources:
+      datasources.yaml:
+        apiVersion: 1
+        datasources:
+          - name: PostgreSQL
+            type: postgres
+            uid: c8fbcbf5-8f4f-4640-8d37-887b135a905e
+            url: postgresql.default:5432
+            database: expenses-monitor
+            user: $DB_GRAFANA_USERNAME
+            jsonData:
+              sslmode: disable
+              postgresVersion: 1500
+            secureJsonData:
+              password: $DB_GRAFANA_PASSWORD
+            readOnly: true
+
+          - uid: "cdxddsz7oioe8c"
+            name: "Loki"
+            type: loki
+            typeName: "Loki"
+            access: "proxy"
+            url: "http://loki-gateway.monitoring.svc.cluster.local"
+            basicAuth: false
+            isDefault: false
+            jsonData: {}
+            readOnly: true
+
+          - uid: "fdxdgtky9l8n4b"
+            name: "Tempo"
+            type: tempo
+            typeName: "Tempo"
+            access: "proxy"
+            url: "http://tempo.monitoring.svc.cluster.local:3100"
+            basicAuth: false
+            isDefault: false
+            jsonData:
+              tracesToLogsV2:
+                customQuery: false
+                datasourceUid: "cdxddsz7oioe8c"
+              tracesToMetrics:
+                datasourceUid: "prometheus"
+            readOnly: false
+
+    envFromSecret: grafana-db-credentials
+
+    ingress:
+      enabled: true
+      # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
+      # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
+      # ingressClassName: nginx
+      # Values can be templated
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+      labels: { }
+      path: /
+      pathType: Prefix
+
+      hosts:
+        - grafana.expmonitor.freeddns.org
+
+      tls:
+        - hosts:
+          - grafana.expmonitor.freeddns.org
+          secretName: grafana-tls
+
+    # put dashboards on folder based on annotation
+    sidecar:
+      dashboards:
+        label: grafana_dashboard
+        folderAnnotation: grafana_folder
+        provider:
+          foldersFromFilesStructure: true
+
+    # alerts
+    alerting:
+      alerts.yaml:
+        apiVersion: 1
+        groups:
+          - orgId: 1
+            name: node_metrics
+            folder: metrics
+            interval: 10m
+            rules:
+              - uid: e92c8421-8e1f-43e1-ab5d-b2a23ba32135
+                title: Disk Usage > 80%
+                condition: B
+                data:
+                  - refId: A
+                    relativeTimeRange:
+                      from: 600
+                      to: 0
+                    datasourceUid: prometheus
+                    model:
+                      datasource:
+                        type: prometheus
+                        uid: prometheus
+                      disableTextWrap: false
+                      editorMode: code
+                      exemplar: false
+                      expr: 100 - (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100
+                      fullMetaSearch: false
+                      includeNullMetadata: true
+                      instant: true
+                      interval: ""
+                      intervalMs: 1000
+                      legendFormat: __auto
+                      maxDataPoints: 43200
+                      range: false
+                      refId: A
+                      useBackend: false
+                  - refId: B
+                    relativeTimeRange:
+                      from: 600
+                      to: 0
+                    datasourceUid: __expr__
+                    model:
+                      conditions:
+                        - evaluator:
+                            params:
+                              - 80
+                            type: gt
+                          operator:
+                            type: and
+                          query:
+                            params:
+                              - C
+                          reducer:
+                            params: [ ]
+                            type: last
+                          type: query
+                      datasource:
+                        type: __expr__
+                        uid: __expr__
+                      expression: A
+                      intervalMs: 1000
+                      maxDataPoints: 43200
+                      refId: B
+                      type: threshold
+                noDataState: NoData
+                execErrState: Error
+                for: 10m
+                annotations:
+                  description: Disk usage has reached the critical level set in threshold parameter. Please free the node disk or increase the available space.
+                  summary: Disk usage is above the threshold
+                isPaused: false
+              - uid: c39e46d6-4ffd-40a0-a2b7-6326fceda734
+                title: Memory Usage > 50%
+                condition: B
+                data:
+                  - refId: A
+                    relativeTimeRange:
+                      from: 600
+                      to: 0
+                    datasourceUid: prometheus
+                    model:
+                      datasource:
+                        type: prometheus
+                        uid: prometheus
+                      editorMode: code
+                      expr: |-
+                        100 -
+                        (
+                          avg(node_memory_MemAvailable_bytes)
+                        /
+                          avg(node_memory_MemTotal_bytes)
+                        * 100
+                        )
+                      instant: true
+                      intervalMs: 1000
+                      legendFormat: __auto
+                      maxDataPoints: 43200
+                      range: false
+                      refId: A
+                  - refId: B
+                    relativeTimeRange:
+                      from: 600
+                      to: 0
+                    datasourceUid: __expr__
+                    model:
+                      conditions:
+                        - evaluator:
+                            params:
+                              - 50
+                            type: gt
+                          operator:
+                            type: and
+                          query:
+                            params:
+                              - C
+                          reducer:
+                            params: [ ]
+                            type: last
+                          type: query
+                      datasource:
+                        type: __expr__
+                        uid: __expr__
+                      expression: A
+                      intervalMs: 1000
+                      maxDataPoints: 43200
+                      refId: B
+                      type: threshold
+                noDataState: NoData
+                execErrState: Error
+                for: 10m
+                annotations:
+                  description: Memory usage has reached the critical level set in threshold parameter. Please check the node or increase the available memory.
+                  summary: Memory usage is above the threshold
+                isPaused: false
+      contact-points.yaml:
+        apiVersion: 1
+        contactPoints:
+          - orgId: 1
+            name: Andrea Morabito
+            receivers:
+              - uid: de989dcd-a9cc-4b42-a813-e2cd200d4495
+                type: email
+                settings:
+                  addresses: and.morabito@gmail.com
+                  singleEmail: false
+                disableResolveMessage: false
+
+    ## Add a seperate remote image renderer deployment/service
+    imageRenderer:
+      deploymentStrategy: { }
+      # Enable the image-renderer deployment & service
+      enabled: true
+      replicas: 1
+      autoscaling:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 5
+        targetCPU: "60"
+        targetMemory: ""
+        behavior: { }
+      image:
+        # -- The Docker registry
+        registry: docker.io
+        # image-renderer Image repository
+        repository: grafana/grafana-image-renderer
+        # image-renderer Image tag
+        tag: 3.10.1
+        # image-renderer Image sha (optional)
+        sha: ""
+        # image-renderer ImagePullPolicy
+        pullPolicy: Always
+      # extra environment variables
+      env:
+        HTTP_HOST: "0.0.0.0"
+        RENDERING_MODE: clustered
+        RENDERING_CLUSTERING_MODE: browser
+        RENDERING_CLUSTERING_MAX_CONCURRENCY: 5
+        RENDERING_CLUSTERING_TIMEOUT: 60
+        RENDERING_VIEWPORT_MAX_WIDTH: 1000
+
+      resources: { }
+      #   limits:
+      #     cpu: 100m
+      #     memory: 100Mi
+      #   requests:
+      #     cpu: 50m
+      #     memory: 50Mi
+
+  prometheus:
+    prometheusSpec:
+      serviceMonitorSelectorNilUsesHelmValues: false
