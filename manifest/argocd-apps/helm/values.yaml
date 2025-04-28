@@ -54,3 +54,12 @@ argocd-apps:
       destination:
         server: https://kubernetes.default.svc
         namespace: monitoring
+    postgresql:
+      project: default
+      source:
+        repoURL: https://github.com/and-mora/expenses-monitor.git
+        path: manifest/postgresql
+        targetRevision: HEAD
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: default
