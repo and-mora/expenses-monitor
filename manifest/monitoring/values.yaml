@@ -143,7 +143,7 @@ kube-prometheus-stack:
             orgId: 1
             folder: 'expenses-monitor'
             type: file
-            disableDeletion: true
+            disableDeletion: false
             editable: true
             options:
               path: /var/lib/grafana/dashboards/dashboard-business
@@ -155,7 +155,7 @@ kube-prometheus-stack:
             orgId: 1
             folder: 'metrics'
             type: file
-            disableDeletion: true
+            disableDeletion: false
             editable: true
             options:
               path: /var/lib/grafana/dashboards/dashboard-metrics
@@ -177,9 +177,6 @@ kube-prometheus-stack:
           url: https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/metrics/container_metrics.json
         node_metrics.json:
           url: https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/metrics/node_metrics.json
-
-    dashboardsConfigMaps:
-      dashboard-metrics: 'monitoring-kube-prometheus-grafana-overview'
 
     # alerts
     alerting:
