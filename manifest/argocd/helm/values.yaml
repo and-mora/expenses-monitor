@@ -28,6 +28,12 @@ argo-cd:
       tls: true
     metrics:
       enabled: true
+      serviceMonitor:
+        enabled: true
 
   redis.metrics.enabled: true
-  controller.metrics.enabled: true
+  controller:
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
