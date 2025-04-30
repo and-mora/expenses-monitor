@@ -177,6 +177,8 @@ kube-prometheus-stack:
           url: https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/metrics/container_metrics.json
         node_metrics.json:
           url: https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/metrics/node_metrics.json
+        argocd_metrics.json:
+          url: https://raw.githubusercontent.com/and-mora/expenses-monitor/master/monitoring/grafana/dashboards/metrics/argocd_metrics.json
 
     # alerts
     alerting:
