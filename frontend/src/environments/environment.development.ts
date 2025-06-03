@@ -1,7 +1,7 @@
 export const environment = {
     production: false,
     apiUrl: 'http://localhost:8080',
-    keycloakUrl: 'https://auth.expmonitor.freeddns.org',
-    keycloakRealm: 'expenses-monitor',
+    keycloakUrl: 'https://idpay.itn.internal.dev.cstar.pagopa.it/keycloak/',
+    keycloakRealm: 'portale-web-io',
     keycloakClientId: 'frontend'
 };

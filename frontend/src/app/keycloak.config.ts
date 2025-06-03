@@ -23,7 +23,8 @@ export const provideKeycloakAngular = () =>
     },
     initOptions: {
       onLoad: 'login-required',
-      checkLoginIframe: false, // Disable iframe checks if not needed
+      checkLoginIframe: false, // Disable iframe checks if not needed,
+      redirectUri: 'https://idpay.itn.internal.dev.cstar.pagopa.it/portale-web-io/'
     },
     features: [
       withAutoRefreshToken({
