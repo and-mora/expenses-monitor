@@ -29,7 +29,7 @@
       "title": "PDF report",
       "tooltip": "create pdf report",
       "type": "link",
-      "url": "https://grafana.expmonitor.freeddns.org/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=d0a30598-95a5-4098-89cc-435d965df315&from=now-1M%2FM&to=now-1M%2FM&layout=grid"
+      "url": "https://grafana.expmonitor.freeddns.org/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=d0a30598-95a5-4098-89cc-435d965df315"
     }
   ],
   "liveNow": false,
@@ -584,9 +584,7 @@
         "orientation": "horizontal",
         "showValue": "auto",
         "stacking": "none",
-        "text": {
-          "valueSize": 30
-        },
+        "text": {},
         "tooltip": {
           "mode": "single",
           "sort": "none"
@@ -1226,8 +1224,8 @@
     "list": []
   },
   "time": {
-    "from": "now/M",
-    "to": "now/M"
+    "from": "now-1M/M",
+    "to": "now-1M/M"
   },
   "timepicker": {
     "hidden": false
@@ -1235,6 +1233,6 @@
   "timezone": "",
   "title": "Monitoraggio mese corrente",
   "uid": "d0a30598-95a5-4098-89cc-435d965df315",
-  "version": 5,
+  "version": 1,
   "weekStart": "monday"
 }
