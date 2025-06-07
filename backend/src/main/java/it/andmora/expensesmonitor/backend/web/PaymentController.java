@@ -26,5 +26,7 @@ public interface PaymentController {
   Flux<String> getCategories();
 
   @GetMapping("")
-  Mono<PagedResponse<PaymentDto>> getRecentPayments(@RequestParam int page, @RequestParam int size);
+  Mono<PagedResponse<PaymentDto>> getRecentPayments(
+      @RequestParam(required = false, defaultValue = "0") int page,
+      @RequestParam(required = false, defaultValue = "10") int size);
 }
