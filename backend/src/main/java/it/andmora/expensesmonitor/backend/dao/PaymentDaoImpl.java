@@ -10,6 +10,7 @@ import it.andmora.expensesmonitor.backend.domain.PaymentDao;
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -65,4 +66,10 @@ class PaymentDaoImpl implements PaymentDao {
     return repository.getCategories();
   }
 
+  @Override
+  public Flux<Payment> getRecentPayments(int page, int size) {
+    return repository
+        .findAllByOrderByAccountingDateDesc(PageRequest.of(page, size))
+        .map(paymentMapper::dbEntityToDomain);
+  }
 }

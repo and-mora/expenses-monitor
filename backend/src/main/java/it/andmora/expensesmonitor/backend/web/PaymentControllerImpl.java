@@ -1,8 +1,9 @@
 package it.andmora.expensesmonitor.backend.web;
 
-import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCategoriesRetriever;
+import it.andmora.expensesmonitor.backend.domain.usecase.PaymentRetriever;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCreator;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentDeleter;
+import it.andmora.expensesmonitor.backend.web.dto.PagedResponse;
 import it.andmora.expensesmonitor.backend.web.dto.PaymentDto;
 import it.andmora.expensesmonitor.backend.web.mapper.PaymentControllerMapper;
 import java.util.UUID;
@@ -24,7 +25,7 @@ class PaymentControllerImpl implements PaymentController {
   private final PaymentCreator paymentCreator;
   private final PaymentControllerMapper paymentMapper;
   private final PaymentDeleter paymentDeleter;
-  private final PaymentCategoriesRetriever paymentCategoriesRetriever;
+  private final PaymentRetriever paymentRetriever;
 
   @Override
   public Mono<PaymentDto> createPayment(PaymentDto paymentDto) {
@@ -42,6 +43,15 @@ class PaymentControllerImpl implements PaymentController {
   @Override
   public Flux<String> getCategories() {
     log.info("Retrieving categories...");
-    return paymentCategoriesRetriever.getCategories();
+    return paymentRetriever.getCategories();
+  }
+
+  @Override
+  public Mono<PagedResponse<PaymentDto>> getRecentPayments(int page, int size) {
+    log.info("Retrieving recent payments, page: {}, size: {}", page, size);
+    return paymentRetriever.getRecentPayments(page, size)
+        .map(paymentMapper::entityToDto)
+        .collectList()
+        .map(list -> new PagedResponse<>(list, page, size));
   }
 }

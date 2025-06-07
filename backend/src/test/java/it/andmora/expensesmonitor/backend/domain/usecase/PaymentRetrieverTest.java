@@ -11,15 +11,15 @@ import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
 @ExtendWith(MockitoExtension.class)
-class PaymentCategoriesRetrieverTest {
+class PaymentRetrieverTest {
 
   @Mock
   PaymentDao paymentDao;
-  private PaymentCategoriesRetriever retriever;
+  private PaymentRetriever retriever;
 
   @BeforeEach
   void setUp() {
-    retriever = new PaymentCategoriesRetriever(paymentDao);
+    retriever = new PaymentRetriever(paymentDao);
   }
 
   @Test

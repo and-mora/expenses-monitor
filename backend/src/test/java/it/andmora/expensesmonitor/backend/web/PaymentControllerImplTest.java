@@ -2,6 +2,7 @@ package it.andmora.expensesmonitor.backend.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockJwt;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
 
@@ -9,10 +10,11 @@ import it.andmora.expensesmonitor.backend.domain.errors.WalletNotFoundException;
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
 import it.andmora.expensesmonitor.backend.domain.model.Tag;
 import it.andmora.expensesmonitor.backend.domain.model.Wallet;
-import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCategoriesRetriever;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCreator;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentDeleter;
+import it.andmora.expensesmonitor.backend.domain.usecase.PaymentRetriever;
 import it.andmora.expensesmonitor.backend.web.dto.ErrorDto;
+import it.andmora.expensesmonitor.backend.web.dto.PagedResponse;
 import it.andmora.expensesmonitor.backend.web.dto.PaymentDto;
 import it.andmora.expensesmonitor.backend.web.dto.TagDto;
 import java.time.LocalDateTime;
@@ -41,14 +43,14 @@ class PaymentControllerImplTest {
   @MockitoBean
   PaymentDeleter paymentDeleter;
   @MockitoBean
-  PaymentCategoriesRetriever categoriesRetriever;
+  PaymentRetriever paymentRetriever;
   @Autowired
   PaymentController paymentController;
   LocalDateTime dateInjected = LocalDateTime.now();
   WebTestClient webTestClient;
-  private static final String POST_PAYMENT_ENDPOINT = "/api/payment";
-  private static final String DELETE_PAYMENT_ENDPOINT = "/api/payment/{id}";
-  private static final String GET_CATEGORIES_ENDPOINT = "/api/payment/categories";
+  private static final String PAYMENT_ENDPOINT = "/api/payments";
+  private static final String DELETE_PAYMENT_ENDPOINT = "/api/payments/{id}";
+  private static final String GET_CATEGORIES_ENDPOINT = "/api/payments/categories";
 
   @Autowired
   ApplicationContext context;
@@ -119,7 +121,7 @@ class PaymentControllerImplTest {
     webTestClient
         .mutateWith(mockJwt())
         .post()
-        .uri(POST_PAYMENT_ENDPOINT)
+        .uri(PAYMENT_ENDPOINT)
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(paymentDto)
@@ -151,7 +153,7 @@ class PaymentControllerImplTest {
 
   @Test
   void whenGetCategoriesIsCalledThen200() {
-    Mockito.when(categoriesRetriever.getCategories()).thenReturn(Flux.just("foo", "bar"));
+    Mockito.when(paymentRetriever.getCategories()).thenReturn(Flux.just("foo", "bar"));
 
     webTestClient
         .mutateWith(mockJwt())
@@ -164,7 +166,7 @@ class PaymentControllerImplTest {
         .expectStatus().isOk()
         .expectHeader().contentType("application/json;charset=UTF-8")
         .expectBody(String.class).value(value -> assertThat(value).contains("foobar"));
-    Mockito.verify(categoriesRetriever).getCategories();
+    Mockito.verify(paymentRetriever).getCategories();
   }
 
   @Test
@@ -174,7 +176,7 @@ class PaymentControllerImplTest {
 
     webTestClient
         .put()
-        .uri(POST_PAYMENT_ENDPOINT)
+        .uri(PAYMENT_ENDPOINT)
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(paymentDto)
@@ -192,7 +194,7 @@ class PaymentControllerImplTest {
     webTestClient
         .mutate().build()
         .post()
-        .uri(POST_PAYMENT_ENDPOINT)
+        .uri(PAYMENT_ENDPOINT)
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(paymentDto)
@@ -202,6 +204,42 @@ class PaymentControllerImplTest {
             .code("WALLET_NOT_FOUND")
             .detail("Wallet null does not exist. Please create it first.")
             .build());
+  }
+
+  @Test
+  @WithMockUser
+  void getRecentPayments_returnsPagedResponse() {
+    when(paymentRetriever.getRecentPayments(0, 2)).thenReturn(
+        Flux.just(createDefaultPayment(), createDefaultPayment()));
+
+    webTestClient.get().uri(PAYMENT_ENDPOINT + "?page=0&size=2")
+        .exchange()
+        .expectStatus().isOk()
+        .expectBody()
+        .jsonPath("$.content").value(content -> {
+          assertThat(content).asInstanceOf(InstanceOfAssertFactories.LIST)
+              .hasSize(2);
+        })
+        .jsonPath("$.page").isEqualTo(0)
+        .jsonPath("$.size").isEqualTo(2);
+  }
+
+  @Test
+  @WithMockUser
+  void getRecentPayments_withNoParams_thenUseDefaultValues() {
+    when(paymentRetriever.getRecentPayments(0, 10)).thenReturn(
+        Flux.just(createDefaultPayment(), createDefaultPayment()));
+
+    webTestClient.get().uri(PAYMENT_ENDPOINT)
+        .exchange()
+        .expectStatus().isOk()
+        .expectBody()
+        .jsonPath("$.content").value(content -> {
+          assertThat(content).asInstanceOf(InstanceOfAssertFactories.LIST)
+              .hasSize(2);
+        })
+        .jsonPath("$.page").isEqualTo(0)
+        .jsonPath("$.size").isEqualTo(10);
   }
 
   PaymentDto createPaymentDto() {
