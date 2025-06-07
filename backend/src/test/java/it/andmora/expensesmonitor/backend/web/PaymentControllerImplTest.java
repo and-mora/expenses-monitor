@@ -9,7 +9,7 @@ import it.andmora.expensesmonitor.backend.domain.errors.WalletNotFoundException;
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
 import it.andmora.expensesmonitor.backend.domain.model.Tag;
 import it.andmora.expensesmonitor.backend.domain.model.Wallet;
-import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCategoriesRetriever;
+import it.andmora.expensesmonitor.backend.domain.usecase.PaymentRetriever;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentCreator;
 import it.andmora.expensesmonitor.backend.domain.usecase.PaymentDeleter;
 import it.andmora.expensesmonitor.backend.web.dto.ErrorDto;
@@ -41,7 +41,7 @@ class PaymentControllerImplTest {
   @MockitoBean
   PaymentDeleter paymentDeleter;
   @MockitoBean
-  PaymentCategoriesRetriever categoriesRetriever;
+  PaymentRetriever categoriesRetriever;
   @Autowired
   PaymentController paymentController;
   LocalDateTime dateInjected = LocalDateTime.now();
