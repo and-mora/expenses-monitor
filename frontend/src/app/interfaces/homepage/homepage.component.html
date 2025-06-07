@@ -1,3 +1,32 @@
-<p>homepage works!</p>
+<div class="dashboard-container">
+  <div class="dashboard-grid">
+    <!-- Latest Transactions Box -->
+    <mat-card class="dashboard-box">
+      <mat-card-title>Latest Transactions</mat-card-title>
+      <mat-list *ngIf="latestTransactions?.length; else noTransactions">
+        <mat-list-item *ngFor="let tx of latestTransactions">
+          <div class="tx-info">
+            <span class="tx-amount">{{ tx.amountInCents | currency }}</span>
+            <span class="tx-category">{{ tx.category }}</span>
+            <span class="tx-date">{{ tx.accountingDate | date:'short' }}</span>
+          </div>
+        </mat-list-item>
+      </mat-list>
+      <ng-template #noTransactions>
+        <p>No transactions found.</p>
+      </ng-template>
+    </mat-card>
+
+    <!-- Placeholder for other boxes -->
+    <mat-card class="dashboard-box">
+      <mat-card-title>Other Info</mat-card-title>
+      <p>Coming soon...</p>
+    </mat-card>
+    <mat-card class="dashboard-box">
+      <mat-card-title>Other Info</mat-card-title>
+      <p>Coming soon...</p>
+    </mat-card>
+  </div>
+</div>
 
 <button (click)="greet()">greet server</button>

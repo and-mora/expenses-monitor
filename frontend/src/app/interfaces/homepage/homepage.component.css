@@ -1,0 +1,24 @@
+.dashboard-container {
+  padding: 16px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.dashboard-box {
+  min-height: 200px;
+}
+
+.tx-info {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 600px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
