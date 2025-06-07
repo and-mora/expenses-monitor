@@ -46,9 +46,9 @@ class PaymentControllerImplTest {
   PaymentController paymentController;
   LocalDateTime dateInjected = LocalDateTime.now();
   WebTestClient webTestClient;
-  private static final String POST_PAYMENT_ENDPOINT = "/api/payment";
-  private static final String DELETE_PAYMENT_ENDPOINT = "/api/payment/{id}";
-  private static final String GET_CATEGORIES_ENDPOINT = "/api/payment/categories";
+  private static final String POST_PAYMENT_ENDPOINT = "/api/payments";
+  private static final String DELETE_PAYMENT_ENDPOINT = "/api/payments/{id}";
+  private static final String GET_CATEGORIES_ENDPOINT = "/api/payments/categories";
 
   @Autowired
   ApplicationContext context;
