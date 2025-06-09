@@ -14,4 +14,6 @@ public interface PaymentDao {
   Mono<Void> deletePayment(UUID id);
 
   Flux<String> getCategories();
+
+  Flux<Payment> getRecentPayments(int page, int size);
 }

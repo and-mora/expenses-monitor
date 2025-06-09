@@ -17,11 +17,15 @@
 							"    pm.response.to.have.status(401);",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "noauth"
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -38,7 +42,7 @@
 			"response": []
 		},
 		{
-			"name": "00b. Login successfully",
+			"name": "00b. Token with client-credentials",
 			"event": [
 				{
 					"listen": "test",
@@ -46,37 +50,55 @@
 						"exec": [
 							"pm.test('00b. Login successfully', () => {",
 							"    pm.response.to.have.status(200);",
-							"});"
+							"});",
+							"pm.collectionVariables.set(\"token\", pm.response.json()[\"access_token\"]);"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "noauth"
+				},
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "urlencoded",
 					"urlencoded": [
 						{
-							"key": "username",
-							"value": "{{API_USERNAME}}",
+							"key": "client_id",
+							"value": "{{CLIENT_ID}}",
 							"type": "text"
 						},
 						{
-							"key": "password",
-							"value": "{{API_PASSWORD}}",
+							"key": "client_secret",
+							"value": "{{CLIENT_SECRET}}",
+							"type": "text"
+						},
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
 							"type": "text"
 						}
 					]
 				},
 				"url": {
-					"raw": "{{host_name}}/login",
+					"raw": "https://auth.expmonitor.freeddns.org/realms/expenses-monitor/protocol/openid-connect/token",
+					"protocol": "https",
 					"host": [
-						"{{host_name}}"
+						"auth",
+						"expmonitor",
+						"freeddns",
+						"org"
 					],
 					"path": [
-						"login"
+						"realms",
+						"expenses-monitor",
+						"protocol",
+						"openid-connect",
+						"token"
 					]
 				}
 			},
@@ -93,7 +115,8 @@
 							"    pm.response.to.have.status(200);",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -164,13 +187,67 @@
 					}
 				},
 				"url": {
-					"raw": "{{host_name}}/api/payment",
+					"raw": "{{host_name}}/api/payments",
 					"host": [
 						"{{host_name}}"
 					],
 					"path": [
 						"api",
-						"payment"
+						"payments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "02. Retrieve payments",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('02. Retrieve payments', () => {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host_name}}/api/payments?page=1&size=10",
+					"host": [
+						"{{host_name}}"
+					],
+					"path": [
+						"api",
+						"payments"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "size",
+							"value": "10"
+						}
 					]
 				}
 			},
@@ -223,6 +300,16 @@
 			"response": []
 		}
 	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
 	"event": [
 		{
 			"listen": "prerequest",
@@ -231,15 +318,21 @@
 				"exec": [
 					"Object.prototype.deletePayment = (that, paymentId) => {",
 					"    return that.sendRequest({",
-					"        url: `${pm.environment.get('host_name')}/api/payment/${paymentId}`,",
-					"        method: 'DELETE'",
+					"        url: `${pm.environment.get('host_name')}/api/payments/${paymentId}`,",
+					"        method: 'DELETE',",
+					"        header: {",
+					"            'Authorization': `Bearer ${pm.collectionVariables.get('token')}`",
+					"        },",
 					"    });",
 					"};",
 					"",
 					"Object.prototype.deleteWallet = (that, walletId) => {",
 					"    return that.sendRequest({",
 					"        url: `${pm.environment.get('host_name')}/api/wallets/${walletId}`,",
-					"        method: 'DELETE'",
+					"        method: 'DELETE',",
+					"        header: {",
+					"            'Authorization': `Bearer ${pm.collectionVariables.get('token')}`",
+					"        },",
 					"    });",
 					"};",
 					"",
@@ -248,7 +341,8 @@
 					"        url: `${pm.environment.get('host_name')}/api/wallets`,",
 					"        method: 'POST',",
 					"        header: {",
-					"            'Content-Type': 'application/json'",
+					"            'Content-Type': 'application/json',",
+					"            'Authorization': `Bearer ${pm.collectionVariables.get('token')}`",
 					"        },",
 					"        body: {",
 					"            mode: 'raw',",
@@ -274,6 +368,12 @@
 					""
 				]
 			}
+		}
+	],
+	"variable": [
+		{
+			"key": "token",
+			"value": ""
 		}
 	]
 }

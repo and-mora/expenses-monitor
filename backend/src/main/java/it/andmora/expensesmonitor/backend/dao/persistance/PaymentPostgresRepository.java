@@ -2,6 +2,7 @@ package it.andmora.expensesmonitor.backend.dao.persistance;
 
 import it.andmora.expensesmonitor.backend.dao.dbmodel.PaymentDbEntity;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;
@@ -13,4 +14,6 @@ public interface PaymentPostgresRepository extends ReactiveCrudRepository<Paymen
 
   @Query("SELECT DISTINCT p.category FROM expenses.payments p")
   Flux<String> getCategories();
+
+  Flux<PaymentDbEntity> findAllByOrderByAccountingDateDesc(Pageable pageable);
 }
