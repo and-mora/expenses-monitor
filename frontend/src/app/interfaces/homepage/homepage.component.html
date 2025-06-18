@@ -1,20 +1,42 @@
 <div class="dashboard-container">
   <div class="dashboard-grid">
     <!-- Latest Transactions Box -->
-    <mat-card class="dashboard-box">
-      <mat-card-title>Latest Transactions</mat-card-title>
-      <mat-list *ngIf="latestTransactions?.length; else noTransactions">
-        <mat-list-item *ngFor="let tx of latestTransactions">
-          <div class="tx-info">
-            <span class="tx-amount">{{ tx.amountInCents | currency }}</span>
-            <span class="tx-category">{{ tx.category }}</span>
-            <span class="tx-date">{{ tx.accountingDate | date:'short' }}</span>
+    <mat-card class="dashboard-box transactions-card">
+      <mat-card-header>
+        <mat-card-title>Latest Transactions</mat-card-title>
+        <mat-card-subtitle>Your recent financial activity</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-divider></mat-divider>
+
+      <mat-card-content>
+        <mat-list *ngIf="latestTransactions?.length; else noTransactions">
+          <mat-list-item *ngFor="let tx of latestTransactions">
+            <div class="tx-list-item-row">
+              <div class="tx-list-avatar" [class.expense]="tx.amountInCents < 0" [class.income]="tx.amountInCents >= 0">
+                <mat-icon>{{ tx.amountInCents < 0 ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+              </div>
+              <div class="tx-details">
+                <span class="tx-category">{{ tx.category }}</span>
+                <span class="tx-amount" [class.expense]="tx.amountInCents < 0" [class.income]="tx.amountInCents >= 0">
+                  {{ tx.amountInCents / 100 | currency }}
+                </span>
+              </div>
+              <div class="tx-time-info">
+                <span class="tx-date">{{ tx.accountingDate | date:'MMM d' }}</span>
+                <span class="tx-time">{{ tx.accountingDate | date:'shortTime' }}</span>
+              </div>
+            </div>
+          </mat-list-item>
+        </mat-list>
+        <ng-template #noTransactions>
+          <div class="empty-state">
+            <mat-icon class="empty-icon">account_balance_wallet</mat-icon>
+            <p class="mat-h2">No transactions yet</p>
+            <p class="mat-body-1">Your recent transactions will appear here</p>
           </div>
-        </mat-list-item>
-      </mat-list>
-      <ng-template #noTransactions>
-        <p>No transactions found.</p>
-      </ng-template>
+        </ng-template>
+      </mat-card-content>
     </mat-card>
 
     <!-- Placeholder for other boxes -->
