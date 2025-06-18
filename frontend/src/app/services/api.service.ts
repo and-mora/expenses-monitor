@@ -17,8 +17,8 @@ export class ApiService {
 
   private baseUrl = environment.apiUrl;
   private checkUrl = '/greet';
-  private paymentUrl = '/api/payment';
-  private categoryUrl = '/api/payment/categories';
+  private paymentUrl = '/api/payments';
+  private categoryUrl = '/api/payments/categories';
   private walletUrl = '/api/wallets';
 
   checkSessionAlive(): Observable<String> {
