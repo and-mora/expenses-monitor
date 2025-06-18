@@ -12,6 +12,6 @@ public interface PaymentControllerMapper {
   @Mapping(target = "tags", source = "tags", defaultExpression = "java(new ArrayList<>())")
   Payment dtoToEntity(PaymentDto paymentDto);
 
-  @Mapping(target = "wallet", source = "wallet.id")
+  @Mapping(target = "wallet", source = "wallet.name")
   PaymentDto entityToDto(Payment payment);
 }

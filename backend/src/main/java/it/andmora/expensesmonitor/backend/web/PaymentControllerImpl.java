@@ -6,6 +6,7 @@ import it.andmora.expensesmonitor.backend.domain.usecase.PaymentDeleter;
 import it.andmora.expensesmonitor.backend.web.dto.PagedResponse;
 import it.andmora.expensesmonitor.backend.web.dto.PaymentDto;
 import it.andmora.expensesmonitor.backend.web.mapper.PaymentControllerMapper;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,12 @@ class PaymentControllerImpl implements PaymentController {
   public Flux<String> getCategories() {
     log.info("Retrieving categories...");
     return paymentRetriever.getCategories();
+  }
+
+  @Override
+  public Mono<List<String>> getCategoriesList() {
+    return paymentRetriever.getCategories()
+        .collectList();
   }
 
   @Override

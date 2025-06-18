@@ -10,6 +10,7 @@ import it.andmora.expensesmonitor.backend.domain.PaymentDao;
 import it.andmora.expensesmonitor.backend.domain.model.Payment;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -22,6 +23,7 @@ import reactor.core.publisher.Mono;
  */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 class PaymentDaoImpl implements PaymentDao {
 
   private final PaymentPostgresRepository repository;
@@ -69,7 +71,7 @@ class PaymentDaoImpl implements PaymentDao {
   @Override
   public Flux<Payment> getRecentPayments(int page, int size) {
     return repository
-        .findAllByOrderByAccountingDateDesc(PageRequest.of(page, size))
-        .map(paymentMapper::dbEntityToDomain);
+        .findAllWithWalletNameByOrderByAccountingDateDesc(PageRequest.of(page, size))
+        .map(paymentMapper::dbEntityWithWalletNameToDomain);
   }
 }

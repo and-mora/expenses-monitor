@@ -2,6 +2,7 @@ package it.andmora.expensesmonitor.backend.web;
 
 import it.andmora.expensesmonitor.backend.web.dto.PagedResponse;
 import it.andmora.expensesmonitor.backend.web.dto.PaymentDto;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +25,9 @@ public interface PaymentController {
 
   @GetMapping("/categories")
   Flux<String> getCategories();
+
+  @GetMapping("/categories-list")
+  Mono<List<String>> getCategoriesList();
 
   @GetMapping("")
   Mono<PagedResponse<PaymentDto>> getRecentPayments(
