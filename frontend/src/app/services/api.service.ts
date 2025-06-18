@@ -7,6 +7,7 @@ import { environment } from '../../environments/environment';
 import { ErrorDto } from '../model/errorDto';
 import { PaymentDto } from '../model/payment';
 import { WalletDto } from '../model/wallet';
+import { PagedPayments } from '../model/pagedPayments';
 
 @Injectable({
   providedIn: 'root'
@@ -17,8 +18,8 @@ export class ApiService {
 
   private baseUrl = environment.apiUrl;
   private checkUrl = '/greet';
-  private paymentUrl = '/api/payment';
-  private categoryUrl = '/api/payment/categories';
+  private paymentUrl = '/api/payments';
+  private categoryUrl = '/api/payments/categories';
   private walletUrl = '/api/wallets';
 
   checkSessionAlive(): Observable<String> {
@@ -83,6 +84,10 @@ export class ApiService {
       .pipe(
         catchError(err => this.convertToErrorDto(err))
       );
+  }
+
+  getLatestTransactions(): Observable<PagedPayments> {
+    return this.http.get<PagedPayments>(`${this.baseUrl + this.paymentUrl}`);
   }
 
   private convertToErrorDto(error: HttpErrorResponse): Observable<ErrorDto> {
