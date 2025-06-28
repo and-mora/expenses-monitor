@@ -24,7 +24,7 @@ impl PaymentDescription {
             .chars()
             .any(|g| forbidden_characters.contains(&g));
         if is_empty_or_whitespace || is_too_long || contains_forbidden_characters {
-            Err(format!("{} is not a valid description.", description))
+            Err(format!("{description} is not a valid description."))
         } else {
             Ok(Self(description))
         }

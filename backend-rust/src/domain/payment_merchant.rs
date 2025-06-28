@@ -24,7 +24,7 @@ impl PaymentMerchant {
             .chars()
             .any(|g| forbidden_characters.contains(&g));
         if is_empty_or_whitespace || is_too_long || contains_forbidden_characters {
-            Err(format!("{} is not a valid merchant name.", merchant_name))
+            Err(format!("{merchant_name} is not a valid merchant name."))
         } else {
             Ok(Self(merchant_name))
         }
