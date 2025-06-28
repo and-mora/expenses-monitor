@@ -45,9 +45,17 @@ pub async fn create_payment(
             return HttpResponse::BadRequest().body("Invalid description");
         }
     };
+    let merchant_name = match crate::domain::PaymentMerchant::parse(payload.0.merchant_name.clone())
+    {
+        Ok(name) => name,
+        Err(_) => {
+            tracing::error!("Invalid merchant name: {}", payload.0.merchant_name);
+            return HttpResponse::BadRequest().body("Invalid merchant name");
+        }
+    };
     let payment = Payment {
         description,
-        merchant_name: payload.0.merchant_name,
+        merchant_name,
         category: category_name,
         amount_in_cents: payload.0.amount_in_cents,
         accounting_date: payload.0.accounting_date,
@@ -70,7 +78,7 @@ async fn insert_payment(payment: &Payment, connection_pool: &PgPool) -> Result<(
         "insert into expenses.payments (category, description, merchant_name, accounting_date, amount) values ($1, $2, $3, $4, $5)",
         payment.category.as_ref(),
         payment.description.as_ref(),
-        payment.merchant_name,
+        payment.merchant_name.as_ref(),
         payment.accounting_date,
         payment.amount_in_cents
     )
