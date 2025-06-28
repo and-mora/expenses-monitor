@@ -1,4 +1,4 @@
-use crate::domain::{Payment, PaymentCategory};
+use crate::domain::{Payment, PaymentCategory, PaymentDescription};
 use actix_web::{web, HttpResponse, Responder};
 use chrono::NaiveDateTime;
 use serde::Deserialize;
@@ -31,19 +31,32 @@ pub async fn create_payment(
     payload: web::Json<PaymentDto>,
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
+    let category_name = match PaymentCategory::parse(payload.0.category.clone()) {
+        Ok(name) => name,
+        Err(_) => {
+            tracing::error!("Invalid category: {}", payload.0.category);
+            return HttpResponse::BadRequest().body("Invalid category");
+        }
+    };
+    let description = match PaymentDescription::parse(payload.0.description.clone()) {
+        Ok(desc) => desc,
+        Err(_) => {
+            tracing::error!("Invalid description: {}", payload.0.description);
+            return HttpResponse::BadRequest().body("Invalid description");
+        }
+    };
     let payment = Payment {
-        description: payload.0.description,
+        description,
         merchant_name: payload.0.merchant_name,
-        category: PaymentCategory::parse(payload.0.category)
-            .map_err(|err| HttpResponse::BadRequest().body(""))?,
+        category: category_name,
         amount_in_cents: payload.0.amount_in_cents,
         accounting_date: payload.0.accounting_date,
     };
     match insert_payment(&payment, connection_pool.deref()).await {
-        Ok(_) => HttpResponse::Ok().await,
+        Ok(_) => HttpResponse::Ok().finish(),
         Err(e) => {
             tracing::error!("Failed to execute query: {:?}", e);
-            HttpResponse::InternalServerError().await
+            HttpResponse::InternalServerError().finish()
         }
     }
 }
@@ -56,7 +69,7 @@ async fn insert_payment(payment: &Payment, connection_pool: &PgPool) -> Result<(
     sqlx::query!(
         "insert into expenses.payments (category, description, merchant_name, accounting_date, amount) values ($1, $2, $3, $4, $5)",
         payment.category.as_ref(),
-        payment.description,
+        payment.description.as_ref(),
         payment.merchant_name,
         payment.accounting_date,
         payment.amount_in_cents

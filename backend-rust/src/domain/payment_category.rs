@@ -1,4 +1,3 @@
-use chrono::NaiveDateTime;
 use unicode_segmentation::UnicodeSegmentation;
 
 #[derive(Debug)]
@@ -29,26 +28,18 @@ impl PaymentCategory {
         let forbidden_characters = ['/', '(', ')', '"', '<', '>', '\\', '{', '}'];
         let contains_forbidden_characters = s.chars().any(|g| forbidden_characters.contains(&g));
         if is_empty_or_whitespace || is_too_long || contains_forbidden_characters {
-            Err(format!("{} is not a valid subscriber name.", s))
+            Err(format!("{} is not a valid category.", s))
         } else {
             Ok(Self(s))
         }
     }
 }
 
-// domain model
-pub struct Payment {
-    pub description: String,
-    pub category: PaymentCategory,
-    pub amount_in_cents: i32,
-    pub merchant_name: String,
-    pub accounting_date: NaiveDateTime,
-}
-
 #[cfg(test)]
 mod tests {
-    use crate::domain::PaymentCategory;
     use claims::{assert_err, assert_ok};
+    use crate::domain::payment_category::PaymentCategory;
+
     #[test]
     fn a_256_grapheme_long_name_is_valid() {
         let name = "ё".repeat(256);
