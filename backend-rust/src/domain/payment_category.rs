@@ -37,8 +37,8 @@ impl PaymentCategory {
 
 #[cfg(test)]
 mod tests {
-    use claims::{assert_err, assert_ok};
     use crate::domain::payment_category::PaymentCategory;
+    use claims::{assert_err, assert_ok};
 
     #[test]
     fn a_256_grapheme_long_name_is_valid() {

@@ -1,15 +1,32 @@
+use unicode_segmentation::UnicodeSegmentation;
 
 #[derive(Debug)]
-pub struct PaymentDescription (String);
+pub struct PaymentDescription(String);
 
 impl PaymentDescription {
     pub fn parse(description: String) -> Result<Self, String> {
-        if description.is_empty() {
-            Err("Payment description cannot be empty".to_string())
-        } else if description.len() > 255 {
-            Err("Payment description is too long".to_string())
+        // `.trim()` returns a view over the input `s` without trailing
+        // whitespace-like characters.
+        // `.is_empty` checks if the view contains any character.
+        let is_empty_or_whitespace = description.trim().is_empty();
+        // A grapheme is defined by the Unicode standard as a "user-perceived"
+        // character: `å` is a single grapheme, but it is composed of two characters
+        // (`a` and `̊`).
+        //
+        // `graphemes` returns an iterator over the graphemes in the input `s`.
+        // `true` specifies that we want to use the extended grapheme definition set,
+        // the recommended one.
+        let is_too_long = description.graphemes(true).count() > 256;
+        // Iterate over all characters in the input `s` to check if any of them
+        // matches one of the characters in the forbidden array.
+        let forbidden_characters = ['/', '(', ')', '"', '<', '>', '\\', '{', '}'];
+        let contains_forbidden_characters = description
+            .chars()
+            .any(|g| forbidden_characters.contains(&g));
+        if is_empty_or_whitespace || is_too_long || contains_forbidden_characters {
+            Err(format!("{} is not a valid description.", description))
         } else {
-            Ok(PaymentDescription(description))
+            Ok(Self(description))
         }
     }
 }
@@ -22,24 +39,39 @@ impl AsRef<str> for PaymentDescription {
 
 #[cfg(test)]
 mod tests {
-    use super::PaymentDescription;
+    use crate::domain::PaymentDescription;
     use claims::{assert_err, assert_ok};
 
     #[test]
-    fn valid_description_is_parsed_successfully() {
-        let description = "Valid payment description".to_string();
-        assert_ok!(PaymentDescription::parse(description));
+    fn a_256_grapheme_long_name_is_valid() {
+        let name = "ё".repeat(256);
+        assert_ok!(PaymentDescription::parse(name));
     }
-
     #[test]
-    fn empty_description_is_rejected() {
-        let description = "".to_string();
-        assert_err!(PaymentDescription::parse(description));
+    fn a_name_longer_than_256_graphemes_is_rejected() {
+        let name = "a".repeat(257);
+        assert_err!(PaymentDescription::parse(name));
     }
-
     #[test]
-    fn long_description_is_rejected() {
-        let description = "a".repeat(256);
-        assert_err!(PaymentDescription::parse(description));
+    fn whitespace_only_names_are_rejected() {
+        let name = " ".to_string();
+        assert_err!(PaymentDescription::parse(name));
+    }
+    #[test]
+    fn empty_string_is_rejected() {
+        let name = "".to_string();
+        assert_err!(PaymentDescription::parse(name));
+    }
+    #[test]
+    fn names_containing_an_invalid_character_are_rejected() {
+        for name in &['/', '(', ')', '"', '<', '>', '\\', '{', '}'] {
+            let name = name.to_string();
+            assert_err!(PaymentDescription::parse(name));
+        }
+    }
+    #[test]
+    fn a_valid_name_is_parsed_successfully() {
+        let name = "Ursula Le Guin".to_string();
+        assert_ok!(PaymentDescription::parse(name));
     }
 }
