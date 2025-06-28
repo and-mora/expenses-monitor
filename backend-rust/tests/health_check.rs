@@ -135,7 +135,7 @@ async fn create_payment_returns_a_200() {
         .body(body)
         .send()
         .await
-        .expect("Failed to execute request.");
+        .expect("The request should be successful.");
 
     // Assert
     assert_eq!(200, response.status().as_u16());
@@ -143,7 +143,7 @@ async fn create_payment_returns_a_200() {
         sqlx::query!("SELECT category, amount FROM expenses.payments WHERE category = 'test'",)
             .fetch_one(&app.db_pool)
             .await
-            .expect("Failed to fetch saved subscription.");
+            .expect("The query should retrieve the saved payment.");
 
     assert_eq!(saved.category.unwrap(), "test");
     assert_eq!(saved.amount.unwrap(), -100);
@@ -177,6 +177,17 @@ async fn create_payment_returns_a_200() {
     "description": "test",
     "category": "test",
     "amountInCents": -100,
+    "accountingDate": "2023-11-13T00:00:00.000"
+}
+"#
+)]
+#[case(
+    r#"
+{
+    "description": "test",
+    "category": "",
+    "amountInCents": -100,
+    "merchantName": "Market",
     "accountingDate": "2023-11-13T00:00:00.000"
 }
 "#

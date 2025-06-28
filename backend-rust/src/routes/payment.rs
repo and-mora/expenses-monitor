@@ -1,3 +1,4 @@
+use crate::domain::{Payment, PaymentCategory, PaymentDescription};
 use actix_web::{web, HttpResponse, Responder};
 use chrono::NaiveDateTime;
 use serde::Deserialize;
@@ -6,7 +7,7 @@ use std::ops::Deref;
 use uuid::Uuid;
 
 #[derive(Deserialize)]
-pub struct Payment {
+pub struct PaymentDto {
     #[serde(skip_serializing_if = "Option::is_none")]
     description: String,
     category: String,
@@ -27,30 +28,59 @@ pub struct Payment {
     )
 )]
 pub async fn create_payment(
-    payload: web::Json<Payment>,
+    payload: web::Json<PaymentDto>,
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
-    match insert_payment(payload.deref(), connection_pool.deref()).await {
-        Ok(_) => HttpResponse::Ok().await,
+    let category_name = match PaymentCategory::parse(payload.0.category.clone()) {
+        Ok(name) => name,
+        Err(_) => {
+            tracing::error!("Invalid category: {}", payload.0.category);
+            return HttpResponse::BadRequest().body("Invalid category");
+        }
+    };
+    let description = match PaymentDescription::parse(payload.0.description.clone()) {
+        Ok(desc) => desc,
+        Err(_) => {
+            tracing::error!("Invalid description: {}", payload.0.description);
+            return HttpResponse::BadRequest().body("Invalid description");
+        }
+    };
+    let merchant_name = match crate::domain::PaymentMerchant::parse(payload.0.merchant_name.clone())
+    {
+        Ok(name) => name,
+        Err(_) => {
+            tracing::error!("Invalid merchant name: {}", payload.0.merchant_name);
+            return HttpResponse::BadRequest().body("Invalid merchant name");
+        }
+    };
+    let payment = Payment {
+        description,
+        merchant_name,
+        category: category_name,
+        amount_in_cents: payload.0.amount_in_cents,
+        accounting_date: payload.0.accounting_date,
+    };
+    match insert_payment(&payment, connection_pool.deref()).await {
+        Ok(_) => HttpResponse::Ok().finish(),
         Err(e) => {
             tracing::error!("Failed to execute query: {:?}", e);
-            HttpResponse::InternalServerError().await
+            HttpResponse::InternalServerError().finish()
         }
     }
 }
 
 #[tracing::instrument(
     name = "Inserting a new payment in the database",
-    skip(payload, connection_pool)
+    skip(payment, connection_pool)
 )]
-async fn insert_payment(payload: &Payment, connection_pool: &PgPool) -> Result<(), Error> {
+async fn insert_payment(payment: &Payment, connection_pool: &PgPool) -> Result<(), Error> {
     sqlx::query!(
         "insert into expenses.payments (category, description, merchant_name, accounting_date, amount) values ($1, $2, $3, $4, $5)",
-        payload.category,
-        payload.description,
-        payload.merchant_name,
-        payload.accounting_date,
-        payload.amount_in_cents
+        payment.category.as_ref(),
+        payment.description.as_ref(),
+        payment.merchant_name.as_ref(),
+        payment.accounting_date,
+        payment.amount_in_cents
     )
         .execute(connection_pool)
         .await
