@@ -23,7 +23,6 @@ RUN dpkg --add-architecture arm64 \
     libc6-dev-arm64-cross \
     libssl-dev:arm64 \
     && rustup target add aarch64-unknown-linux-gnu \
-    && rustup toolchain install stable-aarch64-unknown-linux-gnu \
     && rm -rf /var/lib/apt/lists/*
 
 # Build dependencies - this is the caching Docker layer!
@@ -31,7 +30,7 @@ RUN CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc cargo ch
 
 # Copy the source code
 COPY . /app
-ENV SQLX_OFFLINE true
+ENV SQLX_OFFLINE=true
 
 # Build application - this is the caching Docker layer!
 RUN CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc cargo build --target=aarch64-unknown-linux-gnu --release
@@ -48,7 +47,7 @@ COPY . /app
 RUN cargo chef cook --release --recipe-path recipe.json
 
 COPY . .
-ENV SQLX_OFFLINE true
+ENV SQLX_OFFLINE=true
 
 RUN cargo build --release
 
@@ -79,6 +78,6 @@ COPY --from=builder-amd64 /app/target/release/expenses-monitor-be expenses-monit
 FROM runtime-${TARGETARCH}
 WORKDIR /app
 COPY configuration.yaml configuration.yaml
-ENV APP_ENVIRONMENT production
+ENV APP_ENVIRONMENT=production
 EXPOSE 8080
 ENTRYPOINT ["./expenses-monitor-be"]
