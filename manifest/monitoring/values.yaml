@@ -191,7 +191,7 @@ kube-prometheus-stack:
             interval: 10m
             rules:
               - uid: e92c8421-8e1f-43e1-ab5d-b2a23ba32135
-                title: Disk Usage > 80%
+                title: Disk Usage > 85%
                 condition: B
                 data:
                   - refId: A
@@ -226,7 +226,7 @@ kube-prometheus-stack:
                       conditions:
                         - evaluator:
                             params:
-                              - 80
+                              - 85
                             type: gt
                           operator:
                             type: and
