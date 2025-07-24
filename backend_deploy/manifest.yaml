@@ -46,7 +46,7 @@ spec:
               value: "https://expmonitor.freeddns.org"
             - name: AUTH_SERVER_ISSUER_URI
               value: "https://auth.expmonitor.freeddns.org/realms/expenses-monitor"
-            - name: LIQUIBASE_DB_SCHEMA
+            - name: LIQUIBASE_LIQUIBASE_SCHEMA_NAME
               value: "expenses"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               valueFrom:
