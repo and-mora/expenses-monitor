@@ -1,13 +1,10 @@
-use std::net::TcpListener;
-use actix_web_opentelemetry::PrometheusMetricsHandler;
+use expenses_monitor_be::configuration::{get_configuration, DatabaseSettings, TelemetrySettings};
+use expenses_monitor_be::startup::{get_connection_pool, Application};
+use expenses_monitor_be::telemetry::{get_subscriber, init_subscriber};
 use once_cell::sync::Lazy;
-use prometheus::Registry;
 use secrecy::ExposeSecret;
 use sqlx::{Executor, PgPool};
 use uuid::Uuid;
-use expenses_monitor_be::configuration::{get_configuration, DatabaseSettings, TelemetrySettings};
-use expenses_monitor_be::startup::run;
-use expenses_monitor_be::telemetry::{get_subscriber, init_subscriber};
 
 static TRACING: Lazy<()> = Lazy::new(|| {
     let default_filter_level = "info".to_string();
@@ -48,24 +45,28 @@ pub async fn spawn_app() -> TestApp {
     // let subscriber = get_subscriber("test".into(), "info".into());
     // init_subscriber(subscriber);
     Lazy::force(&TRACING);
-    let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
-    let port = listener.local_addr().unwrap().port();
-    let address = format!("http://127.0.0.1:{}", port);
 
-    let mut configuration = get_configuration().expect("Failed to read configuration.");
-    configuration.database.database_name = Uuid::new_v4().to_string();
-    let connection_pool = configure_database(&configuration.database).await;
+    let configuration = {
+        let mut config = get_configuration().expect("Failed to read configuration.");
+        // Use a different database for each test case
+        config.database.database_name = Uuid::new_v4().to_string();
+        // Use a random OS port
+        config.application.port = 0;
+        config
+    };
 
-    let server = run(
-        listener,
-        connection_pool.clone(),
-        PrometheusMetricsHandler::new(Registry::default()),
-    )
-        .expect("Failed to bind address");
-    let _ = tokio::spawn(server);
+    configure_database(&configuration.database).await;
+
+    let application = Application::build(configuration.clone())
+        .await
+        .expect("Failed to build application.");
+
+    // Get the port before spawning the application
+    let address = format!("http://127.0.0.1:{}", application.port());
+    let _ = tokio::spawn(application.run_until_stopped());
     TestApp {
         address,
-        db_pool: connection_pool,
+        db_pool: get_connection_pool(&configuration),
     }
 }
 

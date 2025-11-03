@@ -9,18 +9,41 @@ use sqlx::PgPool;
 use std::net::TcpListener;
 use tracing_actix_web::TracingLogger;
 
-pub async fn build(configuration: Settings) -> Result<Server, std::io::Error> {
-    let metrics_handler = init_meter(&configuration.otlp);
+pub struct Application {
+    port: u16,
+    server: Server,
+}
 
-    // tpc configuration
-    let address = format!("0.0.0.0:{}", configuration.application.port);
-    let listener = TcpListener::bind(address)?;
+impl Application {
+    pub async fn build(configuration: Settings) -> Result<Self, std::io::Error> {
+        let metrics_handler = init_meter(&configuration.otlp);
 
-    // database configuration
-    let connection_pool =
-        PgPoolOptions::new().connect_lazy_with(configuration.database.connect_options());
+        // tpc configuration
+        let address = format!("0.0.0.0:{}", configuration.application.port);
+        let listener = TcpListener::bind(address)?;
+        let port = listener.local_addr()?.port();
 
-    run(listener, connection_pool, metrics_handler)
+        // database configuration
+        let connection_pool = get_connection_pool(&configuration);
+
+        let server = run(listener, connection_pool, metrics_handler)?;
+
+        Ok(Self { port, server })
+    }
+
+    pub fn port(&self) -> u16 {
+        self.port
+    }
+
+    // A more expressive name that makes it clear that
+    // this function only returns when the application is stopped.
+    pub async fn run_until_stopped(self) -> Result<(), std::io::Error> {
+        self.server.await
+    }
+}
+
+pub fn get_connection_pool(configuration: &Settings) -> PgPool {
+    PgPoolOptions::new().connect_lazy_with(configuration.database.connect_options())
 }
 
 pub fn run(

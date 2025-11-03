@@ -1,5 +1,5 @@
 use expenses_monitor_be::configuration::get_configuration;
-use expenses_monitor_be::startup::build;
+use expenses_monitor_be::startup::Application;
 use expenses_monitor_be::telemetry::{get_subscriber, init_subscriber};
 
 #[tokio::main]
@@ -15,5 +15,6 @@ async fn main() -> Result<(), std::io::Error> {
     );
     init_subscriber(subscriber);
 
-    build(configuration).await?.await
+    let application = Application::build(configuration).await?;
+    application.run_until_stopped().await
 }
