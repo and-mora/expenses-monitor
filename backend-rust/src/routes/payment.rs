@@ -4,6 +4,7 @@ use chrono::NaiveDateTime;
 use serde::Deserialize;
 use sqlx::{Error, PgPool};
 use std::ops::Deref;
+use actix_web::web::Json;
 use uuid::Uuid;
 
 #[derive(Deserialize)]
@@ -19,6 +20,23 @@ pub struct PaymentDto {
     accounting_date: NaiveDateTime,
 }
 
+impl TryFrom<Json<PaymentDto>> for Payment {
+    type Error = String;
+
+    fn try_from(json: Json<PaymentDto>) -> Result<Self, Self::Error> {
+        let category_name = PaymentCategory::parse(json.0.category.clone())?;
+        let description = PaymentDescription::parse(json.0.description.clone())?;
+        let merchant_name = PaymentMerchant::parse(json.0.merchant_name.clone())?;
+        Ok(Self {
+            description,
+            merchant_name,
+            category: category_name,
+            amount_in_cents: json.0.amount_in_cents,
+            accounting_date: json.0.accounting_date,
+        })
+    }
+}
+
 #[tracing::instrument(
     name = "Creating a new payment",
     skip(payload, connection_pool),
@@ -28,10 +46,10 @@ pub struct PaymentDto {
     )
 )]
 pub async fn create_payment(
-    payload: web::Json<PaymentDto>,
+    payload: Json<PaymentDto>,
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
-    let payment = match parse_payment(payload) {
+    let payment = match Payment::try_from(payload) {
         Ok(payment) => payment,
         Err(_) => return HttpResponse::BadRequest().finish()
     };
@@ -42,19 +60,6 @@ pub async fn create_payment(
             HttpResponse::InternalServerError().finish()
         }
     }
-}
-
-pub fn parse_payment(payment_json: web::Json<PaymentDto>) -> Result<Payment, String> {
-    let category_name = PaymentCategory::parse(payment_json.0.category.clone())?;
-    let description = PaymentDescription::parse(payment_json.0.description.clone())?;
-    let merchant_name = PaymentMerchant::parse(payment_json.0.merchant_name.clone())?;
-    Ok(Payment {
-        description,
-        merchant_name,
-        category: category_name,
-        amount_in_cents: payment_json.0.amount_in_cents,
-        accounting_date: payment_json.0.accounting_date,
-    })
 }
 
 #[tracing::instrument(
