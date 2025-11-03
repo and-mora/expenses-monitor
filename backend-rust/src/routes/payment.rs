@@ -1,4 +1,4 @@
-use crate::domain::{Payment, PaymentCategory, PaymentDescription};
+use crate::domain::{Payment, PaymentCategory, PaymentDescription, PaymentMerchant};
 use actix_web::{web, HttpResponse, Responder};
 use chrono::NaiveDateTime;
 use serde::Deserialize;
@@ -31,34 +31,9 @@ pub async fn create_payment(
     payload: web::Json<PaymentDto>,
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
-    let category_name = match PaymentCategory::parse(payload.0.category.clone()) {
-        Ok(name) => name,
-        Err(_) => {
-            tracing::error!("Invalid category: {}", payload.0.category);
-            return HttpResponse::BadRequest().body("Invalid category");
-        }
-    };
-    let description = match PaymentDescription::parse(payload.0.description.clone()) {
-        Ok(desc) => desc,
-        Err(_) => {
-            tracing::error!("Invalid description: {}", payload.0.description);
-            return HttpResponse::BadRequest().body("Invalid description");
-        }
-    };
-    let merchant_name = match crate::domain::PaymentMerchant::parse(payload.0.merchant_name.clone())
-    {
-        Ok(name) => name,
-        Err(_) => {
-            tracing::error!("Invalid merchant name: {}", payload.0.merchant_name);
-            return HttpResponse::BadRequest().body("Invalid merchant name");
-        }
-    };
-    let payment = Payment {
-        description,
-        merchant_name,
-        category: category_name,
-        amount_in_cents: payload.0.amount_in_cents,
-        accounting_date: payload.0.accounting_date,
+    let payment = match parse_payment(payload) {
+        Ok(payment) => payment,
+        Err(_) => return HttpResponse::BadRequest().finish()
     };
     match insert_payment(&payment, connection_pool.deref()).await {
         Ok(_) => HttpResponse::Ok().finish(),
@@ -67,6 +42,19 @@ pub async fn create_payment(
             HttpResponse::InternalServerError().finish()
         }
     }
+}
+
+pub fn parse_payment(payment_json: web::Json<PaymentDto>) -> Result<Payment, String> {
+    let category_name = PaymentCategory::parse(payment_json.0.category.clone())?;
+    let description = PaymentDescription::parse(payment_json.0.description.clone())?;
+    let merchant_name = PaymentMerchant::parse(payment_json.0.merchant_name.clone())?;
+    Ok(Payment {
+        description,
+        merchant_name,
+        category: category_name,
+        amount_in_cents: payment_json.0.amount_in_cents,
+        accounting_date: payment_json.0.accounting_date,
+    })
 }
 
 #[tracing::instrument(
