@@ -1,0 +1,127 @@
+use rstest::rstest;
+use crate::helpers::spawn_app;
+
+#[tokio::test]
+async fn create_payment_returns_a_200() {
+    // Arrange
+    let app = spawn_app().await;
+    let client = reqwest::Client::new();
+
+    // Act
+    let body = r#"
+    {
+        "description": "test",
+        "category": "test",
+        "amountInCents": -100,
+        "merchantName": "Market",
+        "accountingDate": "2023-11-13T00:00:00.000"
+    }
+    "#;
+
+    let response = client
+        .post(&format!("{}/api/payment", &app.address))
+        .header("Content-Type", "application/json")
+        .body(body)
+        .send()
+        .await
+        .expect("The request should be successful.");
+
+    // Assert
+    assert_eq!(200, response.status().as_u16());
+    let saved =
+        sqlx::query!("SELECT category, amount FROM expenses.payments WHERE category = 'test'",)
+            .fetch_one(&app.db_pool)
+            .await
+            .expect("The query should retrieve the saved payment.");
+
+    assert_eq!(saved.category.unwrap(), "test");
+    assert_eq!(saved.amount.unwrap(), -100);
+}
+
+#[rstest]
+#[case("{}")]
+#[case(
+    r#"
+{
+    "description": "test",
+    "amountInCents": -100,
+    "merchantName": "Market",
+    "accountingDate": "2023-11-13T00:00:00.000"
+}
+"#
+)]
+#[case(
+    r#"
+{
+    "description": "test",
+    "category": "test",
+    "merchantName": "Market",
+    "accountingDate": "2023-11-13T00:00:00.000"
+}
+"#
+)]
+#[case(
+    r#"
+{
+    "description": "test",
+    "category": "test",
+    "amountInCents": -100,
+    "accountingDate": "2023-11-13T00:00:00.000"
+}
+"#
+)]
+#[case(
+    r#"
+{
+    "description": "test",
+    "category": "",
+    "amountInCents": -100,
+    "merchantName": "Market",
+    "accountingDate": "2023-11-13T00:00:00.000"
+}
+"#
+)]
+#[case("")]
+#[tokio::test]
+async fn create_payment_returns_a_400_when_data_is_missing(#[case] invalid_body: String) {
+    // Arrange
+    let app = spawn_app().await;
+    let client = reqwest::Client::new();
+
+    // Act
+    let response = client
+        .post(&format!("{}/api/payment", &app.address))
+        .header("Content-Type", "application/json")
+        .body(invalid_body.clone())
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    // Assert
+    assert_eq!(
+        400,
+        response.status().as_u16(),
+        // Additional customised error message on test failure
+        "The API did not fail with 400 Bad Request when the payload was {}.",
+        invalid_body
+    );
+}
+
+#[tokio::test]
+async fn when_get_categories_then_ok() {
+    // Arrange
+    let app = spawn_app().await;
+    let client = reqwest::Client::new();
+
+    // Act
+    let response = client
+        // Use the returned application address
+        .get(&format!("{}/api/payment/categories", &app.address))
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    // Assert
+    assert!(response.status().is_success());
+    assert_ne!(response.content_length().unwrap(), 0);
+}
