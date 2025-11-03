@@ -1,10 +1,27 @@
+use crate::configuration::Settings;
 use crate::routes::{create_payment, delete_payment, get_categories, greet, health_check};
+use crate::telemetry::init_meter;
 use actix_web::dev::Server;
 use actix_web::{web, App, HttpServer};
 use actix_web_opentelemetry::{PrometheusMetricsHandler, RequestMetrics};
+use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use std::net::TcpListener;
 use tracing_actix_web::TracingLogger;
+
+pub async fn build(configuration: Settings) -> Result<Server, std::io::Error> {
+    let metrics_handler = init_meter(&configuration.otlp);
+
+    // tpc configuration
+    let address = format!("0.0.0.0:{}", configuration.application.port);
+    let listener = TcpListener::bind(address)?;
+
+    // database configuration
+    let connection_pool =
+        PgPoolOptions::new().connect_lazy_with(configuration.database.connect_options());
+
+    run(listener, connection_pool, metrics_handler)
+}
 
 pub fn run(
     listener: TcpListener,
