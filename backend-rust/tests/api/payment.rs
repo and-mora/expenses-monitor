@@ -5,7 +5,6 @@ use rstest::rstest;
 async fn create_payment_returns_a_200() {
     // Arrange
     let app = spawn_app().await;
-    let client = reqwest::Client::new();
 
     // Act
     let body = r#"
