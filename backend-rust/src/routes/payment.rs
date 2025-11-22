@@ -152,7 +152,7 @@ async fn get_categories_from_db(connection_pool: &PgPool) -> Result<Vec<String>,
             e
         })?
         .into_iter()
-        .map(|cat| cat.category.unwrap())
+        .filter_map(|cat| cat.category)
         .collect();
 
     Ok(categories)
