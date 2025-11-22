@@ -1,5 +1,5 @@
-use rstest::rstest;
 use crate::helpers::spawn_app;
+use rstest::rstest;
 
 #[tokio::test]
 async fn create_payment_returns_a_200() {
@@ -18,13 +18,7 @@ async fn create_payment_returns_a_200() {
     }
     "#;
 
-    let response = client
-        .post(&format!("{}/api/payment", &app.address))
-        .header("Content-Type", "application/json")
-        .body(body)
-        .send()
-        .await
-        .expect("The request should be successful.");
+    let response = app.post_payment(body).await;
 
     // Assert
     assert_eq!(200, response.status().as_u16());
@@ -83,19 +77,12 @@ async fn create_payment_returns_a_200() {
 )]
 #[case("")]
 #[tokio::test]
-async fn create_payment_returns_a_400_when_data_is_missing(#[case] invalid_body: String) {
+async fn create_payment_returns_a_400_when_data_is_missing(#[case] invalid_body: &str) {
     // Arrange
     let app = spawn_app().await;
-    let client = reqwest::Client::new();
 
     // Act
-    let response = client
-        .post(&format!("{}/api/payment", &app.address))
-        .header("Content-Type", "application/json")
-        .body(invalid_body.clone())
-        .send()
-        .await
-        .expect("Failed to execute request.");
+    let response = app.post_payment(invalid_body).await;
 
     // Assert
     assert_eq!(
@@ -111,15 +98,9 @@ async fn create_payment_returns_a_400_when_data_is_missing(#[case] invalid_body:
 async fn when_get_categories_then_ok() {
     // Arrange
     let app = spawn_app().await;
-    let client = reqwest::Client::new();
 
     // Act
-    let response = client
-        // Use the returned application address
-        .get(&format!("{}/api/payment/categories", &app.address))
-        .send()
-        .await
-        .expect("Failed to execute request.");
+    let response = app.get_categories().await;
 
     // Assert
     assert!(response.status().is_success());

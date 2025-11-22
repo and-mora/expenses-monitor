@@ -41,6 +41,26 @@ pub struct TestApp {
     pub db_pool: PgPool,
 }
 
+impl TestApp {
+    pub async fn post_payment(&self, body: &str) -> reqwest::Response {
+        reqwest::Client::new()
+            .post(&format!("{}/api/payment", &self.address))
+            .header("Content-Type", "application/json")
+            .body(body.to_owned())
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
+
+    pub async fn get_categories(&self) -> reqwest::Response {
+        reqwest::Client::new()
+            .get(&format!("{}/api/payment/categories", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
+}
+
 pub async fn spawn_app() -> TestApp {
     // let subscriber = get_subscriber("test".into(), "info".into());
     // init_subscriber(subscriber);

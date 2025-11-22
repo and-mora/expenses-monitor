@@ -1,10 +1,10 @@
 use crate::domain::{Payment, PaymentCategory, PaymentDescription, PaymentMerchant};
+use actix_web::web::Json;
 use actix_web::{web, HttpResponse, Responder};
 use chrono::NaiveDateTime;
 use serde::Deserialize;
 use sqlx::{Error, PgPool};
 use std::ops::Deref;
-use actix_web::web::Json;
 use uuid::Uuid;
 
 #[derive(Deserialize)]
@@ -51,7 +51,7 @@ pub async fn create_payment(
 ) -> impl Responder {
     let payment = match Payment::try_from(payload) {
         Ok(payment) => payment,
-        Err(_) => return HttpResponse::BadRequest().finish()
+        Err(_) => return HttpResponse::BadRequest().finish(),
     };
     match insert_payment(&payment, connection_pool.deref()).await {
         Ok(_) => HttpResponse::Ok().finish(),
