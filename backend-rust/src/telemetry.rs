@@ -103,7 +103,7 @@ pub fn init_meter(otlp_settings: &TelemetrySettings) -> PrometheusMetricsHandler
                     record_min_max: true,
                 }),
             )
-            .unwrap(),
+            .expect("cannot initialize the view to build the metric provider"),
         )
         .build();
     global::set_meter_provider(provider.clone());
