@@ -56,7 +56,7 @@ where
                 )])),
         )
         .install_batch(opentelemetry_sdk::runtime::Tokio)
-        .unwrap();
+        .expect("init OTLP tracer failed");
     let tracer = provider.tracer(otlp_settings.service_name.clone());
 
     // Create a tracing layer with the configured tracer
