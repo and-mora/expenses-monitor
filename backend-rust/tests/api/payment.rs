@@ -105,3 +105,30 @@ async fn when_get_categories_then_ok() {
     assert!(response.status().is_success());
     assert_ne!(response.content_length().unwrap(), 0);
 }
+
+#[tokio::test]
+async fn get_payments_returns_list() {
+    // Arrange
+    let app = spawn_app().await;
+    
+    let payment = r#"
+    {
+        "description": "p1",
+        "category": "test",
+        "amountInCents": -1000,
+        "merchantName": "m1",
+        "accountingDate": "2023-01-01T00:00:00.000"
+    }
+    "#;
+    app.post_payment(payment).await;
+
+    // Act
+    let response = app.get_payments("?page=0&size=10").await;
+
+    // Assert
+    assert_eq!(200, response.status().as_u16());
+    let json: serde_json::Value = response.json().await.unwrap();
+    let content = json["content"].as_array().unwrap();
+    assert_eq!(1, content.len());
+    assert_eq!("p1", content[0]["description"]);
+}

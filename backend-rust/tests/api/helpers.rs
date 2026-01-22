@@ -44,7 +44,7 @@ pub struct TestApp {
 impl TestApp {
     pub async fn post_payment(&self, body: &str) -> reqwest::Response {
         reqwest::Client::new()
-            .post(&format!("{}/api/payment", &self.address))
+            .post(&format!("{}/api/payments", &self.address))
             .header("Content-Type", "application/json")
             .body(body.to_owned())
             .send()
@@ -54,7 +54,49 @@ impl TestApp {
 
     pub async fn get_categories(&self) -> reqwest::Response {
         reqwest::Client::new()
-            .get(&format!("{}/api/payment/categories", &self.address))
+            .get(&format!("{}/api/payments/categories", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
+
+    pub async fn get_payments(&self, query: &str) -> reqwest::Response {
+        reqwest::Client::new()
+            .get(&format!("{}/api/payments{}", &self.address, query))
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
+
+    pub async fn get_balance(&self) -> reqwest::Response {
+        reqwest::Client::new()
+            .get(&format!("{}/api/balance", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
+
+    pub async fn create_wallet(&self, body: &str) -> reqwest::Response {
+        reqwest::Client::new()
+            .post(&format!("{}/api/wallets", &self.address))
+            .header("Content-Type", "application/json")
+            .body(body.to_owned())
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
+
+    pub async fn get_wallets(&self) -> reqwest::Response {
+        reqwest::Client::new()
+            .get(&format!("{}/api/wallets", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
+
+    pub async fn delete_wallet(&self, id: uuid::Uuid) -> reqwest::Response {
+        reqwest::Client::new()
+            .delete(&format!("{}/api/wallets/{}", &self.address, id))
             .send()
             .await
             .expect("Failed to execute request.")
