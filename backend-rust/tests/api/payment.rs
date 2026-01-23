@@ -132,3 +132,90 @@ async fn get_payments_returns_list() {
     assert_eq!(1, content.len());
     assert_eq!("p1", content[0]["description"]);
 }
+
+#[tokio::test]
+async fn delete_payment_with_tags_succeeds() {
+    // Arrange
+    let app = spawn_app().await;
+    
+    // Create a payment
+    let payment = r#"
+    {
+        "description": "test payment with tags",
+        "category": "test",
+        "amountInCents": -500,
+        "merchantName": "test merchant",
+        "accountingDate": "2023-01-01T00:00:00.000"
+    }
+    "#;
+    let create_response = app.post_payment(payment).await;
+    assert_eq!(200, create_response.status().as_u16());
+    
+    // Get the payment ID from the database
+    let saved = sqlx::query!(
+        "SELECT id FROM expenses.payments WHERE description = 'test payment with tags'"
+    )
+    .fetch_one(&app.db_pool)
+    .await
+    .expect("Failed to retrieve payment");
+    
+    let payment_id = saved.id;
+    
+    // Create a tag for testing
+    let tag_id = uuid::Uuid::new_v4();
+    sqlx::query!(
+        "INSERT INTO expenses.tags (id, key, value) VALUES ($1, $2, $3)",
+        tag_id,
+        "category",
+        "test-tag"
+    )
+    .execute(&app.db_pool)
+    .await
+    .expect("Failed to insert tag");
+    
+    // Associate the tag with the payment
+    sqlx::query!(
+        "INSERT INTO expenses.payment_tags (payment_id, tag_id) VALUES ($1, $2)",
+        payment_id,
+        tag_id
+    )
+    .execute(&app.db_pool)
+    .await
+    .expect("Failed to associate tag with payment");
+    
+    // Verify the association exists
+    let tag_count = sqlx::query!(
+        "SELECT COUNT(*) as count FROM expenses.payment_tags WHERE payment_id = $1",
+        payment_id
+    )
+    .fetch_one(&app.db_pool)
+    .await
+    .expect("Failed to count tags");
+    assert_eq!(tag_count.count.unwrap(), 1);
+    
+    // Act - Delete the payment
+    let delete_response = app.delete_payment(payment_id).await;
+    
+    // Assert - The deletion should succeed
+    assert_eq!(204, delete_response.status().as_u16());
+    
+    // Verify the payment no longer exists
+    let payment_exists = sqlx::query!(
+        "SELECT id FROM expenses.payments WHERE id = $1",
+        payment_id
+    )
+    .fetch_optional(&app.db_pool)
+    .await
+    .expect("Failed to query payment");
+    assert!(payment_exists.is_none(), "Payment should have been deleted");
+    
+    // Verify the tag association was also deleted
+    let tags_exist = sqlx::query!(
+        "SELECT COUNT(*) as count FROM expenses.payment_tags WHERE payment_id = $1",
+        payment_id
+    )
+    .fetch_one(&app.db_pool)
+    .await
+    .expect("Failed to count tags");
+    assert_eq!(tags_exist.count.unwrap(), 0, "Tag associations should have been deleted");
+}

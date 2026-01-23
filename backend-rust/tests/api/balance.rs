@@ -1,4 +1,5 @@
 use crate::helpers::spawn_app;
+use expenses_monitor_be::routes::BalanceResponse;
 
 #[tokio::test]
 async fn get_balance_returns_correct_amount() {
@@ -33,8 +34,8 @@ async fn get_balance_returns_correct_amount() {
 
     // Assert
     assert_eq!(200, response.status().as_u16());
-    let balance: i32 = response.json().await.unwrap();
-    assert_eq!(-500, balance);
+    let balance: BalanceResponse = response.json().await.unwrap();
+    assert_eq!(-500, balance.total_in_cents);
 }
 
 #[tokio::test]
@@ -47,6 +48,6 @@ async fn get_balance_returns_zero_when_no_payments() {
 
     // Assert
     assert_eq!(200, response.status().as_u16());
-    let balance: i32 = response.json().await.unwrap();
-    assert_eq!(0, balance);
+    let balance: BalanceResponse = response.json().await.unwrap();
+    assert_eq!(0, balance.total_in_cents);
 }

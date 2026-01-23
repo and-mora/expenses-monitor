@@ -90,7 +90,7 @@ pub async fn create_payment(
     };
 
     // Create payment with resolved wallet_id
-    let mut payment_data = payload.0;
+    let payment_data = payload.0;
     let payment = match Payment::try_from_dto(payment_data, wallet_id) {
         Ok(payment) => payment,
         Err(_) => return HttpResponse::BadRequest().finish(),
@@ -190,7 +190,7 @@ pub async fn delete_payment(
 async fn delete_payment_query(connection_pool: &PgPool, payment_id: Uuid) -> Result<(), Error> {
     // First, delete all associated tags to avoid foreign key constraint violation
     sqlx::query!(
-        "delete from expenses.payments_tags where payment_id = $1",
+        "delete from expenses.payment_tags where payment_id = $1",
         payment_id
     )
     .execute(connection_pool)
@@ -214,9 +214,18 @@ async fn delete_payment_query(connection_pool: &PgPool, payment_id: Uuid) -> Res
 /*
  categories
 */
+#[derive(Deserialize, Debug)]
+pub struct CategoryQuery {
+    #[serde(rename = "type")]
+    category_type: Option<String>,
+}
+
 #[tracing::instrument(name = "Retrieve all categories", skip(connection_pool))]
-pub async fn get_categories(connection_pool: web::Data<PgPool>) -> impl Responder {
-    match get_categories_from_db(connection_pool.deref()).await {
+pub async fn get_categories(
+    connection_pool: web::Data<PgPool>,
+    query: web::Query<CategoryQuery>,
+) -> impl Responder {
+    match get_categories_from_db(connection_pool.deref(), query.category_type.as_deref()).await {
         Ok(categories) => HttpResponse::Ok().json(categories),
         Err(e) => {
             tracing::error!("Failed to execute query: {:?}", e);
@@ -229,8 +238,11 @@ pub async fn get_categories(connection_pool: web::Data<PgPool>) -> impl Responde
     name = "Retrieving all categories from database",
     skip(connection_pool)
 )]
-async fn get_categories_from_db(connection_pool: &PgPool) -> Result<Vec<String>, Error> {
-    let categories = sqlx::query!("select distinct category from expenses.payments")
+async fn get_categories_from_db(
+    connection_pool: &PgPool,
+    category_type: Option<&str>,
+) -> Result<Vec<String>, Error> {
+    let mut categories: Vec<String> = sqlx::query!("select distinct category from expenses.payments")
         .fetch_all(connection_pool)
         .await
         .map_err(|e| {
@@ -240,6 +252,15 @@ async fn get_categories_from_db(connection_pool: &PgPool) -> Result<Vec<String>,
         .into_iter()
         .filter_map(|cat| cat.category)
         .collect();
+
+    // Apply filter based on type parameter
+    if let Some(filter_type) = category_type {
+        categories = match filter_type {
+            "expense" => categories.into_iter().filter(|c| c != "income").collect(),
+            "income" => categories.into_iter().filter(|c| c == "income").collect(),
+            _ => categories, // Invalid type, return all
+        };
+    }
 
     Ok(categories)
 }

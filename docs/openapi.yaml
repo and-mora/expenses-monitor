@@ -205,6 +205,21 @@ paths:
         - Server-Sent Events (SSE) stream (`text/event-stream`) - recommended
         - Plain text comma-separated list (`text/plain`)
       operationId: getCategories
+      parameters:
+        - name: type
+          in: query
+          description: |
+            Filter categories by type:
+            - `expense`: Returns all categories except 'income'
+            - `income`: Returns only the 'income' category
+            - If omitted, returns all categories
+          required: false
+          schema:
+            type: string
+            enum:
+              - expense
+              - income
+          example: expense
       responses:
         '200':
           description: List of categories

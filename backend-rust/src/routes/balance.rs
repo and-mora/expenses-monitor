@@ -1,12 +1,12 @@
 use actix_web::{web, HttpResponse, Responder};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use std::ops::Deref;
 
-#[derive(Serialize)]
-struct BalanceResponse {
+#[derive(Serialize, Deserialize)]
+pub struct BalanceResponse {
     #[serde(rename = "totalInCents")]
-    total_in_cents: i32,
+    pub total_in_cents: i32,
 }
 
 #[tracing::instrument(name = "Retrieve overall balance", skip(connection_pool))]

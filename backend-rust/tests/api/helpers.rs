@@ -101,6 +101,14 @@ impl TestApp {
             .await
             .expect("Failed to execute request.")
     }
+
+    pub async fn delete_payment(&self, id: uuid::Uuid) -> reqwest::Response {
+        reqwest::Client::new()
+            .delete(&format!("{}/api/payments/{}", &self.address, id))
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
 }
 
 pub async fn spawn_app() -> TestApp {
