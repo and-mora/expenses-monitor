@@ -153,3 +153,22 @@ async fn delete_wallet_from_db(id: Uuid, pool: &PgPool) -> Result<(), sqlx::Erro
     .await?;
     Ok(())
 }
+
+#[tracing::instrument(
+    name = "Get wallet ID by name",
+    skip(pool)
+)]
+pub async fn get_wallet_id_by_name(name: &str, pool: &PgPool) -> Result<Option<Uuid>, sqlx::Error> {
+    let result = sqlx::query!(
+        r#"
+        SELECT id
+        FROM expenses.wallets
+        WHERE name = $1
+        "#,
+        name
+    )
+    .fetch_optional(pool)
+    .await?;
+    
+    Ok(result.map(|r| r.id))
+}

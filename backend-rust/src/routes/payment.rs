@@ -1,4 +1,5 @@
 use crate::domain::{Payment, PaymentCategory, PaymentDescription, PaymentMerchant};
+use crate::routes::wallet::get_wallet_id_by_name;
 use actix_web::web::Json;
 use actix_web::{web, HttpResponse, Responder};
 use chrono::NaiveDateTime;
@@ -27,27 +28,32 @@ pub struct PaymentDto {
     #[serde(rename = "accountingDate")]
     accounting_date: NaiveDateTime,
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "walletId")]
-    wallet_id: Option<Uuid>,
+    wallet: Option<String>, // Changed from wallet_id to wallet (name)
     #[serde(skip_serializing_if = "Option::is_none")]
     tags: Option<Vec<TagDto>>,
+}
+
+impl Payment {
+    fn try_from_dto(dto: PaymentDto, wallet_id: Option<Uuid>) -> Result<Self, String> {
+        let category_name = PaymentCategory::parse(dto.category.clone())?;
+        let description = PaymentDescription::parse(dto.description.clone())?;
+        let merchant_name = PaymentMerchant::parse(dto.merchant_name.clone())?;
+        Ok(Self {
+            description,
+            merchant_name,
+            category: category_name,
+            amount_in_cents: dto.amount_in_cents,
+            accounting_date: dto.accounting_date,
+            wallet_id,
+        })
+    }
 }
 
 impl TryFrom<Json<PaymentDto>> for Payment {
     type Error = String;
 
     fn try_from(json: Json<PaymentDto>) -> Result<Self, Self::Error> {
-        let category_name = PaymentCategory::parse(json.0.category.clone())?;
-        let description = PaymentDescription::parse(json.0.description.clone())?;
-        let merchant_name = PaymentMerchant::parse(json.0.merchant_name.clone())?;
-        Ok(Self {
-            description,
-            merchant_name,
-            category: category_name,
-            amount_in_cents: json.0.amount_in_cents,
-            accounting_date: json.0.accounting_date,
-            wallet_id: json.0.wallet_id,
-        })
+        Self::try_from_dto(json.0, None)
     }
 }
 
@@ -64,9 +70,28 @@ pub async fn create_payment(
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
     let tags = payload.0.tags.clone();
-    let wallet_id = payload.0.wallet_id;
+    let wallet_name_input = payload.0.wallet.clone();
 
-    let payment = match Payment::try_from(payload) {
+    // Resolve wallet_id from wallet name
+    let wallet_id = if let Some(name) = &wallet_name_input {
+        match get_wallet_id_by_name(name, connection_pool.deref()).await {
+            Ok(Some(id)) => Some(id),
+            Ok(None) => {
+                tracing::error!("Wallet not found: {}", name);
+                return HttpResponse::BadRequest().body(format!("Wallet '{}' not found", name));
+            }
+            Err(e) => {
+                tracing::error!("Failed to lookup wallet: {:?}", e);
+                return HttpResponse::InternalServerError().finish();
+            }
+        }
+    } else {
+        None
+    };
+
+    // Create payment with resolved wallet_id
+    let mut payment_data = payload.0;
+    let payment = match Payment::try_from_dto(payment_data, wallet_id) {
         Ok(payment) => payment,
         Err(_) => return HttpResponse::BadRequest().finish(),
     };
@@ -150,10 +175,10 @@ pub async fn delete_payment(
     let payment_id = path.into_inner();
 
     match delete_payment_query(connection_pool.get_ref(), payment_id).await {
-        Ok(_) => HttpResponse::Ok().await,
+        Ok(_) => HttpResponse::NoContent().finish(),
         Err(e) => {
             tracing::error!("Failed to execute query: {:?}", e);
-            HttpResponse::InternalServerError().await
+            HttpResponse::InternalServerError().finish()
         }
     }
 }
@@ -163,14 +188,25 @@ pub async fn delete_payment(
     skip(payment_id, connection_pool)
 )]
 async fn delete_payment_query(connection_pool: &PgPool, payment_id: Uuid) -> Result<(), Error> {
+    // First, delete all associated tags to avoid foreign key constraint violation
+    sqlx::query!(
+        "delete from expenses.payments_tags where payment_id = $1",
+        payment_id
+    )
+    .execute(connection_pool)
+    .await
+    .map_err(|e| {
+        tracing::error!("Failed to delete payment tags: {:?}", e);
+        e
+    })?;
+
+    // Then delete the payment itself
     sqlx::query!("delete from expenses.payments where id = $1", payment_id)
         .execute(connection_pool)
         .await
         .map_err(|e| {
-            tracing::error!("Failed to execute query: {:?}", e);
+            tracing::error!("Failed to delete payment: {:?}", e);
             e
-            // Using the `?` operator to return early
-            // if the function failed, returning a sqlx::Error
         })?;
     Ok(())
 }

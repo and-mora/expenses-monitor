@@ -4,8 +4,9 @@ use crate::routes::{
     get_recent_payments, get_wallets, greet, health_check,
 };
 use crate::telemetry::init_meter;
+use actix_cors::Cors;
 use actix_web::dev::Server;
-use actix_web::{web, App, HttpServer};
+use actix_web::{http, web, App, HttpServer};
 use actix_web_opentelemetry::{PrometheusMetricsHandler, RequestMetrics};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
@@ -57,7 +58,24 @@ pub fn run(
     let connection_pool = web::Data::new(connection_pool);
 
     let server = HttpServer::new(move || {
+        // Configure CORS for local development
+        let cors = Cors::default()
+            .allowed_origin("http://localhost:5173") // Vite default port
+            .allowed_origin("http://localhost:5174") // Vite alternate port
+            .allowed_origin("http://localhost:3000") // Next.js fallback
+            .allowed_origin("http://127.0.0.1:5173")
+            .allowed_origin("http://127.0.0.1:5174")
+            .allowed_origin("http://127.0.0.1:3000")
+            .allowed_methods(vec!["GET", "POST", "DELETE", "OPTIONS"])
+            .allowed_headers(vec![
+                http::header::AUTHORIZATION,
+                http::header::ACCEPT,
+                http::header::CONTENT_TYPE,
+            ])
+            .max_age(3600);
+
         App::new()
+            .wrap(cors)
             .wrap(RequestMetrics::default())
             .route("/metrics", web::get().to(metrics_handler.clone()))
             .wrap(TracingLogger::default())

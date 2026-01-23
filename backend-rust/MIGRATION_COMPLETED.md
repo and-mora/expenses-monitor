@@ -1,69 +1,69 @@
-as# Rust Backend Migration - Completamento Funzionalità
+# Rust Backend Migration - Functionality Completion
 
-## ✅ Modifiche Completate
+## ✅ Completed Changes
 
-### 1. **Endpoint Greet** - RISOLTO
+### 1. **Greet Endpoint** - FIXED
 - **File**: `src/routes/greet.rs`
-- **Modifica**: L'endpoint ora restituisce correttamente il messaggio "greetings!" invece di una risposta vuota
-- **Prima**: `HttpResponse::Ok()`
-- **Dopo**: `HttpResponse::Ok().body("greetings!")`
+- **Change**: The endpoint now correctly returns the message "greetings!" instead of an empty response.
+- **Before**: `HttpResponse::Ok()`
+- **After**: `HttpResponse::Ok().body("greetings!")`
 
-### 2. **Supporto Tags** - IMPLEMENTATO
-Implementato il supporto completo per i tags nei pagamenti, allineandosi al backend Java.
+### 2. **Tag Support** - IMPLEMENTED
+Implemented full tag support for payments, aligned with the Java backend.
 
-#### File Creati:
-- **`src/domain/tag.rs`**: Modello di dominio per Tag con validazione
-  - `Tag`: Struttura principale
-  - `TagKey`: Wrapper validato per le chiavi dei tag
-  - `TagValue`: Wrapper validato per i valori dei tag
+#### Created Files
+- **`src/domain/tag.rs`**: Domain model for Tags with validation
+  - `Tag`: Main structure
+  - `TagKey`: Validated wrapper for tag keys
+  - `TagValue`: Validated wrapper for tag values
 
-- **`migrations/20260119000000_create_tags_table.sql`**: Migration per creare le tabelle
-  - `expenses.tags`: Tabella per memorizzare i tag
-  - `expenses.payment_tags`: Tabella di giunzione payment-tag
+- **`migrations/20240104000000_create_tags_table.sql`**: Migration to create the tables
+  - `expenses.tags`: Table to store tags
+  - `expenses.payment_tags`: Payment-tag junction table
 
-#### File Modificati:
-- **`src/domain/mod.rs`**: Aggiunto export del modulo tag
-- **`src/routes/payment.rs`**: Modifiche principali:
-  - Aggiunto `TagDto` per request/response
-  - Aggiunto `TagResponseDto` per le risposte
-  - Campo `tags` aggiunto a `PaymentDto` e `PaymentResponseDto`
-  - Funzioni helper aggiunte:
-    - `insert_payment_tags()`: Inserisce i tag per un pagamento
-    - `get_payment_tags()`: Recupera i tag di un pagamento
-    - `get_wallet_name()`: Recupera il nome del wallet
+#### Modified Files
+- **`src/domain/mod.rs`**: Exported the tag module
+- **`src/routes/payment.rs`**: Main changes:
+  - Added `TagDto` for request/response
+  - Added `TagResponseDto` for responses
+  - Added `tags` field to `PaymentDto` and `PaymentResponseDto`
+  - Added helper functions:
+    - `insert_payment_tags()`: Inserts tags for a payment
+    - `get_payment_tags()`: Retrieves tags for a payment
+    - `get_wallet_name()`: Retrieves the wallet name
 
-### 3. **Payment Creation Response** - RISOLTO
-- **Prima**: L'endpoint POST `/api/payments` restituiva solo 200 OK senza dati
-- **Dopo**: Restituisce il `PaymentResponseDto` completo con:
-  - ID del pagamento creato
-  - Tutti i dati del pagamento
-  - Nome del wallet (se presente)
-  - Tags associati (se presenti)
+### 3. **Payment Creation Response** - FIXED
+- **Before**: POST `/api/payments` returned only 200 OK with no payload
+- **After**: Returns the full `PaymentResponseDto` including:
+  - ID of the created payment
+  - All payment fields
+  - Wallet name (if present)
+  - Associated tags (if present)
 
-### 4. **Get Recent Payments** - MIGLIORATO
-- Ora include i tags per ogni pagamento nella risposta
-- Mantiene il supporto per paginazione
-- Include il nome del wallet
+### 4. **Get Recent Payments** - IMPROVED
+- Now includes tags for each payment in the response
+- Keeps pagination support
+- Includes the wallet name
 
-## 📋 Confronto con Backend Java
+## 📋 Comparison with Java Backend
 
-### Endpoints Implementati
+### Implemented Endpoints
 
-| Endpoint | Metodo | Java | Rust | Note |
+| Endpoint | Method | Java | Rust | Notes |
 |----------|--------|------|------|------|
-| `/api/payments` | POST | ✅ | ✅ | Restituisce payment con ID |
-| `/api/payments` | GET | ✅ | ✅ | Paginazione + tags |
+| `/api/payments` | POST | ✅ | ✅ | Returns payment with ID |
+| `/api/payments` | GET | ✅ | ✅ | Pagination + tags |
 | `/api/payments/{id}` | DELETE | ✅ | ✅ | |
 | `/api/payments/categories` | GET | ✅ | ✅ | |
 | `/api/wallets` | POST | ✅ | ✅ | |
 | `/api/wallets` | GET | ✅ | ✅ | |
 | `/api/wallets/{id}` | DELETE | ✅ | ✅ | |
 | `/api/balance` | GET | ✅ | ✅ | |
-| `/greet` | GET | ✅ | ✅ | Restituisce "greetings!" |
-| `/health` | GET | ❌ | ✅ | Solo in Rust |
-| `/metrics` | GET | ❌ | ✅ | Solo in Rust |
+| `/greet` | GET | ✅ | ✅ | Returns "greetings!" |
+| `/health` | GET | ❌ | ✅ | Rust-only |
+| `/metrics` | GET | ❌ | ✅ | Rust-only |
 
-### DTOs Allineati
+### Aligned DTOs
 
 #### PaymentDto (Request)
 ```rust
@@ -74,21 +74,21 @@ Implementato il supporto completo per i tags nei pagamenti, allineandosi al back
   "merchantName": String,
   "accountingDate": DateTime,
   "walletId": Option<Uuid>,
-  "tags": Option<Vec<TagDto>>  // ✅ NUOVO
+  "tags": Option<Vec<TagDto>>  // ✅ NEW
 }
 ```
 
 #### PaymentResponseDto (Response)
 ```rust
 {
-  "id": Uuid,              // ✅ NUOVO
+  "id": Uuid,              // ✅ NEW
   "description": String,
   "amountInCents": i32,
   "merchantName": String,
   "accountingDate": DateTime,
   "category": String,
   "wallet": Option<String>,
-  "tags": Option<Vec<TagResponseDto>>  // ✅ NUOVO
+  "tags": Option<Vec<TagResponseDto>>  // ✅ NEW
 }
 ```
 
@@ -101,40 +101,40 @@ Implementato il supporto completo per i tags nei pagamenti, allineandosi al back
 }
 ```
 
-## 🚀 Testing e Deploy
+## 🚀 Testing and Deployment
 
-### Pre-requisiti per il Testing
+### Testing Prerequisites
 
-1. **Database PostgreSQL** deve essere in esecuzione con lo schema corretto
-2. **Eseguire le migrations**:
-   ```bash
-   cd backend-rust
-   sqlx database create
-   sqlx migrate run
-   ```
+1. **PostgreSQL database** must be running with the correct schema
+2. **Run migrations**:
+  ```bash
+  cd backend-rust
+  sqlx database create
+  sqlx migrate run
+  ```
 
-3. **Configurare DATABASE_URL** (nel file `.env` o `configuration.yaml`):
-   ```
-   DATABASE_URL=postgres://user:password@localhost:5432/expenses
-   ```
+3. **Configure DATABASE_URL** (in `.env` or `configuration.yaml`):
+  ```
+  DATABASE_URL=postgres://user:password@localhost:5432/expenses-monitor
+  ```
 
-### Compilazione con SQLx Offline Mode (Opzionale)
+### Build with SQLx Offline Mode (Optional)
 
-Se non si ha accesso al database durante la compilazione:
+If you cannot access the database at build time:
 
-1. Con database disponibile, preparare i dati offline:
-   ```bash
-   cargo sqlx prepare
-   ```
+1. With database available, prepare offline metadata:
+  ```bash
+  cargo sqlx prepare
+  ```
 
-2. Compilare senza database:
-   ```bash
-   SQLX_OFFLINE=true cargo build
-   ```
+2. Build without database:
+  ```bash
+  SQLX_OFFLINE=true cargo build
+  ```
 
-### Test dell'API
+### API Testing
 
-Puoi testare gli endpoint con curl o la collezione Postman esistente:
+You can test the endpoints using curl or the existing Postman collection:
 
 ```bash
 # Test greet
@@ -160,9 +160,9 @@ curl -X POST http://localhost:8080/api/payments \
 curl http://localhost:8080/api/payments?page=0&size=10
 ```
 
-## 📊 Schema Database Aggiornato
+## 📊 Updated Database Schema
 
-### Nuove Tabelle
+### New Tables
 
 ```sql
 -- Tags table
@@ -181,9 +181,9 @@ CREATE TABLE expenses.payment_tags (
 );
 ```
 
-## 🔄 Differenze Rimanenti con Java Backend
+## 🔄 Remaining Differences vs Java Backend
 
-### Differenze Architetturali (Non Problematiche)
+### Architectural Differences (Non-Blocking)
 
 1. **Rust**: Usa Actix-web (async/await nativo)
    **Java**: Usa Spring WebFlux (Project Reactor)
@@ -194,7 +194,7 @@ CREATE TABLE expenses.payment_tags (
 3. **Rust**: Telemetria con OpenTelemetry + Prometheus built-in
    **Java**: Telemetria con Spring Boot Actuator
 
-### Funzionalità Identiche
+### Identical Functionality
 
 - ✅ Tutti gli endpoint REST
 - ✅ Gestione errori (constraint violations)
@@ -203,7 +203,7 @@ CREATE TABLE expenses.payment_tags (
 - ✅ Wallet association
 - ✅ Response format compatibili
 
-## ✨ Vantaggi del Backend Rust
+## ✨ Benefits of the Rust Backend
 
 1. **Performance**: Rust è più veloce e usa meno memoria
 2. **Safety**: Type safety a compile-time
@@ -211,7 +211,7 @@ CREATE TABLE expenses.payment_tags (
 4. **Metrics**: Prometheus metrics built-in
 5. **Tracing**: OpenTelemetry integrato
 
-## 📝 Prossimi Passi
+## 📝 Next Steps
 
 1. **Avviare il database PostgreSQL**
 2. **Eseguire le migrations** (inclusa quella per i tags)
@@ -219,12 +219,12 @@ CREATE TABLE expenses.payment_tags (
 4. **Verificare compatibilità** con il frontend Angular
 5. **Aggiornare il deployment** per usare il backend Rust invece di Java
 
-## 🔧 Configurazione Production
+## 🔧 Production Configuration
 
-Aggiorna i manifest Kubernetes in `backend_deploy/manifest_rust.yaml` se necessario per assicurarti che:
-- Le variabili d'ambiente siano corrette
-- Il database sia accessibile
-- Le migrations vengano eseguite all'avvio
-- Health checks puntino a `/health`
-- Metrics scraping punti a `/metrics`
+Update the Kubernetes manifests in `backend_deploy/manifest_rust.yaml` if needed to ensure that:
+- Environment variables are correct
+- The database is reachable
+- Migrations are executed on startup
+- Health checks point to `/health`
+- Metrics scraping targets `/metrics`
 

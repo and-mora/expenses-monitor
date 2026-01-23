@@ -1,11 +1,20 @@
 use actix_web::{web, HttpResponse, Responder};
+use serde::Serialize;
 use sqlx::PgPool;
 use std::ops::Deref;
+
+#[derive(Serialize)]
+struct BalanceResponse {
+    #[serde(rename = "totalInCents")]
+    total_in_cents: i32,
+}
 
 #[tracing::instrument(name = "Retrieve overall balance", skip(connection_pool))]
 pub async fn get_balance(connection_pool: web::Data<PgPool>) -> impl Responder {
     match get_balance_from_db(connection_pool.deref()).await {
-        Ok(balance) => HttpResponse::Ok().json(balance),
+        Ok(balance) => HttpResponse::Ok().json(BalanceResponse {
+            total_in_cents: balance,
+        }),
         Err(e) => {
             tracing::error!("Failed to execute query: {:?}", e);
             HttpResponse::InternalServerError().finish()
