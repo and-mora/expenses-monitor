@@ -25,7 +25,7 @@ spec:
             name: frontend-companion-nginx-config
           name: nginx-config
       containers:
-        - image: ghcr.io/and-mora/expenses-monitor:v0.2.1-expense-companion
+        - image: ghcr.io/and-mora/expenses-monitor:v0.2.2-expense-companion
           name: frontend-companion
           volumeMounts:
             - mountPath: "/etc/nginx/conf.d"
