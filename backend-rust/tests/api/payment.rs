@@ -219,3 +219,150 @@ async fn delete_payment_with_tags_succeeds() {
     .expect("Failed to count tags");
     assert_eq!(tags_exist.count.unwrap(), 0, "Tag associations should have been deleted");
 }
+
+#[tokio::test]
+async fn create_payment_with_empty_description_returns_200() {
+    // Arrange
+    let app = spawn_app().await;
+
+    // Act - Empty string description
+    let body = r#"
+    {
+        "description": "",
+        "category": "test",
+        "amountInCents": -200,
+        "merchantName": "Market",
+        "accountingDate": "2023-11-13T00:00:00.000"
+    }
+    "#;
+
+    let response = app.post_payment(body).await;
+
+    // Assert
+    assert_eq!(200, response.status().as_u16());
+    let saved = sqlx::query!(
+        "SELECT category, amount, description FROM expenses.payments WHERE category = 'test' AND amount = -200",
+    )
+    .fetch_one(&app.db_pool)
+    .await
+    .expect("The query should retrieve the saved payment.");
+
+    assert_eq!(saved.category.unwrap(), "test");
+    assert_eq!(saved.amount.unwrap(), -200);
+    // Should have default value
+    assert_eq!(saved.description.unwrap(), "No description");
+}
+
+#[tokio::test]
+async fn create_payment_without_description_returns_200() {
+    // Arrange
+    let app = spawn_app().await;
+
+    // Act - No description field at all
+    let body = r#"
+    {
+        "category": "food",
+        "amountInCents": -300,
+        "merchantName": "Supermarket",
+        "accountingDate": "2023-11-14T10:30:00.000"
+    }
+    "#;
+
+    let response = app.post_payment(body).await;
+
+    // Assert
+    assert_eq!(200, response.status().as_u16());
+    let saved = sqlx::query!(
+        "SELECT category, amount, description FROM expenses.payments WHERE category = 'food' AND amount = -300",
+    )
+    .fetch_one(&app.db_pool)
+    .await
+    .expect("The query should retrieve the saved payment.");
+
+    assert_eq!(saved.category.unwrap(), "food");
+    assert_eq!(saved.amount.unwrap(), -300);
+    // Should have default value
+    assert_eq!(saved.description.unwrap(), "No description");
+}
+
+#[tokio::test]
+async fn create_payment_with_wallet_name_returns_200() {
+    // Arrange
+    let app = spawn_app().await;
+    
+    // First create a wallet
+    let wallet_body = r#"{"name": "TestWallet"}"#;
+    let wallet_response = app.post_wallet(wallet_body).await;
+    assert_eq!(200, wallet_response.status().as_u16());
+
+    // Act - Create payment with wallet name
+    let body = r#"
+    {
+        "description": "payment with wallet",
+        "category": "shopping",
+        "amountInCents": -1500,
+        "merchantName": "Store",
+        "accountingDate": "2023-11-15T14:00:00.000",
+        "wallet": "TestWallet"
+    }
+    "#;
+
+    let response = app.post_payment(body).await;
+
+    // Assert
+    assert_eq!(200, response.status().as_u16());
+    let json: serde_json::Value = response.json().await.unwrap();
+    assert_eq!(json["wallet"], "TestWallet");
+    assert_eq!(json["amountInCents"], -1500);
+}
+
+#[tokio::test]
+async fn create_payment_with_nonexistent_wallet_returns_400() {
+    // Arrange
+    let app = spawn_app().await;
+
+    // Act - Create payment with non-existent wallet
+    let body = r#"
+    {
+        "description": "payment with invalid wallet",
+        "category": "shopping",
+        "amountInCents": -1000,
+        "merchantName": "Store",
+        "accountingDate": "2023-11-15T14:00:00.000",
+        "wallet": "NonExistentWallet"
+    }
+    "#;
+
+    let response = app.post_payment(body).await;
+
+    // Assert
+    assert_eq!(400, response.status().as_u16());
+}
+
+#[rstest]
+#[case("2023-11-13T00:00:00")]
+#[case("2023-11-13T10:30:00.000")]
+#[case("2023-11-13T23:59:59")]
+#[tokio::test]
+async fn create_payment_accepts_various_datetime_formats(#[case] datetime: &str) {
+    // Arrange
+    let app = spawn_app().await;
+
+    // Act
+    let body = format!(
+        r#"{{
+            "description": "datetime test",
+            "category": "test",
+            "amountInCents": -100,
+            "merchantName": "Market",
+            "accountingDate": "{}"
+        }}"#,
+        datetime
+    );
+
+    let response = app.post_payment(&body).await;
+
+    // Assert
+    assert_eq!(200, response.status().as_u16(), 
+        "Should accept datetime format: {}", datetime);
+}

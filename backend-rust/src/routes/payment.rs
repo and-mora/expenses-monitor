@@ -18,8 +18,7 @@ pub struct TagDto {
 
 #[derive(Deserialize)]
 pub struct PaymentDto {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    description: String,
+    description: Option<String>,
     category: String,
     #[serde(rename = "amountInCents")]
     amount_in_cents: i32,
@@ -36,7 +35,11 @@ pub struct PaymentDto {
 impl Payment {
     fn try_from_dto(dto: PaymentDto, wallet_id: Option<Uuid>) -> Result<Self, String> {
         let category_name = PaymentCategory::parse(dto.category.clone())?;
-        let description = PaymentDescription::parse(dto.description.clone())?;
+        // Use a default value for empty/missing description
+        let description_str = dto.description
+            .filter(|s| !s.trim().is_empty())
+            .unwrap_or_else(|| String::from("No description"));
+        let description = PaymentDescription::parse(description_str)?;
         let merchant_name = PaymentMerchant::parse(dto.merchant_name.clone())?;
         Ok(Self {
             description,
