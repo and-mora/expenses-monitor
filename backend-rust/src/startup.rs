@@ -58,7 +58,7 @@ pub fn run(
     let connection_pool = web::Data::new(connection_pool);
 
     let server = HttpServer::new(move || {
-        // Configure CORS for local development
+        // Configure CORS for local development and production
         let cors = Cors::default()
             .allowed_origin("http://localhost:5173") // Vite default port
             .allowed_origin("http://localhost:5174") // Vite alternate port
@@ -66,6 +66,8 @@ pub fn run(
             .allowed_origin("http://127.0.0.1:5173")
             .allowed_origin("http://127.0.0.1:5174")
             .allowed_origin("http://127.0.0.1:3000")
+            .allowed_origin("https://expenses.expmonitor.freeddns.org") // Production frontend
+            .allowed_origin("https://expmonitor.freeddns.org") // Legacy frontend (if still in use)
             .allowed_methods(vec!["GET", "POST", "DELETE", "OPTIONS"])
             .allowed_headers(vec![
                 http::header::AUTHORIZATION,
