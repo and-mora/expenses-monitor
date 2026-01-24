@@ -1,13 +1,237 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
 /* Expenses Monitor Design System
    A modern financial app with deep slate blues, emerald accents for income,
    coral tones for expenses, and clean typography for data-heavy interfaces.
 */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap')
+layer(utilities);
+
+@plugin 'tailwindcss-animate';
+
+@custom-variant dark (&:is(.dark *));
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+  @media (width >= --theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+  @media (width >= 1400px) {
+    max-width: 1400px;
+  }
+}
+
+@theme {
+  --font-sans: Inter, system-ui, sans-serif;
+  --font-mono: JetBrains Mono, monospace;
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-income: hsl(var(--income));
+  --color-income-foreground: hsl(var(--income-foreground));
+  --color-income-muted: hsl(var(--income-muted));
+
+  --color-expense: hsl(var(--expense));
+  --color-expense-foreground: hsl(var(--expense-foreground));
+  --color-expense-muted: hsl(var(--expense-muted));
+
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --color-chart-6: hsl(var(--chart-6));
+
+  --color-category-food: hsl(var(--category-food));
+  --color-category-transport: hsl(var(--category-transport));
+  --color-category-shopping: hsl(var(--category-shopping));
+  --color-category-entertainment: hsl(var(--category-entertainment));
+  --color-category-utilities: hsl(var(--category-utilities));
+  --color-category-health: hsl(var(--category-health));
+  --color-category-income: hsl(var(--category-income));
+  --color-category-other: hsl(var(--category-other));
+
+  --color-tag-blue: hsl(var(--tag-blue));
+  --color-tag-purple: hsl(var(--tag-purple));
+  --color-tag-teal: hsl(var(--tag-teal));
+  --color-tag-amber: hsl(var(--tag-amber));
+  --color-tag-rose: hsl(var(--tag-rose));
+  --color-tag-emerald: hsl(var(--tag-emerald));
+  --color-tag-indigo: hsl(var(--tag-indigo));
+  --color-tag-orange: hsl(var(--tag-orange));
+
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --shadow-card: var(--shadow-card);
+  --shadow-soft: var(--shadow-md);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-fade-in: fade-in 0.3s ease-out;
+  --animate-slide-up: slide-up 0.3s ease-out;
+  --animate-scale-in: scale-in 0.2s ease-out;
+  --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes pulse-soft {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+@utility amount-positive {
+  /* Amount styling utilities */
+  @apply text-income font-semibold;
+}
+
+@utility amount-negative {
+  @apply text-expense font-semibold;
+}
+
+@utility card-hover {
+  /* Card hover effect */
+  @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5;
+}
+
+@utility animate-in-up {
+  /* Animate entrance */
+  animation: slideInUp 0.3s ease-out forwards;
+}
+
+@utility stagger-children {
+  /* Stagger children */
+  & > * {
+    @apply animate-in-up;
+  }
+
+  & > *:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  & > *:nth-child(2) {
+    animation-delay: 50ms;
+  }
+  & > *:nth-child(3) {
+    animation-delay: 100ms;
+  }
+  & > *:nth-child(4) {
+    animation-delay: 150ms;
+  }
+  & > *:nth-child(5) {
+    animation-delay: 200ms;
+  }
+}
+
+@utility glass {
+  /* Glass effect */
+  @apply bg-white/80 backdrop-blur-xs;
+}
 
 @layer base {
   :root {
@@ -181,24 +405,6 @@
 }
 
 @layer utilities {
-  /* Amount styling utilities */
-  .amount-positive {
-    @apply text-income font-semibold;
-  }
-  
-  .amount-negative {
-    @apply text-expense font-semibold;
-  }
-  
-  /* Card hover effect */
-  .card-hover {
-    @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5;
-  }
-  
-  /* Animate entrance */
-  .animate-in-up {
-    animation: slideInUp 0.3s ease-out forwards;
-  }
   
   @keyframes slideInUp {
     from {
@@ -209,22 +415,6 @@
       opacity: 1;
       transform: translateY(0);
     }
-  }
-  
-  /* Stagger children */
-  .stagger-children > * {
-    @apply animate-in-up;
-  }
-  
-  .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
-  .stagger-children > *:nth-child(2) { animation-delay: 50ms; }
-  .stagger-children > *:nth-child(3) { animation-delay: 100ms; }
-  .stagger-children > *:nth-child(4) { animation-delay: 150ms; }
-  .stagger-children > *:nth-child(5) { animation-delay: 200ms; }
-  
-  /* Glass effect */
-  .glass {
-    @apply bg-white/80 backdrop-blur-sm;
   }
 }
 

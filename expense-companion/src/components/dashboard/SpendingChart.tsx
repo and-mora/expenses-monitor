@@ -103,7 +103,7 @@ export function SpendingChart({ payments, className }: SpendingChartProps) {
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div 
-                  className="w-3 h-3 rounded-full flex-shrink-0"
+                  className="w-3 h-3 rounded-full shrink-0"
                   style={{ backgroundColor: category.color }}
                 />
                 <div className="flex-1 min-w-0">

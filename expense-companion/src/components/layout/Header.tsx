@@ -47,7 +47,7 @@ export function Header({ className }: HeaderProps) {
                 <p className="text-sm font-medium">{userName}</p>
                 {userEmail && <p className="text-xs text-muted-foreground">{userEmail}</p>}
               </div>
-              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground font-medium">
+              <div className="h-9 w-9 rounded-full bg-linear-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground font-medium">
                 {userName.charAt(0).toUpperCase()}
               </div>
             </Button>

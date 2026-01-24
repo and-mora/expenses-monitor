@@ -107,7 +107,7 @@ function TagBadge({ tag }: TagBadgeProps) {
         </div>
       </TooltipTrigger>
       <TooltipContent side="top" className="max-w-[200px]">
-        <p className="text-xs break-words">{fullDescription}</p>
+        <p className="text-xs wrap-break-word">{fullDescription}</p>
       </TooltipContent>
     </Tooltip>
   );
