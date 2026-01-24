@@ -27,7 +27,7 @@ pub struct PaymentDto {
     #[serde(rename = "accountingDate")]
     accounting_date: NaiveDateTime,
     #[serde(skip_serializing_if = "Option::is_none")]
-    wallet: Option<String>, // Changed from wallet_id to wallet (name)
+    wallet: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     tags: Option<Vec<TagDto>>,
 }
@@ -361,7 +361,7 @@ async fn get_recent_payments_from_db(
 ) -> Result<Vec<PaymentResponseDto>, Error> {
     let payments = sqlx::query!(
         r#"
-        SELECT p.id, p.category, p.description, p.merchant_name, p.accounting_date, p.amount, w.name as wallet_name
+        SELECT p.id, p.category, p.description, p.merchant_name, p.accounting_date, p.amount, w.name as "wallet_name?"
         FROM expenses.payments p
         LEFT JOIN expenses.wallets w ON p.wallet_id = w.id
         ORDER BY p.accounting_date DESC
