@@ -34,14 +34,8 @@ export default defineConfig(({ mode }) => {
       // Generate sourcemaps for production debugging (configurable)
       sourcemap: sourcemaps,
       
-      // Minification
-      minify: 'terser',
-      terserOptions: {
-        compress: {
-          drop_console: !isDev,
-          drop_debugger: !isDev,
-        },
-      },
+      // Minification (esbuild is faster and built-in)
+      minify: 'esbuild',
       
       // Chunk size warnings
       chunkSizeWarningLimit: 1000,
