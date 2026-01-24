@@ -1,0 +1,98 @@
+name: Deploy Backend Rust via ArgoCD
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      ARGOCD_SERVER:
+        required: true
+      ARGOCD_AUTH_TOKEN:
+        required: true
+
+jobs:
+  ArgoSync:
+    name: ArgoCD Sync
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: Install ArgoCD CLI
+        run: |
+          curl -sSL -o /tmp/argocd https://github.com/argoproj/argo-cd/releases/download/v2.12.4/argocd-linux-amd64
+          sudo install -m 555 /tmp/argocd /usr/local/bin/argocd
+          argocd version --client
+      
+      - name: Trigger ArgoCD Sync
+        env:
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
+        run: |
+          argocd app sync backend-rust \
+            --server $ARGOCD_SERVER \
+            --auth-token $ARGOCD_AUTH_TOKEN \
+            --insecure \
+            --async
+      
+      - name: Wait for Sync Completion
+        env:
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
+        run: |
+          argocd app wait backend-rust \
+            --server $ARGOCD_SERVER \
+            --auth-token $ARGOCD_AUTH_TOKEN \
+            --insecure \
+            --health \
+            --timeout 300 \
+            --resource apps:Deployment:expenses-monitor:backend-rust
+      
+      - name: Verify Application Status
+        env:
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
+        run: |
+          STATUS=$(argocd app get backend-rust \
+            --server $ARGOCD_SERVER \
+            --auth-token $ARGOCD_AUTH_TOKEN \
+            --insecure \
+            --output json | jq -r '.status.sync.status')
+          
+          HEALTH=$(argocd app get backend-rust \
+            --server $ARGOCD_SERVER \
+            --auth-token $ARGOCD_AUTH_TOKEN \
+            --insecure \
+            --output json | jq -r '.status.health.status')
+          
+          echo "Sync Status: $STATUS"
+          echo "Health Status: $HEALTH"
+          
+          if [ "$STATUS" != "Synced" ] || [ "$HEALTH" != "Healthy" ]; then
+            echo "Backend Rust deployment failed!"
+            echo "Sync: $STATUS (expected: Synced)"
+            echo "Health: $HEALTH (expected: Healthy)"
+            exit 1
+          fi
+
+  HealthCheck:
+    name: Service Health Check
+    needs: ArgoSync
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: Wait for Backend Rust Readiness
+        run: |
+          echo "Checking backend-rust service availability"
+          echo "Note: Backend Rust runs as internal service without Ingress"
+          echo "Verifying pod readiness via kubectl proxy would require cluster access"
+          echo "Relying on ArgoCD health check confirmation"
+          echo "✓ Backend Rust deployment verified via ArgoCD"
+      
+      - name: Summary
+        run: |
+          echo "=== Deployment Summary ==="
+          echo "Application: backend-rust"
+          echo "Namespace: expenses-monitor"
+          echo "Health Check: /health"
+          echo "Status: Deployed and Ready"
+          echo ""
+          echo "Note: Backend Rust is an internal service without public endpoint."
+          echo "Integration tests should be run separately to verify functionality."

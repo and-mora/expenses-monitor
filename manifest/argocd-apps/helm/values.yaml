@@ -1,5 +1,36 @@
 argocd-apps:
   applications:
+    backend:
+      project: default
+      source:
+        repoURL: https://github.com/and-mora/expenses-monitor.git
+        path: backend_deploy
+        targetRevision: HEAD
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: expenses-monitor
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=false
+    backend-rust:
+      project: default
+      source:
+        repoURL: https://github.com/and-mora/expenses-monitor.git
+        path: backend_deploy
+        targetRevision: HEAD
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: expenses-monitor
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=false
+      ignoreDifferences:
+        - group: ""
+          kind: Service
+          name: backend-rust
+          jsonPointers:
+            - /spec/clusterIP
+            - /spec/clusterIPs
     keycloak:
       project: default
       source:

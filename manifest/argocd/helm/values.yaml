@@ -6,6 +6,9 @@ argo-cd:
     params:
       server.insecure: true
     cm:
+      # Enable API token generation for admin account
+      accounts.admin: apiKey, login
+      
       oidc.config: |
         name: Keycloak
         issuer: https://auth.expmonitor.freeddns.org/realms/argocd
