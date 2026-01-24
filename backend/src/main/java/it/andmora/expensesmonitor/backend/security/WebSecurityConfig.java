@@ -17,13 +17,15 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 @EnableWebFluxSecurity
 public class WebSecurityConfig {
 
-  @Value("${frontend.origin}")
-  private String frontendOrigin;
+  @Value("${frontend.origins}")
+  private String frontendOrigins;
 
   @Bean
   CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of(frontendOrigin));
+    // Split comma-separated origins
+    List<String> origins = List.of(frontendOrigins.split(","));
+    configuration.setAllowedOrigins(origins);
     configuration.setAllowedMethods(List.of("GET", "POST", "DELETE"));
     configuration.setAllowedHeaders(List.of("Cache-Control", "Content-Type", "Authorization"));
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
