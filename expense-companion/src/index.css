@@ -1,12 +1,11 @@
-@import 'tailwindcss';
-
 /* Expenses Monitor Design System
    A modern financial app with deep slate blues, emerald accents for income,
    coral tones for expenses, and clean typography for data-heavy interfaces.
 */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap')
-layer(utilities);
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@import 'tailwindcss';
 
 @plugin 'tailwindcss-animate';
 
