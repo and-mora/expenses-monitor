@@ -146,7 +146,7 @@ export function WalletList({
               key={wallet.id}
               className={cn(
                 "group relative flex items-center gap-3 p-3 rounded-xl text-white animate-slide-up",
-                "bg-gradient-to-r",
+                "bg-linear-to-r",
                 walletColors[index % walletColors.length]
               )}
               style={{ animationDelay: `${index * 50}ms` }}

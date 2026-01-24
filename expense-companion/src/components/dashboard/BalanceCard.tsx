@@ -28,7 +28,7 @@ export function BalanceCard({
   
   return (
     <Card className={cn(
-      "overflow-hidden border-0 shadow-card bg-gradient-to-br from-primary to-primary/90",
+      "overflow-hidden border-0 shadow-card bg-linear-to-br from-primary to-primary/90",
       className
     )}>
       <CardContent className="p-6 text-primary-foreground">
@@ -49,7 +49,7 @@ export function BalanceCard({
         </div>
         
         <div className="grid grid-cols-2 gap-4">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-white/10 backdrop-blur-sm">
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-white/10 backdrop-blur-xs">
             <div className="p-2 rounded-full bg-income/20">
               <ArrowUpRight className="h-4 w-4 text-income" />
             </div>
@@ -61,7 +61,7 @@ export function BalanceCard({
             </div>
           </div>
           
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-white/10 backdrop-blur-sm">
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-white/10 backdrop-blur-xs">
             <div className="p-2 rounded-full bg-expense/20">
               <ArrowDownRight className="h-4 w-4 text-expense" />
             </div>

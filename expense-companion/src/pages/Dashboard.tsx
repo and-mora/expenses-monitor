@@ -78,7 +78,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-50" />
+      <Header className="border-b bg-card/80 backdrop-blur-xs sticky top-0 z-50" />
       
       <main className="container px-4 py-6 md:px-6 md:py-8">
         {/* Page Header */}
