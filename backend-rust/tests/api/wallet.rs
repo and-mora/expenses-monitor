@@ -18,12 +18,13 @@ async fn create_wallet_returns_200() {
     // Assert
     assert_eq!(200, response.status().as_u16());
 
-    let saved = sqlx::query!("SELECT name FROM expenses.wallets WHERE name = 'My Wallet'")
-        .fetch_one(&app.db_pool)
-        .await
-        .expect("Failed to fetch saved wallet");
+    let saved =
+        sqlx::query!("SELECT name as \"name!\" FROM expenses.wallets WHERE name = 'My Wallet'")
+            .fetch_one(&app.db_pool)
+            .await
+            .expect("Failed to fetch saved wallet");
 
-    assert_eq!(saved.name.as_deref(), Some("My Wallet"));
+    assert_eq!(saved.name.as_str(), "My Wallet");
 }
 
 #[tokio::test]

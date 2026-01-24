@@ -112,8 +112,7 @@ async fn get_wallets_from_db(pool: &PgPool) -> Result<Vec<Wallet>, sqlx::Error> 
         .into_iter()
         .map(|row| Wallet {
             id: Some(row.id),
-            name: WalletName::parse(row.name)
-                .expect("Stored name should be valid"),
+            name: WalletName::parse(row.name).expect("Stored name should be valid"),
         })
         .collect();
 
