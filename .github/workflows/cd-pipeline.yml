@@ -21,6 +21,8 @@ jobs:
       backend_rust_version_tag: ${{ steps.backend-rust-versioning.outputs.version_tag }}
       frontend_changed: ${{ steps.frontend-versioning.outputs.changed }}
       frontend_version_tag: ${{ steps.frontend-versioning.outputs.version_tag }}
+      frontend_companion_changed: ${{ steps.frontend-companion-versioning.outputs.changed }}
+      frontend_companion_version_tag: ${{ steps.frontend-companion-versioning.outputs.version_tag }}
       database_changed: ${{ steps.database-versioning.outputs.changed }}
       database_version_tag: ${{ steps.database-versioning.outputs.version_tag }}
       monitoring_changed: ${{ steps.monitoring-versioning.outputs.changed }}
@@ -59,6 +61,15 @@ jobs:
         with:
           change_path: "frontend"
           namespace: frontend
+          major_pattern: "breaking"
+          minor_pattern: "feat"
+
+      - name: Frontend Companion Version
+        id: frontend-companion-versioning
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
+        with:
+          change_path: "expense-companion"
+          namespace: expense-companion
           major_pattern: "breaking"
           minor_pattern: "feat"
 
@@ -183,6 +194,22 @@ jobs:
       version: ${{needs.SemanticVersioning.outputs.frontend_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.frontend_changed}}
       folder: frontend
+    secrets: inherit
+
+  FrontendCompanionRelease:
+    needs: SemanticVersioning
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{needs.SemanticVersioning.outputs.frontend_companion_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.frontend_companion_changed}}
+
+  FrontendCompanionBuildAndPush:
+    needs: [ SemanticVersioning, FrontendCompanionRelease ]
+    uses: ./.github/workflows/build-push-workflow.yml
+    with:
+      version: ${{needs.SemanticVersioning.outputs.frontend_companion_version_tag}}
+      enabled: ${{needs.SemanticVersioning.outputs.frontend_companion_changed}}
+      folder: expense-companion
     secrets: inherit
 
   MonitoringRelease:

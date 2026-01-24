@@ -19,6 +19,7 @@ on:
           - backend
           - frontend
           - backend-rust
+          - expense-companion
       version:
         description: 'Tag'
         required: true

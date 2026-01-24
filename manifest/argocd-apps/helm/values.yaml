@@ -18,6 +18,15 @@ argocd-apps:
       destination:
         server: https://kubernetes.default.svc
         namespace: expenses-monitor
+    frontend-companion:
+      project: default
+      source:
+        repoURL: https://github.com/and-mora/expenses-monitor.git
+        path: manifest/frontend-companion
+        targetRevision: HEAD
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: expenses-monitor
     tempo:
       project: default
       source:
