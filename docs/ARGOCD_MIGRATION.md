@@ -4,7 +4,7 @@
 
 ### 1. ArgoCD Applications
 - ✅ Aggiunte app `backend` e `backend-rust` in `manifest/argocd-apps/helm/values.yaml`
-- ✅ Configurate per sincronizzare da `backend_deploy/` folder
+- ✅ Configurate per sincronizzare da `manifest/backend/` e `manifest/backend-rust/`
 
 ### 2. Nuovi Workflow GitOps
 - ✅ `.github/workflows/deploy_backend_argocd.yml` - Deploy backend Java con ArgoCD

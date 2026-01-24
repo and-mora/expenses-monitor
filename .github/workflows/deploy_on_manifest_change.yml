@@ -1,0 +1,44 @@
+name: Deploy on Manifest Change
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'manifest/backend/**'
+      - 'manifest/backend-rust/**'
+
+jobs:
+  DetectChanges:
+    name: Detect Changed Manifests
+    runs-on: ubuntu-latest
+    outputs:
+      backend_changed: ${{ steps.filter.outputs.backend }}
+      backend_rust_changed: ${{ steps.filter.outputs.backend-rust }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'manifest/backend/**'
+            backend-rust:
+              - 'manifest/backend-rust/**'
+
+  BackendDeploy:
+    needs: DetectChanges
+    if: needs.DetectChanges.outputs.backend_changed == 'true'
+    uses: ./.github/workflows/deploy_backend_argocd.yml
+    secrets: inherit
+
+  BackendApiTest:
+    needs: BackendDeploy
+    uses: ./.github/workflows/api_test.yml
+    secrets: inherit
+
+  BackendRustDeploy:
+    needs: DetectChanges
+    if: needs.DetectChanges.outputs.backend_rust_changed == 'true'
+    uses: ./.github/workflows/deploy_backend_rust_argocd.yml
+    secrets: inherit

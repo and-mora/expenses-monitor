@@ -123,15 +123,25 @@ jobs:
       folder: backend
     secrets: inherit
 
-  BackendDeployK8s:
-    needs: [ BackendBuildAndPush ]
-    uses: ./.github/workflows/deploy_backend_argocd.yml
+  BackendUpdateManifest:
+    needs: [ SemanticVersioning, BackendBuildAndPush ]
+    uses: ./.github/workflows/update_manifest.yml
+    with:
+      version: ${{needs.SemanticVersioning.outputs.backend_version_tag}}
+      component: backend
+      auto_merge: false  # true per deploy automatico, false per review manuale
     secrets: inherit
 
-  BackendApiTest:
-    needs: [ BackendDeployK8s ]
-    uses: ./.github/workflows/api_test.yml
-    secrets: inherit
+  # Deploy jobs ora triggerati da merge PR manifest
+  # BackendDeployK8s:
+  #   needs: [ BackendBuildAndPush ]
+  #   uses: ./.github/workflows/deploy_backend_argocd.yml
+  #   secrets: inherit
+
+  # BackendApiTest:
+  #   needs: [ BackendDeployK8s ]
+  #   uses: ./.github/workflows/api_test.yml
+  #   secrets: inherit
 
   BackendRustRelease:
     needs: SemanticVersioning
@@ -149,10 +159,20 @@ jobs:
       folder: backend-rust
     secrets: inherit
 
-  BackendRustDeployK8s:
-    needs: [ BackendRustBuildAndPush ]
-    uses: ./.github/workflows/deploy_backend_rust_argocd.yml
+  BackendRustUpdateManifest:
+    needs: [ SemanticVersioning, BackendRustBuildAndPush ]
+    uses: ./.github/workflows/update_manifest.yml
+    with:
+      version: ${{needs.SemanticVersioning.outputs.backend_rust_version_tag}}
+      component: backend-rust
+      auto_merge: false  # true per deploy automatico, false per review manuale
     secrets: inherit
+
+  # Deploy jobs ora triggerati da merge PR manifest
+  # BackendRustDeployK8s:
+  #   needs: [ BackendRustBuildAndPush ]
+  #   uses: ./.github/workflows/deploy_backend_rust_argocd.yml
+  #   secrets: inherit
 
   DatabaseRelease:
     needs: SemanticVersioning
