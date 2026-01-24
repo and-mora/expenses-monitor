@@ -1,0 +1,54 @@
+name: Deploy Frontend Companion via ArgoCD
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  DeployViaArgoCD:
+    name: Sync Frontend Companion with ArgoCD
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: Install ArgoCD CLI
+        run: |
+          curl -sSL -o argocd https://github.com/argoproj/argocd/releases/download/v2.12.4/argocd-linux-amd64
+          chmod +x argocd
+          sudo mv argocd /usr/local/bin/
+          argocd version --client
+      
+      - name: Sync Application
+        run: |
+          SERVER="${{ secrets.ARGOCD_SERVER }}"
+          TOKEN="${{ secrets.ARGOCD_AUTH_TOKEN }}"
+          
+          # Sync the application
+          argocd app sync frontend-companion \
+            --server $SERVER \
+            --auth-token $TOKEN \
+            --insecure \
+            --grpc-web
+          
+          echo "✅ Sync initiated for frontend-companion"
+      
+      - name: Wait for Sync Completion
+        timeout-minutes: 5
+        run: |
+          SERVER="${{ secrets.ARGOCD_SERVER }}"
+          TOKEN="${{ secrets.ARGOCD_AUTH_TOKEN }}"
+          
+          # Wait for the application to be Synced and Healthy
+          argocd app wait frontend-companion \
+            --server $SERVER \
+            --auth-token $TOKEN \
+            --insecure \
+            --health \
+            --timeout 300 \
+            --grpc-web
+          
+          echo "✅ Application frontend-companion is Synced and Healthy"
+      
+      - name: Verify Deployment
+        run: |
+          echo "Frontend Companion deployed successfully via ArgoCD"
+          echo "Check status: https://${{ secrets.ARGOCD_SERVER }}/applications/frontend-companion"
