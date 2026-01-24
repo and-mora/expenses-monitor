@@ -42,8 +42,7 @@ jobs:
             --auth-token $ARGOCD_AUTH_TOKEN \
             --insecure \
             --health \
-            --timeout 300 \
-            --resource apps:Deployment:expenses-monitor:backend
+            --timeout 300
       
       - name: Verify Application Status
         env:
