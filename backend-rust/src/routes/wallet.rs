@@ -63,7 +63,7 @@ async fn insert_wallet(name: &WalletName, pool: &PgPool) -> Result<Wallet, sqlx:
         r#"
         INSERT INTO expenses.wallets (name)
         VALUES ($1)
-        RETURNING id, name
+        RETURNING id, name as "name!"
         "#,
         name.as_ref()
     )
@@ -72,7 +72,7 @@ async fn insert_wallet(name: &WalletName, pool: &PgPool) -> Result<Wallet, sqlx:
 
     Ok(Wallet {
         id: Some(row.id),
-        name: WalletName::parse(row.name.unwrap_or_default()).expect("Stored name should be valid"),
+        name: WalletName::parse(row.name).expect("Stored name should be valid"),
     })
 }
 
@@ -100,7 +100,7 @@ pub async fn get_wallets(connection_pool: web::Data<PgPool>) -> impl Responder {
 async fn get_wallets_from_db(pool: &PgPool) -> Result<Vec<Wallet>, sqlx::Error> {
     let rows = sqlx::query!(
         r#"
-        SELECT id, name
+        SELECT id, name as "name!"
         FROM expenses.wallets
         ORDER BY name
         "#
@@ -112,7 +112,7 @@ async fn get_wallets_from_db(pool: &PgPool) -> Result<Vec<Wallet>, sqlx::Error> 
         .into_iter()
         .map(|row| Wallet {
             id: Some(row.id),
-            name: WalletName::parse(row.name.unwrap_or_default())
+            name: WalletName::parse(row.name)
                 .expect("Stored name should be valid"),
         })
         .collect();

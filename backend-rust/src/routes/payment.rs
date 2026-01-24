@@ -480,7 +480,7 @@ async fn get_wallet_name(
 ) -> Result<Option<String>, Error> {
     let result = sqlx::query!(
         r#"
-        SELECT name
+        SELECT name as "name!"
         FROM expenses.wallets
         WHERE id = $1
         "#,
@@ -489,5 +489,5 @@ async fn get_wallet_name(
     .fetch_optional(connection_pool)
     .await?;
 
-    Ok(result.and_then(|r| r.name))
+    Ok(result.map(|r| r.name))
 }
