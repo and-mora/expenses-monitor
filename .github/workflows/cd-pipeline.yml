@@ -216,6 +216,15 @@ jobs:
       folder: frontend
     secrets: inherit
 
+  FrontendUpdateManifest:
+    needs: [ SemanticVersioning, FrontendBuildAndPush ]
+    uses: ./.github/workflows/update_manifest.yml
+    with:
+      version: ${{needs.SemanticVersioning.outputs.frontend_version_tag}}
+      component: frontend
+      auto_merge: false  # true per deploy automatico, false per review manuale
+    secrets: inherit
+
   FrontendCompanionRelease:
     needs: SemanticVersioning
     uses: ./.github/workflows/release.yml
@@ -230,6 +239,15 @@ jobs:
       version: ${{needs.SemanticVersioning.outputs.frontend_companion_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.frontend_companion_changed}}
       folder: expense-companion
+    secrets: inherit
+
+  FrontendCompanionUpdateManifest:
+    needs: [ SemanticVersioning, FrontendCompanionBuildAndPush ]
+    uses: ./.github/workflows/update_manifest.yml
+    with:
+      version: ${{needs.SemanticVersioning.outputs.frontend_companion_version_tag}}
+      component: frontend-companion
+      auto_merge: false  # true per deploy automatico, false per review manuale
     secrets: inherit
 
   MonitoringRelease:

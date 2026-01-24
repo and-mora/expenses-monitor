@@ -1,4 +1,4 @@
-name: Update Backend Manifest
+name: Update Manifest
 
 on:
   workflow_call:
@@ -9,7 +9,7 @@ on:
       component:
         required: true
         type: string
-        description: 'backend or backend-rust'
+        description: 'backend, backend-rust, frontend, or frontend-companion'
       auto_merge:
         required: false
         type: boolean
@@ -36,13 +36,31 @@ jobs:
         run: |
           MANIFEST_PATH="manifest/${{ inputs.component }}/manifest.yaml"
           
-          if [ "${{ inputs.component }}" == "backend" ]; then
-            IMAGE_NAME="ghcr.io/and-mora/expenses-monitor:${{ inputs.version }}-backend"
-            sed -i.bak "s|image: 'ghcr.io/and-mora/expenses-monitor:v.*-backend'|image: '$IMAGE_NAME'|g" $MANIFEST_PATH
-          else
-            IMAGE_NAME="ghcr.io/and-mora/expenses-monitor:${{ inputs.version }}-backend-rust"
-            sed -i.bak "s|image: 'ghcr.io/and-mora/expenses-monitor:v.*-backend-rust'|image: '$IMAGE_NAME'|g" $MANIFEST_PATH
-          fi
+          case "${{ inputs.component }}" in
+            "backend")
+              IMAGE_SUFFIX="backend"
+              ;;
+            "backend-rust")
+              IMAGE_SUFFIX="backend-rust"
+              ;;
+            "frontend")
+              IMAGE_SUFFIX="frontend"
+              ;;
+            "frontend-companion")
+              IMAGE_SUFFIX="expense-companion"
+              ;;
+            *)
+              echo "Unknown component: ${{ inputs.component }}"
+              exit 1
+              ;;
+          esac
+          
+          # La version include già il suffisso (es. v0.7.2-backend-rust)
+          # Quindi usiamo direttamente la version senza aggiungere il suffisso
+          IMAGE_NAME="ghcr.io/and-mora/expenses-monitor:${{ inputs.version }}"
+          
+          # Update image tag - pattern cerca il suffisso specifico per evitare match errati
+          sed -i.bak "s|image: ['\"]\?ghcr.io/and-mora/expenses-monitor:[^'\" ]*-${IMAGE_SUFFIX}['\"]\?|image: ${IMAGE_NAME}|g" $MANIFEST_PATH
           
           rm -f $MANIFEST_PATH.bak
           
