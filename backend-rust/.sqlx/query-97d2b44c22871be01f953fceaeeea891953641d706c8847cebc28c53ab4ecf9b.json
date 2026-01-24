@@ -1,0 +1,59 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT p.id, p.category, p.description, p.merchant_name, p.accounting_date, p.amount, w.name as \"wallet_name?\"\n        FROM expenses.payments p\n        LEFT JOIN expenses.wallets w ON p.wallet_id = w.id\n        ORDER BY p.accounting_date DESC\n        LIMIT $1 OFFSET $2\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "category",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "description",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "merchant_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "accounting_date",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 5,
+        "name": "amount",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "wallet_name?",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "97d2b44c22871be01f953fceaeeea891953641d706c8847cebc28c53ab4ecf9b"
+}

@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                INSERT INTO expenses.tags (key, value)\n                VALUES ($1, $2)\n                ON CONFLICT (key, value) DO UPDATE SET key = EXCLUDED.key\n                RETURNING id\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "52658b734d72fcd4f3cbe581649f26f1f8e8ae67e63616303b7fde2bacda7c50"
+}
