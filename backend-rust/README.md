@@ -1,6 +1,7 @@
 # Backend
 
 Rust web service developed with Actix framework.
+Based on the original Java backend.
 ## Installation requirements
 
 refer to the [java backend README](../backend/README.md) for detailed information.
