@@ -1,0 +1,110 @@
+name: Deploy Backend via ArgoCD
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      ARGOCD_SERVER:
+        required: true
+      ARGOCD_AUTH_TOKEN:
+        required: true
+
+jobs:
+  ArgoSync:
+    name: ArgoCD Sync
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: Install ArgoCD CLI
+        run: |
+          curl -sSL -o /tmp/argocd https://github.com/argoproj/argo-cd/releases/download/v2.12.4/argocd-linux-amd64
+          sudo install -m 555 /tmp/argocd /usr/local/bin/argocd
+          argocd version --client
+      
+      - name: Trigger ArgoCD Sync
+        env:
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
+        run: |
+          argocd app sync backend \
+            --server $ARGOCD_SERVER \
+            --auth-token $ARGOCD_AUTH_TOKEN \
+            --insecure \
+            --async
+      
+      - name: Wait for Sync Completion
+        env:
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
+        run: |
+          argocd app wait backend \
+            --server $ARGOCD_SERVER \
+            --auth-token $ARGOCD_AUTH_TOKEN \
+            --insecure \
+            --health \
+            --timeout 300 \
+            --resource apps:Deployment:expenses-monitor:backend
+      
+      - name: Verify Application Status
+        env:
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
+        run: |
+          STATUS=$(argocd app get backend \
+            --server $ARGOCD_SERVER \
+            --auth-token $ARGOCD_AUTH_TOKEN \
+            --insecure \
+            --output json | jq -r '.status.sync.status')
+          
+          HEALTH=$(argocd app get backend \
+            --server $ARGOCD_SERVER \
+            --auth-token $ARGOCD_AUTH_TOKEN \
+            --insecure \
+            --output json | jq -r '.status.health.status')
+          
+          echo "Sync Status: $STATUS"
+          echo "Health Status: $HEALTH"
+          
+          if [ "$STATUS" != "Synced" ] || [ "$HEALTH" != "Healthy" ]; then
+            echo "Backend deployment failed!"
+            echo "Sync: $STATUS (expected: Synced)"
+            echo "Health: $HEALTH (expected: Healthy)"
+            exit 1
+          fi
+
+  HealthCheck:
+    name: Endpoint Health Check
+    needs: ArgoSync
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: Wait for Backend Readiness
+        run: |
+          echo "Checking backend readiness at https://api.expmonitor.freeddns.org/actuator/health/readiness"
+          
+          for i in {1..30}; do
+            echo "Attempt $i/30..."
+            
+            if curl -f -s --max-time 10 https://api.expmonitor.freeddns.org/actuator/health/readiness > /dev/null 2>&1; then
+              echo "✓ Backend is ready and responding!"
+              curl -s https://api.expmonitor.freeddns.org/actuator/health/readiness | jq '.'
+              exit 0
+            fi
+            
+            echo "Backend not ready yet, waiting 10 seconds..."
+            sleep 10
+          done
+          
+          echo "✗ Backend failed to become ready within 5 minutes"
+          exit 1
+      
+      - name: Verify Health Details
+        run: |
+          echo "=== Liveness Check ==="
+          curl -s https://api.expmonitor.freeddns.org/actuator/health/liveness | jq '.'
+          
+          echo "=== Readiness Check ==="
+          curl -s https://api.expmonitor.freeddns.org/actuator/health/readiness | jq '.'
+          
+          echo "=== Full Health ==="
+          curl -s https://api.expmonitor.freeddns.org/actuator/health | jq '.'

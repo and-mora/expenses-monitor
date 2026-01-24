@@ -125,7 +125,7 @@ jobs:
 
   BackendDeployK8s:
     needs: [ BackendBuildAndPush ]
-    uses: ./.github/workflows/deploy_backend.yml
+    uses: ./.github/workflows/deploy_backend_argocd.yml
     secrets: inherit
 
   BackendApiTest:
@@ -151,7 +151,7 @@ jobs:
 
   BackendRustDeployK8s:
     needs: [ BackendRustBuildAndPush ]
-    uses: ./.github/workflows/deploy_backend_rust.yml
+    uses: ./.github/workflows/deploy_backend_rust_argocd.yml
     secrets: inherit
 
   DatabaseRelease:
