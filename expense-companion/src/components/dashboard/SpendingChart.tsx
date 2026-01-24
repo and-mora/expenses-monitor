@@ -5,15 +5,15 @@ import { formatCurrency, capitalize } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import type { Payment } from '@/types/api';
 
-const categoryColors: Record<string, string> = {
-  food: 'hsl(24, 95%, 53%)',
-  transport: 'hsl(196, 80%, 45%)',
-  shopping: 'hsl(262, 52%, 47%)',
-  entertainment: 'hsl(330, 75%, 55%)',
-  utilities: 'hsl(220, 14%, 50%)',
-  health: 'hsl(158, 64%, 42%)',
-  income: 'hsl(158, 64%, 42%)',
-  other: 'hsl(220, 9%, 46%)',
+// Palette di colori per categorie
+const categoryColors = [
+  '#f97316', '#06b6d4', '#a855f7', '#ec4899', 
+  '#10b981', '#eab308', '#f59e0b', '#3b82f6',
+  '#8b5cf6', '#14b8a6', '#f43f5e', '#6366f1'
+];
+
+const getCategoryColor = (index: number): string => {
+  return categoryColors[index % categoryColors.length];
 };
 
 interface SpendingChartProps {
@@ -34,11 +34,11 @@ export function SpendingChart({ payments, className }: SpendingChartProps) {
     const total = Object.values(byCategory).reduce((sum, val) => sum + val, 0);
     
     return Object.entries(byCategory)
-      .map(([name, value]) => ({
+      .map(([name, value], index) => ({
         name: capitalize(name),
         value,
         percentage: total > 0 ? ((value / total) * 100).toFixed(1) : '0',
-        color: categoryColors[name] || categoryColors.other,
+        color: getCategoryColor(index),
       }))
       .sort((a, b) => b.value - a.value);
   }, [payments]);
@@ -65,8 +65,8 @@ export function SpendingChart({ payments, className }: SpendingChartProps) {
       </CardHeader>
       <CardContent className="pt-2">
         <div className="flex items-center gap-6">
-          <div className="w-[160px] h-[160px]">
-            <ResponsiveContainer width="100%" height="100%">
+          <div style={{ width: 160, height: 160, flexShrink: 0 }}>
+            <ResponsiveContainer width={160} height={160}>
               <PieChart>
                 <Pie
                   data={categoryData}
@@ -79,7 +79,11 @@ export function SpendingChart({ payments, className }: SpendingChartProps) {
                   strokeWidth={0}
                 >
                   {categoryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.color}
+                      style={{ fill: entry.color }}
+                    />
                   ))}
                 </Pie>
                 <Tooltip 

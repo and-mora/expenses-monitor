@@ -27,15 +27,16 @@ const Dashboard = () => {
   const createWallet = useCreateWallet();
   const deleteWallet = useDeleteWallet();
 
-  // Calculate income and expenses
-  const { incomeInCents, expensesInCents } = useMemo(() => {
+  // Calculate income, expenses, and total balance
+  const { incomeInCents, expensesInCents, totalInCents } = useMemo(() => {
     const income = payments
       .filter(p => p.amountInCents > 0)
       .reduce((sum, p) => sum + p.amountInCents, 0);
     const expenses = payments
       .filter(p => p.amountInCents < 0)
       .reduce((sum, p) => sum + p.amountInCents, 0);
-    return { incomeInCents: income, expensesInCents: expenses };
+    const total = income + expenses;
+    return { incomeInCents: income, expensesInCents: expenses, totalInCents: total };
   }, [payments]);
 
   const handleCreatePayment = async (data: Parameters<typeof createPayment.mutate>[0]) => {
@@ -108,7 +109,7 @@ const Dashboard = () => {
             ) : (
               <>
                 <BalanceCard
-                  totalInCents={balance?.totalInCents ?? 0}
+                  totalInCents={totalInCents}
                   currency="EUR"
                   incomeInCents={incomeInCents}
                   expensesInCents={expensesInCents}

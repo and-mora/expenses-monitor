@@ -70,6 +70,12 @@ class PaymentDaoImpl implements PaymentDao {
   public Flux<Payment> getRecentPayments(int page, int size) {
     return repository
         .findAllByOrderByAccountingDateDesc(PageRequest.of(page, size))
-        .map(paymentMapper::dbEntityToDomain);
+        .map(paymentMapper::dbEntityToDomain)
+        .flatMap(payment ->
+            paymentTagRepository.findByPaymentId(payment.id())
+                .map(tagMapper::dbEntityToDomain)
+                .collectList()
+                .map(tags -> payment.toPaymentWithTags(tags))
+        );
   }
 }
