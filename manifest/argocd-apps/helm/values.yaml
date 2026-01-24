@@ -4,7 +4,7 @@ argocd-apps:
       project: default
       source:
         repoURL: https://github.com/and-mora/expenses-monitor.git
-        path: backend_deploy
+        path: manifest/backend
         targetRevision: HEAD
       destination:
         server: https://kubernetes.default.svc
@@ -16,7 +16,7 @@ argocd-apps:
       project: default
       source:
         repoURL: https://github.com/and-mora/expenses-monitor.git
-        path: backend_deploy
+        path: manifest/backend-rust
         targetRevision: HEAD
       destination:
         server: https://kubernetes.default.svc
