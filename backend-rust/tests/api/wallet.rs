@@ -17,7 +17,7 @@ async fn create_wallet_returns_200() {
 
     // Assert
     assert_eq!(200, response.status().as_u16());
-    
+
     let saved = sqlx::query!("SELECT name FROM expenses.wallets WHERE name = 'My Wallet'")
         .fetch_one(&app.db_pool)
         .await
@@ -74,7 +74,7 @@ async fn delete_wallet_returns_200() {
 
     // Assert
     assert_eq!(200, response.status().as_u16());
-    
+
     let exists = sqlx::query!("SELECT id FROM expenses.wallets WHERE id = $1", id)
         .fetch_optional(&app.db_pool)
         .await

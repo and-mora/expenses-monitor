@@ -36,7 +36,8 @@ impl Payment {
     fn try_from_dto(dto: PaymentDto, wallet_id: Option<Uuid>) -> Result<Self, String> {
         let category_name = PaymentCategory::parse(dto.category.clone())?;
         // Use a default value for empty/missing description
-        let description_str = dto.description
+        let description_str = dto
+            .description
             .filter(|s| !s.trim().is_empty())
             .unwrap_or_else(|| String::from("No description"));
         let description = PaymentDescription::parse(description_str)?;
@@ -103,7 +104,8 @@ pub async fn create_payment(
         Ok(payment_id) => {
             // Insert tags if provided
             if let Some(tags) = tags {
-                if let Err(e) = insert_payment_tags(payment_id, tags, connection_pool.deref()).await {
+                if let Err(e) = insert_payment_tags(payment_id, tags, connection_pool.deref()).await
+                {
                     tracing::error!("Failed to insert tags: {:?}", e);
                     // Continue anyway, tags are optional
                 }
@@ -111,7 +113,10 @@ pub async fn create_payment(
 
             // Fetch wallet name if wallet_id is provided
             let wallet_name = if let Some(wid) = wallet_id {
-                get_wallet_name(wid, connection_pool.deref()).await.ok().flatten()
+                get_wallet_name(wid, connection_pool.deref())
+                    .await
+                    .ok()
+                    .flatten()
             } else {
                 None
             };
@@ -129,7 +134,11 @@ pub async fn create_payment(
                 accounting_date: payment.accounting_date,
                 category: payment.category.as_ref().to_string(),
                 wallet: wallet_name,
-                tags: if response_tags.is_empty() { None } else { Some(response_tags) },
+                tags: if response_tags.is_empty() {
+                    None
+                } else {
+                    Some(response_tags)
+                },
             };
 
             HttpResponse::Ok().json(response)
@@ -245,16 +254,17 @@ async fn get_categories_from_db(
     connection_pool: &PgPool,
     category_type: Option<&str>,
 ) -> Result<Vec<String>, Error> {
-    let mut categories: Vec<String> = sqlx::query!("select distinct category from expenses.payments")
-        .fetch_all(connection_pool)
-        .await
-        .map_err(|e| {
-            tracing::error!("Failed to execute query: {:?}", e);
-            e
-        })?
-        .into_iter()
-        .filter_map(|cat| cat.category)
-        .collect();
+    let mut categories: Vec<String> =
+        sqlx::query!("select distinct category from expenses.payments")
+            .fetch_all(connection_pool)
+            .await
+            .map_err(|e| {
+                tracing::error!("Failed to execute query: {:?}", e);
+                e
+            })?
+            .into_iter()
+            .filter_map(|cat| cat.category)
+            .collect();
 
     // Apply filter based on type parameter
     if let Some(filter_type) = category_type {
@@ -323,7 +333,7 @@ pub async fn get_recent_payments(
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
     let offset = params.page * params.size;
-    
+
     match get_recent_payments_from_db(connection_pool.deref(), params.size, offset).await {
         Ok(payments) => {
             let response = PagedResponse {
@@ -370,7 +380,9 @@ async fn get_recent_payments_from_db(
     let mut result = Vec::new();
     for record in payments {
         let payment_id = record.id;
-        let tags = get_payment_tags(payment_id, connection_pool).await.unwrap_or_default();
+        let tags = get_payment_tags(payment_id, connection_pool)
+            .await
+            .unwrap_or_default();
 
         result.push(PaymentResponseDto {
             id: payment_id,

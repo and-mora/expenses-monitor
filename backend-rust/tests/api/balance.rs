@@ -5,7 +5,7 @@ use expenses_monitor_be::routes::BalanceResponse;
 async fn get_balance_returns_correct_amount() {
     // Arrange
     let app = spawn_app().await;
-    
+
     // Add some payments
     let payment1 = r#"
     {
@@ -25,7 +25,7 @@ async fn get_balance_returns_correct_amount() {
         "accountingDate": "2023-01-01T00:00:00.000"
     }
     "#;
-    
+
     app.post_payment(payment1).await;
     app.post_payment(payment2).await;
 

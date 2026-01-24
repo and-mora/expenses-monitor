@@ -112,7 +112,8 @@ async fn get_wallets_from_db(pool: &PgPool) -> Result<Vec<Wallet>, sqlx::Error> 
         .into_iter()
         .map(|row| Wallet {
             id: Some(row.id),
-            name: WalletName::parse(row.name.unwrap_or_default()).expect("Stored name should be valid"),
+            name: WalletName::parse(row.name.unwrap_or_default())
+                .expect("Stored name should be valid"),
         })
         .collect();
 
@@ -154,10 +155,7 @@ async fn delete_wallet_from_db(id: Uuid, pool: &PgPool) -> Result<(), sqlx::Erro
     Ok(())
 }
 
-#[tracing::instrument(
-    name = "Get wallet ID by name",
-    skip(pool)
-)]
+#[tracing::instrument(name = "Get wallet ID by name", skip(pool))]
 pub async fn get_wallet_id_by_name(name: &str, pool: &PgPool) -> Result<Option<Uuid>, sqlx::Error> {
     let result = sqlx::query!(
         r#"
@@ -169,6 +167,6 @@ pub async fn get_wallet_id_by_name(name: &str, pool: &PgPool) -> Result<Option<U
     )
     .fetch_optional(pool)
     .await?;
-    
+
     Ok(result.map(|r| r.id))
 }
