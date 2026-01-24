@@ -42,8 +42,8 @@ spec:
                 secretKeyRef:
                   name: backend-db-credentials
                   key: postgres-username
-            - name: FRONTEND_ORIGIN_URL
-              value: "https://expmonitor.freeddns.org"
+            - name: FRONTEND_ORIGINS
+              value: "https://expmonitor.freeddns.org,https://expenses.expmonitor.freeddns.org"
             - name: AUTH_SERVER_ISSUER_URI
               value: "https://auth.expmonitor.freeddns.org/realms/expenses-monitor"
             - name: LIQUIBASE_LIQUIBASE_SCHEMA_NAME

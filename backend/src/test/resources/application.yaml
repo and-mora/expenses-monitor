@@ -15,4 +15,4 @@ basic-auth:
   password: ${BASIC_AUTH_PASSWORD:{bcrypt}$2a$10$lnno9KSTgXgzXPidwsN0nudlqzMhd4Ls/9W122onLGQEgWUeydUmm # "pwd" as default
 
 frontend:
-  origin: ${FRONTEND_ORIGIN_URL:http://localhost:5173}
+  origins: ${FRONTEND_ORIGINS:http://localhost:5173}
