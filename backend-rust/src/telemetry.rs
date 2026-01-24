@@ -56,7 +56,7 @@ where
                 )])),
         )
         .install_batch(opentelemetry_sdk::runtime::Tokio)
-        .unwrap();
+        .expect("init OTLP tracer failed");
     let tracer = provider.tracer(otlp_settings.service_name.clone());
 
     // Create a tracing layer with the configured tracer
@@ -103,7 +103,7 @@ pub fn init_meter(otlp_settings: &TelemetrySettings) -> PrometheusMetricsHandler
                     record_min_max: true,
                 }),
             )
-            .unwrap(),
+            .expect("cannot initialize the view to build the metric provider"),
         )
         .build();
     global::set_meter_provider(provider.clone());

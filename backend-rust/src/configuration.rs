@@ -1,32 +1,32 @@
 use secrecy::{ExposeSecret, SecretString};
 use serde::Deserialize;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
     pub otlp: TelemetrySettings,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct ApplicationSettings {
     pub port: u16,
     pub name: String,
     pub log: LogSettings,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct LogSettings {
     pub level: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct TelemetrySettings {
     pub grpc_endpoint: String,
     pub service_name: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct DatabaseSettings {
     pub username: String,
     pub password: SecretString,
@@ -52,6 +52,15 @@ impl DatabaseSettings {
             self.host,
             self.port
         ))
+    }
+
+    pub fn connect_options(&self) -> sqlx::postgres::PgConnectOptions {
+        sqlx::postgres::PgConnectOptions::new()
+            .host(&self.host)
+            .port(self.port)
+            .username(&self.username)
+            .password(self.password.expose_secret())
+            .database(&self.database_name)
     }
 }
 
