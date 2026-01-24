@@ -1,0 +1,96 @@
+name: Update Backend Manifest
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      component:
+        required: true
+        type: string
+        description: 'backend or backend-rust'
+      auto_merge:
+        required: false
+        type: boolean
+        default: false
+        description: 'Auto-merge PR (true) or require manual approval (false)'
+
+jobs:
+  UpdateManifest:
+    name: Update Manifest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+      
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Update Image Tag in Manifest
+        run: |
+          MANIFEST_PATH="manifest/${{ inputs.component }}/manifest.yaml"
+          
+          if [ "${{ inputs.component }}" == "backend" ]; then
+            IMAGE_NAME="ghcr.io/and-mora/expenses-monitor:${{ inputs.version }}-backend"
+            sed -i.bak "s|image: 'ghcr.io/and-mora/expenses-monitor:v.*-backend'|image: '$IMAGE_NAME'|g" $MANIFEST_PATH
+          else
+            IMAGE_NAME="ghcr.io/and-mora/expenses-monitor:${{ inputs.version }}-backend-rust"
+            sed -i.bak "s|image: 'ghcr.io/and-mora/expenses-monitor:v.*-backend-rust'|image: '$IMAGE_NAME'|g" $MANIFEST_PATH
+          fi
+          
+          rm -f $MANIFEST_PATH.bak
+          
+          echo "Updated $MANIFEST_PATH to image: $IMAGE_NAME"
+          cat $MANIFEST_PATH | grep "image:"
+      
+      - name: Create Pull Request
+        id: create-pr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update ${{ inputs.component }} to ${{ inputs.version }}"
+          title: "🚀 Deploy ${{ inputs.component }} ${{ inputs.version }}"
+          body: |
+            ## Automated Deployment Update
+            
+            **Component**: `${{ inputs.component }}`
+            **Version**: `${{ inputs.version }}`
+            **Image**: `ghcr.io/and-mora/expenses-monitor:${{ inputs.version }}`
+            
+            ### Changes
+            - Updated manifest image tag
+            - ArgoCD will auto-sync after merge
+            
+            ### Checklist
+            - [ ] Build successful
+            - [ ] Tests passed
+            - [ ] Ready for production
+            
+            **Auto-merge**: ${{ inputs.auto_merge }}
+          branch: deploy/${{ inputs.component }}-${{ inputs.version }}
+          delete-branch: true
+          labels: deployment,automated
+      
+      - name: Auto-merge PR (if enabled)
+        if: steps.create-pr.outputs.pull-request-number && inputs.auto_merge
+        run: |
+          gh pr merge ${{ steps.create-pr.outputs.pull-request-number }} \
+            --auto \
+            --squash \
+            --delete-branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Comment on PR
+        if: steps.create-pr.outputs.pull-request-number
+        run: |
+          gh pr comment ${{ steps.create-pr.outputs.pull-request-number }} \
+            --body "✅ Manifest updated successfully. Merge to deploy to production."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
