@@ -29,8 +29,6 @@ export function TagInput({ tags, onChange, maxTags = 5 }: TagInputProps) {
   const [keyInput, setKeyInput] = useState('');
   const [valueInput, setValueInput] = useState('');
   const [isAdding, setIsAdding] = useState(false);
-  
-  console.log('[TagInput] Render - current tags:', tags);
 
   const handleAddTag = () => {
     if (keyInput.trim() && valueInput.trim() && tags.length < maxTags) {
@@ -39,20 +37,15 @@ export function TagInput({ tags, onChange, maxTags = 5 }: TagInputProps) {
         value: valueInput.trim(),
       };
       
-      console.log('[TagInput] Adding tag:', newTag);
-      console.log('[TagInput] Current tags before add:', tags);
-      
       // Check if tag with same key already exists
       const existingIndex = tags.findIndex(t => t.key === newTag.key);
       if (existingIndex >= 0) {
         // Update existing tag
         const updatedTags = [...tags];
         updatedTags[existingIndex] = newTag;
-        console.log('[TagInput] Updated tags (replaced existing):', updatedTags);
         onChange(updatedTags);
       } else {
         const updatedTags = [...tags, newTag];
-        console.log('[TagInput] Updated tags (new tag):', updatedTags);
         onChange(updatedTags);
       }
       
