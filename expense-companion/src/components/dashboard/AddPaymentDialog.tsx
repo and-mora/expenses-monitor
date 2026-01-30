@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Minus, CalendarIcon, Loader2 } from 'lucide-react';
+import { Plus, Minus, CalendarIcon, Loader2, Check, ChevronsUpDown } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   Dialog,
@@ -28,6 +28,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
   Form,
   FormControl,
   FormField,
@@ -46,8 +54,8 @@ import type { Wallet, Tag } from '@/types/api';
 const paymentSchema = z.object({
   merchantName: z.string().min(1, 'Merchant name is required').max(100),
   amount: z.string().min(1, 'Amount is required'),
-  category: z.string().min(1, 'Category is required'),
-  accountingDate: z.date({ required_error: 'Date is required' }),
+  category: z.string().min(1, 'Category is required').max(50, 'Category name is too long'),
+  accountingDate: z.date({ message: 'Date is required' }),
   description: z.string().max(500).optional(),
   wallet: z.string().min(1, 'Wallet is required'),
   isExpense: z.boolean(),
@@ -73,6 +81,8 @@ export function AddPaymentDialog({ wallets, onSubmit, isLoading }: AddPaymentDia
   const [open, setOpen] = useState(false);
   const [isExpense, setIsExpense] = useState(true);
   const [tags, setTags] = useState<Tag[]>([]);
+  const [categoryComboboxOpen, setCategoryComboboxOpen] = useState(false);
+  const [categorySearch, setCategorySearch] = useState('');
   
   // Get filtered categories based on expense/income mode from backend
   const categoryType = isExpense ? 'expense' : 'income';
@@ -117,6 +127,8 @@ export function AddPaymentDialog({ wallets, onSubmit, isLoading }: AddPaymentDia
     
     form.reset();
     setTags([]);
+    setCategorySearch('');
+    setCategoryComboboxOpen(false);
     setOpen(false);
   };
 
@@ -148,6 +160,8 @@ export function AddPaymentDialog({ wallets, onSubmit, isLoading }: AddPaymentDia
                   setIsExpense(true);
                   form.setValue('isExpense', true);
                   form.setValue('category', '');
+                  setCategorySearch('');
+                  setCategoryComboboxOpen(false);
                 }}
               >
                 <Minus className="h-4 w-4" />
@@ -164,6 +178,8 @@ export function AddPaymentDialog({ wallets, onSubmit, isLoading }: AddPaymentDia
                   setIsExpense(false);
                   form.setValue('isExpense', false);
                   form.setValue('category', 'income');
+                  setCategorySearch('');
+                  setCategoryComboboxOpen(false);
                 }}
               >
                 <Plus className="h-4 w-4" />
@@ -252,25 +268,84 @@ export function AddPaymentDialog({ wallets, onSubmit, isLoading }: AddPaymentDia
                 control={form.control}
                 name="category"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Category</FormLabel>
                     {categoriesLoading ? (
                       <Skeleton className="h-10 w-full" />
                     ) : (
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {categories.map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Popover open={categoryComboboxOpen} onOpenChange={setCategoryComboboxOpen}>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={categoryComboboxOpen}
+                              className={cn(
+                                "w-full justify-between overflow-hidden",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              <span className="truncate">
+                                {field.value || "Seleziona o inserisci categoria"}
+                              </span>
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[200px] p-0" align="start">
+                          <Command>
+                            <CommandInput
+                              placeholder="Cerca o crea categoria..."
+                              value={categorySearch}
+                              onValueChange={setCategorySearch}
+                            />
+                            <CommandList>
+                              <CommandEmpty>
+                                <div className="p-2 text-center text-sm">
+                                  <p className="text-muted-foreground mb-2">Nessuna categoria trovata</p>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-full"
+                                    onClick={() => {
+                                      if (categorySearch.trim()) {
+                                        field.onChange(categorySearch.trim().toLowerCase());
+                                        setCategoryComboboxOpen(false);
+                                        setCategorySearch('');
+                                      }
+                                    }}
+                                  >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Crea "{categorySearch}"
+                                  </Button>
+                                </div>
+                              </CommandEmpty>
+                              <CommandGroup>
+                                {categories.map((category) => (
+                                  <CommandItem
+                                    key={category}
+                                    value={category}
+                                    onSelect={(currentValue) => {
+                                      field.onChange(currentValue);
+                                      setCategoryComboboxOpen(false);
+                                      setCategorySearch('');
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        field.value === category ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {category}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     )}
                     <FormMessage />
                   </FormItem>
