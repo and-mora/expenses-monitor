@@ -85,10 +85,13 @@ export function AddPaymentDialog({ wallets, onSubmit, isLoading }: AddPaymentDia
   const [categorySearch, setCategorySearch] = useState('');
   
   // Get filtered categories based on expense/income mode from backend
+  // Only fetch when dialog is open to avoid unnecessary API calls
   const categoryType = isExpense ? 'expense' : 'income';
   const { data: categories = [], isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories', categoryType],
     queryFn: () => apiClient.getCategories(categoryType),
+    enabled: open, // Only fetch when dialog is open
+    staleTime: 300000, // 5 minutes - categories rarely change
   });
 
   const form = useForm<PaymentFormValues>({
