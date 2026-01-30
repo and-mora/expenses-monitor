@@ -153,7 +153,7 @@ class PaymentControllerImplTest {
 
   @Test
   void whenGetCategoriesIsCalledThen200() {
-    Mockito.when(paymentRetriever.getCategories()).thenReturn(Flux.just("foo", "bar"));
+    Mockito.when(paymentRetriever.getCategories(null)).thenReturn(Flux.just("foo", "bar"));
 
     webTestClient
         .mutateWith(mockJwt())
@@ -165,8 +165,11 @@ class PaymentControllerImplTest {
         .exchange()
         .expectStatus().isOk()
         .expectHeader().contentType("application/json;charset=UTF-8")
-        .expectBody(String.class).value(value -> assertThat(value).contains("foobar"));
-    Mockito.verify(paymentRetriever).getCategories();
+        .expectBody()
+        .jsonPath("$").isArray()
+        .jsonPath("$[0]").isEqualTo("foo")
+        .jsonPath("$[1]").isEqualTo("bar");
+    Mockito.verify(paymentRetriever).getCategories(null);
   }
 
   @Test

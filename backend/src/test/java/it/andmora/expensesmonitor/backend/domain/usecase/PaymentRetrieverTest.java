@@ -24,9 +24,9 @@ class PaymentRetrieverTest {
 
   @Test
   void whenGetCategoriesThenReturnFlux() {
-    Mockito.when(paymentDao.getCategories()).thenReturn(Flux.just("foo", "bar", "pippo"));
+    Mockito.when(paymentDao.getCategories(null)).thenReturn(Flux.just("foo", "bar", "pippo"));
 
-    var categories = retriever.getCategories();
+    var categories = retriever.getCategories(null);
 
     StepVerifier
         .create(categories)

@@ -62,7 +62,19 @@ class PaymentDaoImpl implements PaymentDao {
   }
 
   @Override
-  public Flux<String> getCategories() {
+  public Flux<String> getCategories(String type) {
+    // Filter categories based on transaction amounts
+    if (type != null && !type.isEmpty()) {
+      if ("expense".equalsIgnoreCase(type)) {
+        // Return categories from transactions with negative amounts
+        return repository.getExpenseCategories();
+      } else if ("income".equalsIgnoreCase(type)) {
+        // Return categories from transactions with positive amounts
+        return repository.getIncomeCategories();
+      }
+    }
+    
+    // Return all categories if no type specified
     return repository.getCategories();
   }
 
@@ -75,7 +87,7 @@ class PaymentDaoImpl implements PaymentDao {
             paymentTagRepository.findByPaymentId(payment.id())
                 .map(tagMapper::dbEntityToDomain)
                 .collectList()
-                .map(tags -> payment.toPaymentWithTags(tags))
+                .map(payment::toPaymentWithTags)
         );
   }
 }

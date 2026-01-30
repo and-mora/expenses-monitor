@@ -12,8 +12,8 @@ public class PaymentRetriever {
 
   private final PaymentDao paymentDao;
 
-  public Flux<String> getCategories() {
-    return paymentDao.getCategories();
+  public Flux<String> getCategories(String type) {
+    return paymentDao.getCategories(type);
   }
 
   public Flux<Payment> getRecentPayments(int page, int size) {
