@@ -15,10 +15,10 @@ public interface PaymentPostgresRepository extends ReactiveCrudRepository<Paymen
   @Query("SELECT DISTINCT p.category FROM expenses.payments p")
   Flux<String> getCategories();
 
-  @Query("SELECT DISTINCT p.category FROM expenses.payments p WHERE p.amount_in_cents > 0")
+  @Query("SELECT DISTINCT p.category FROM expenses.payments p WHERE p.amount > 0")
   Flux<String> getIncomeCategories();
 
-  @Query("SELECT DISTINCT p.category FROM expenses.payments p WHERE p.amount_in_cents < 0")
+  @Query("SELECT DISTINCT p.category FROM expenses.payments p WHERE p.amount < 0")
   Flux<String> getExpenseCategories();
 
   Flux<PaymentDbEntity> findAllByOrderByAccountingDateDesc(Pageable pageable);
