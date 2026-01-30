@@ -164,7 +164,7 @@ class PaymentControllerImplTest {
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
         .expectStatus().isOk()
-        .expectHeader().contentType("application/json;charset=UTF-8")
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
         .expectBody()
         .jsonPath("$").isArray()
         .jsonPath("$[0]").isEqualTo("foo")
