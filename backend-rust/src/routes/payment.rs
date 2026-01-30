@@ -254,26 +254,29 @@ async fn get_categories_from_db(
     connection_pool: &PgPool,
     category_type: Option<&str>,
 ) -> Result<Vec<String>, Error> {
-    let mut categories: Vec<String> =
-        sqlx::query!("select distinct category from expenses.payments")
-            .fetch_all(connection_pool)
-            .await
-            .map_err(|e| {
-                tracing::error!("Failed to execute query: {:?}", e);
-                e
-            })?
-            .into_iter()
-            .filter_map(|cat| cat.category)
-            .collect();
+    // Filter categories based on transaction amounts
+    let query = match category_type {
+        Some("expense") => {
+            // Return categories from transactions with negative amounts (expenses)
+            "select distinct category from expenses.payments where amount_in_cents < 0"
+        }
+        Some("income") => {
+            // Return categories from transactions with positive amounts (income)
+            "select distinct category from expenses.payments where amount_in_cents > 0"
+        }
+        _ => {
+            // Return all categories if no type specified or invalid type
+            "select distinct category from expenses.payments"
+        }
+    };
 
-    // Apply filter based on type parameter
-    if let Some(filter_type) = category_type {
-        categories = match filter_type {
-            "expense" => categories.into_iter().filter(|c| c != "income").collect(),
-            "income" => categories.into_iter().filter(|c| c == "income").collect(),
-            _ => categories, // Invalid type, return all
-        };
-    }
+    let categories: Vec<String> = sqlx::query_scalar(query)
+        .fetch_all(connection_pool)
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to execute query: {:?}", e);
+            e
+        })?;
 
     Ok(categories)
 }

@@ -13,7 +13,7 @@ public interface PaymentDao {
 
   Mono<Void> deletePayment(UUID id);
 
-  Flux<String> getCategories();
+  Flux<String> getCategories(String type);
 
   Flux<Payment> getRecentPayments(int page, int size);
 }

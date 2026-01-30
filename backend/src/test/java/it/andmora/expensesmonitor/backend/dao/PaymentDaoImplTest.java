@@ -176,12 +176,40 @@ class PaymentDaoImplTest {
   void whenGetCategoriesThenReturnFlux() {
     Mockito.when(repository.getCategories()).thenReturn(Flux.just("foo", "bar"));
 
-    var categories = paymentDao.getCategories();
+    var categories = paymentDao.getCategories(null);
 
     verify(repository).getCategories();
     StepVerifier
         .create(categories)
         .expectNext("foo", "bar")
+        .expectComplete()
+        .verify();
+  }
+
+  @Test
+  void whenGetCategoriesWithExpenseTypeThenReturnExpenseCategories() {
+    Mockito.when(repository.getExpenseCategories()).thenReturn(Flux.just("food", "transport"));
+
+    var categories = paymentDao.getCategories("expense");
+
+    verify(repository).getExpenseCategories();
+    StepVerifier
+        .create(categories)
+        .expectNext("food", "transport")
+        .expectComplete()
+        .verify();
+  }
+
+  @Test
+  void whenGetCategoriesWithIncomeTypeThenReturnIncomeCategories() {
+    Mockito.when(repository.getIncomeCategories()).thenReturn(Flux.just("stipendio", "ticket", "interessi"));
+
+    var categories = paymentDao.getCategories("income");
+
+    verify(repository).getIncomeCategories();
+    StepVerifier
+        .create(categories)
+        .expectNext("stipendio", "ticket", "interessi")
         .expectComplete()
         .verify();
   }

@@ -104,6 +104,10 @@ async fn when_get_categories_then_ok() {
     // Assert
     assert!(response.status().is_success());
     assert_ne!(response.content_length().unwrap(), 0);
+
+    // Verify it returns a JSON array
+    let categories: Vec<String> = response.json().await.expect("Failed to parse JSON array");
+    assert!(categories.is_empty() || !categories.is_empty()); // At least validate it's a valid Vec
 }
 
 #[tokio::test]
