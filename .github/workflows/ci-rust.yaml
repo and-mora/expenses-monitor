@@ -127,11 +127,20 @@ jobs:
           cd backend-rust
           SKIP_DOCKER=true ./scripts/init_db.sh
 
+      - name: Check sqlx-data.json is up-to-date
+        run: |
+          cd backend-rust
+          cargo sqlx prepare --check -- --bin expenses-monitor-be
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/expenses-monitor
+
       - name: Run tests
         run: cargo test --manifest-path backend-rust/Cargo.toml
 
       - name: Run clippy
         run: cargo clippy --manifest-path backend-rust/Cargo.toml -- -D warnings
+        env:
+          SQLX_OFFLINE: true
 
   # Code coverage job - separate because it's slower and installs tarpaulin
   coverage:
