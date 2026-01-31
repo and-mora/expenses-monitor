@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -169,6 +170,9 @@ export function AddPaymentDialog({ wallets, onSubmit, isLoading }: AddPaymentDia
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Add Transaction</DialogTitle>
+          <DialogDescription>
+            Add a new income or expense transaction to track your finances.
+          </DialogDescription>
         </DialogHeader>
         
         <Form {...form}>
