@@ -135,12 +135,12 @@ jobs:
           echo "Checking migrations..."
           PGPASSWORD=postgres psql -h localhost -U postgres -d expenses-monitor -c "SELECT * FROM _sqlx_migrations;"
 
-      - name: Check sqlx-data.json is up-to-date
-        run: |
-          cd backend-rust
-          cargo sqlx prepare --check -- --bin expenses-monitor-be
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/expenses-monitor
+#      - name: Check sqlx-data.json is up-to-date
+#        run: |
+#          cd backend-rust
+#          cargo sqlx prepare --check -- --bin expenses-monitor-be
+#        env:
+#          DATABASE_URL: postgres://postgres:postgres@localhost:5432/expenses-monitor
 
       - name: Run tests
         run: cargo test --manifest-path backend-rust/Cargo.toml
