@@ -240,20 +240,24 @@ const Transactions = () => {
                 </PaginationItem>
                 
                 {/* Show page numbers */}
-                {[...Array(Math.min(5, Math.max(1, currentPage + 3)))].map((_, i) => {
-                  const pageNum = Math.max(0, currentPage - 1) + i;
-                  return (
-                    <PaginationItem key={pageNum}>
-                      <PaginationLink
-                        onClick={() => handlePageChange(pageNum)}
-                        isActive={pageNum === currentPage}
-                        className="cursor-pointer"
-                      >
-                        {pageNum + 1}
-                      </PaginationLink>
-                    </PaginationItem>
-                  );
-                })}
+                {(() => {
+                  const startPage = Math.max(0, currentPage - 1);
+                  const totalPages = Math.min(5, currentPage + 3);
+                  return [...Array(totalPages)].map((_, i) => {
+                    const pageNum = startPage + i;
+                    return (
+                      <PaginationItem key={`page-${pageNum}`}>
+                        <PaginationLink
+                          onClick={() => handlePageChange(pageNum)}
+                          isActive={pageNum === currentPage}
+                          className="cursor-pointer"
+                        >
+                          {pageNum + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  });
+                })()}
 
                 <PaginationItem>
                   <PaginationNext 

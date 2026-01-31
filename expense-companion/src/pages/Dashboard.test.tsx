@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import Dashboard from './Dashboard';
@@ -161,8 +161,14 @@ describe('Dashboard Page', () => {
       // Income from recent transactions should be calculated
       // Salary: 250000 cents = €2,500.00
       await waitFor(() => {
-        // Look for the positive amount in recent transactions
-        expect(screen.getByText(/\+€2,500\.00/)).toBeInTheDocument();
+        // Look for the Salary transaction by merchant name first
+        const salaryTransaction = screen.getByText('Salary');
+        expect(salaryTransaction).toBeInTheDocument();
+        
+        // Then verify the amount is displayed in the same transaction row
+        const transactionRow = salaryTransaction.closest('div[class*="group"]');
+        expect(transactionRow).toBeInTheDocument();
+        expect(within(transactionRow!).getByText(/\+€2,500\.00/)).toBeInTheDocument();
       });
     });
 

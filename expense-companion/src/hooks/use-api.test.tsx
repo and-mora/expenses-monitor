@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { usePayments, useRecentPayments } from './use-api';
@@ -28,6 +28,10 @@ const createWrapper = () => {
 };
 
 describe('API Hooks - Pagination', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   describe('usePayments', () => {
     it('should fetch payments with default page and size', async () => {
       const mockResponse = {
@@ -146,12 +150,25 @@ describe('API Hooks - Pagination', () => {
         .mockResolvedValueOnce(mockResponsePage0 as any)
         .mockResolvedValueOnce(mockResponsePage1 as any);
 
+      // Create separate QueryClients to ensure fresh cache for each test
+      const queryClient1 = new QueryClient({
+        defaultOptions: {
+          queries: { retry: false },
+          mutations: { retry: false },
+        },
+      });
+
+      const wrapper1 = ({ children }: { children: React.ReactNode }) => (
+        <QueryClientProvider client={queryClient1}>
+          {children}
+        </QueryClientProvider>
+      );
+
       // Fetch page 0
-      const { result: result0, rerender } = renderHook(
-        ({ page, size }) => usePayments(page, size),
+      const { result: result0, unmount } = renderHook(
+        () => usePayments(0, 50),
         {
-          wrapper: createWrapper(),
-          initialProps: { page: 0, size: 50 },
+          wrapper: wrapper1,
         }
       );
 
@@ -161,15 +178,39 @@ describe('API Hooks - Pagination', () => {
 
       expect(result0.current.data?.content[0].merchantName).toBe('Page 0');
 
-      // Fetch page 1
-      rerender({ page: 1, size: 50 });
+      // Unmount and create new instance for page 1
+      unmount();
 
-      await waitFor(() => {
-        expect(result0.current.data?.content[0].merchantName).toBe('Page 1');
+      // Create fresh QueryClient for page 1
+      const queryClient2 = new QueryClient({
+        defaultOptions: {
+          queries: { retry: false },
+          mutations: { retry: false },
+        },
       });
 
-      // Should have called API at least twice (once for each page)
-      // TanStack Query may make additional calls for refetching
+      const wrapper2 = ({ children }: { children: React.ReactNode }) => (
+        <QueryClientProvider client={queryClient2}>
+          {children}
+        </QueryClientProvider>
+      );
+
+      // Fetch page 1 with fresh QueryClient
+      const { result: result1 } = renderHook(
+        () => usePayments(1, 50),
+        {
+          wrapper: wrapper2,
+        }
+      );
+
+      await waitFor(() => {
+        expect(result1.current.isLoading).toBe(false);
+      });
+
+      expect(result1.current.data?.content[0].merchantName).toBe('Page 1');
+
+      // Should have called API twice (once for each page)
+      expect(apiClient.getPayments).toHaveBeenCalledTimes(2);
       expect(apiClient.getPayments).toHaveBeenCalledWith(0, 50);
       expect(apiClient.getPayments).toHaveBeenCalledWith(1, 50);
     });

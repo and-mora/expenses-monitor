@@ -1,26 +1,10 @@
 import { describe, it, expect } from 'vitest';
+import { formatCurrency, centsToEuros, eurosToCents } from '@/lib/utils/currency';
 
 /**
  * Test per le utility functions che gestiscono formattazione e conversioni.
  * Questi test prevengono regressioni in logica comune usata in tutto il FE.
  */
-
-// Currency formatting utilities (da implementare o testare se esistono)
-const formatCurrency = (cents: number, currency = 'EUR'): string => {
-  const euros = cents / 100;
-  return new Intl.NumberFormat('it-IT', {
-    style: 'currency',
-    currency,
-  }).format(euros);
-};
-
-const centsToEuros = (cents: number): number => {
-  return cents / 100;
-};
-
-const eurosToCents = (euros: number): number => {
-  return Math.round(euros * 100);
-};
 
 describe('Currency Utilities', () => {
   describe('formatCurrency', () => {
