@@ -76,7 +76,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: expenses-monitor
+          POSTGRES_DB: postgres
         ports:
           - 5432:5432
         options: >-
@@ -147,16 +147,16 @@ jobs:
         run: |
           cd backend-rust
           echo "Checking database tables..."
-          PGPASSWORD=postgres psql -h localhost -U postgres -d expenses-monitor -c "\dt expenses.*"
+          PGPASSWORD=postgres psql -h localhost -U postgres -d postgres -c "\dt expenses.*"
           echo "Checking migrations..."
-          PGPASSWORD=postgres psql -h localhost -U postgres -d expenses-monitor -c "SELECT * FROM _sqlx_migrations;"
+          PGPASSWORD=postgres psql -h localhost -U postgres -d postgres -c "SELECT * FROM _sqlx_migrations;"
 
       - name: Check sqlx-data.json is up-to-date
         run: |
           cd backend-rust
           cargo sqlx prepare --check -- --bin expenses-monitor-be
         env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/expenses-monitor
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
 
       - name: Run tests
         run: cargo test --manifest-path backend-rust/Cargo.toml
@@ -173,11 +173,11 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:15.8
+        image: postgres:16
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: expenses-monitor
+          POSTGRES_DB: postgres
         ports:
           - 5432:5432
         options: >-
@@ -246,7 +246,7 @@ jobs:
           cd backend-rust
           SKIP_DOCKER=true ./scripts/init_db.sh
         env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/expenses-monitor
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
 
       - name: Generate code coverage
         run: cargo tarpaulin --verbose --workspace --manifest-path backend-rust/Cargo.toml
