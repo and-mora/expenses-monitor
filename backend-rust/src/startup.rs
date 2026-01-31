@@ -1,13 +1,14 @@
 use crate::configuration::Settings;
 use crate::routes::{
     create_payment, create_wallet, delete_payment, delete_wallet, get_balance, get_categories,
-    get_recent_payments, get_wallets, greet, health_check,
+    get_recent_payments, get_wallets, greet, health_check, metrics,
 };
 use crate::telemetry::init_meter;
 use actix_cors::Cors;
 use actix_web::dev::Server;
 use actix_web::{http, web, App, HttpServer};
-use actix_web_opentelemetry::{PrometheusMetricsHandler, RequestMetrics};
+use opentelemetry_instrumentation_actix_web::RequestMetrics;
+use prometheus::Registry;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use std::net::TcpListener;
@@ -20,7 +21,7 @@ pub struct Application {
 
 impl Application {
     pub async fn build(configuration: Settings) -> Result<Self, std::io::Error> {
-        let metrics_handler = init_meter(&configuration.otlp);
+        let metrics_registry = init_meter(&configuration.otlp);
 
         // tpc configuration
         let address = format!("0.0.0.0:{}", configuration.application.port);
@@ -30,7 +31,7 @@ impl Application {
         // database configuration
         let connection_pool = get_connection_pool(&configuration);
 
-        let server = run(listener, connection_pool, metrics_handler)?;
+        let server = run(listener, connection_pool, metrics_registry)?;
 
         Ok(Self { port, server })
     }
@@ -53,9 +54,10 @@ pub fn get_connection_pool(configuration: &Settings) -> PgPool {
 pub fn run(
     listener: TcpListener,
     connection_pool: PgPool,
-    metrics_handler: PrometheusMetricsHandler,
+    metrics_registry: Registry,
 ) -> Result<Server, std::io::Error> {
     let connection_pool = web::Data::new(connection_pool);
+    let metrics_registry = web::Data::new(metrics_registry);
 
     let server = HttpServer::new(move || {
         // Configure CORS for local development and production
@@ -79,7 +81,7 @@ pub fn run(
         App::new()
             .wrap(cors)
             .wrap(RequestMetrics::default())
-            .route("/metrics", web::get().to(metrics_handler.clone()))
+            .route("/metrics", web::get().to(metrics))
             .wrap(TracingLogger::default())
             .route("/health", web::get().to(health_check))
             .route("/api/payments/categories", web::get().to(get_categories))
@@ -91,6 +93,7 @@ pub fn run(
             .route("/api/wallets", web::get().to(get_wallets))
             .route("/api/wallets", web::post().to(create_wallet))
             .route("/api/wallets/{id}", web::delete().to(delete_wallet))
+            .app_data(metrics_registry.clone())
             .app_data(connection_pool.clone())
     })
     .listen(listener)?
