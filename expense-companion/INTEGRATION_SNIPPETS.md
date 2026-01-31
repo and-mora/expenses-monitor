@@ -302,7 +302,7 @@ COPY . .
 ARG VITE_KEYCLOAK_URL=https://auth.expmonitor.freeddns.org
 ARG VITE_KEYCLOAK_REALM=expenses-monitor
 ARG VITE_KEYCLOAK_CLIENT_ID=expenses-monitor-frontend
-ARG VITE_API_BASE_URL=https://api.expmonitor.freeddns.org
+ARG VITE_API_BASE_URL=https://api-rust.expmonitor.freeddns.org
 ARG VITE_USE_MOCK_DATA=false
 ARG VITE_SOURCEMAPS=false
 
@@ -434,7 +434,7 @@ kubectl exec -n expenses-monitor -it <pod-name> -- curl localhost/health
 1. **DNS**: Configura `expenses.expmonitor.freeddns.org` prima del deploy
 2. **TLS**: Let's Encrypt genererà automaticamente il certificato
 3. **Keycloak**: Assicurati che il client `expenses-monitor-frontend` esista
-4. **API**: Backend deve essere raggiungibile da `api.expmonitor.freeddns.org`
+4. **API**: Backend Rust deve essere raggiungibile da `api-rust.expmonitor.freeddns.org`
 5. **Semantic Versioning**: Usa commit messages convenzionali:
    - `feat:` per minor version bump
    - `fix:` per patch version bump
