@@ -107,7 +107,7 @@ export function AddPaymentDialog({ wallets, onSubmit, isLoading }: AddPaymentDia
     },
   });
 
-  const handleSubmit = (values: PaymentFormValues) => {
+  const processSubmit = (values: PaymentFormValues, keepOpen: boolean) => {
     const amountInCents = Math.round(parseFloat(values.amount) * 100);
     
     // Find wallet name from ID
@@ -128,11 +128,34 @@ export function AddPaymentDialog({ wallets, onSubmit, isLoading }: AddPaymentDia
     
     onSubmit(paymentData);
     
-    form.reset();
-    setTags([]);
-    setCategorySearch('');
-    setCategoryComboboxOpen(false);
-    setOpen(false);
+    if (keepOpen) {
+      // Keep tags, category, wallet, and isExpense - only reset merchant, amount, description, and date
+      form.reset({
+        merchantName: '',
+        amount: '',
+        category: values.category,
+        description: '',
+        wallet: values.wallet,
+        isExpense: values.isExpense,
+        accountingDate: new Date(),
+      });
+      // Tags are preserved in state
+    } else {
+      // Full reset and close
+      form.reset();
+      setTags([]);
+      setCategorySearch('');
+      setCategoryComboboxOpen(false);
+      setOpen(false);
+    }
+  };
+
+  const handleSubmit = (values: PaymentFormValues) => {
+    processSubmit(values, false);
+  };
+
+  const handleSubmitAndContinue = () => {
+    form.handleSubmit((values) => processSubmit(values, true))();
   };
 
   return (
@@ -406,10 +429,27 @@ export function AddPaymentDialog({ wallets, onSubmit, isLoading }: AddPaymentDia
               <TagInput tags={tags} onChange={setTags} maxTags={5} />
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading || categoriesLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isLoading ? 'Adding...' : 'Add Transaction'}
-            </Button>
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+              <Button 
+                type="button" 
+                variant="outline"
+                className="flex-1" 
+                disabled={isLoading || categoriesLoading}
+                onClick={handleSubmitAndContinue}
+              >
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoading ? 'Adding...' : 'Add & Add Another'}
+              </Button>
+              <Button 
+                type="submit" 
+                className="flex-1" 
+                disabled={isLoading || categoriesLoading}
+              >
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoading ? 'Adding...' : 'Add Transaction'}
+              </Button>
+            </div>
           </form>
         </Form>
       </DialogContent>

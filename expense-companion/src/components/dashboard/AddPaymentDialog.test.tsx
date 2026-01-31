@@ -428,4 +428,170 @@ describe('AddPaymentDialog', () => {
       expect(resetCategoryButton).toHaveTextContent(/seleziona o inserisci categoria/i);
     });
   });
+
+  describe('Add & Add Another Feature', () => {
+    it('should keep dialog open and preserve tags, category, and wallet when using "Add & Add Another"', async () => {
+      const user = userEvent.setup();
+      render(
+        <AddPaymentDialog 
+          wallets={mockWallets} 
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      // Open dialog
+      await user.click(screen.getByRole('button', { name: /add transaction/i }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Fill in all fields
+      await user.type(screen.getByLabelText(/merchant \/ payee/i), 'Restaurant Lunch');
+      await user.type(screen.getByPlaceholderText('0.00'), '25.50');
+
+      // Select category
+      const categoryButton = screen.getByRole('combobox', { name: /category/i });
+      await user.click(categoryButton);
+
+      await waitFor(() => {
+        expect(screen.getByRole('option', { name: 'food' })).toBeInTheDocument();
+      });
+      
+      await user.click(screen.getByRole('option', { name: 'food' }));
+
+      // Add description
+      await user.type(screen.getByPlaceholderText(/aggiungi una nota/i), 'First expense');
+
+      // Click "Add & Add Another" button
+      const addAnotherButton = screen.getByRole('button', { name: /add & add another/i });
+      await user.click(addAnotherButton);
+
+      // Verify submission happened
+      await waitFor(() => {
+        expect(mockOnSubmit).toHaveBeenCalledWith(
+          expect.objectContaining({
+            merchantName: 'Restaurant Lunch',
+            amountInCents: -2550,
+            category: 'food',
+          })
+        );
+      });
+
+      // Dialog should still be open
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Category should be preserved
+      await waitFor(() => {
+        expect(categoryButton).toHaveTextContent('food');
+      });
+
+      // Merchant and amount should be cleared
+      expect(screen.getByLabelText(/merchant \/ payee/i)).toHaveValue('');
+      expect(screen.getByPlaceholderText('0.00')).toHaveValue(null);
+
+      // Description should be cleared
+      expect(screen.getByPlaceholderText(/aggiungi una nota/i)).toHaveValue('');
+
+      // Wallet should be preserved (Main Account is default)
+      const walletSelect = screen.getByRole('combobox', { name: /wallet/i });
+      expect(walletSelect).toHaveTextContent('Main Account');
+    });
+
+    it('should allow adding multiple expenses in sequence with same tags', async () => {
+      const user = userEvent.setup();
+      render(
+        <AddPaymentDialog 
+          wallets={mockWallets} 
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      // Open dialog
+      await user.click(screen.getByRole('button', { name: /add transaction/i }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Fill first expense
+      await user.type(screen.getByLabelText(/merchant \/ payee/i), 'Restaurant');
+      await user.type(screen.getByPlaceholderText('0.00'), '45.50');
+
+      const categoryButton = screen.getByRole('combobox', { name: /category/i });
+      await user.click(categoryButton);
+
+      await waitFor(() => {
+        expect(screen.getByRole('option', { name: 'food' })).toBeInTheDocument();
+      });
+      
+      await user.click(screen.getByRole('option', { name: 'food' }));
+
+      // Click "Add & Add Another"
+      await user.click(screen.getByRole('button', { name: /add & add another/i }));
+
+      await waitFor(() => {
+        expect(mockOnSubmit).toHaveBeenCalledTimes(1);
+      });
+
+      // Dialog still open, add second expense
+      await user.type(screen.getByLabelText(/merchant \/ payee/i), 'Taxi');
+      await user.type(screen.getByPlaceholderText('0.00'), '12.00');
+
+      // Category should still be 'food'
+      expect(categoryButton).toHaveTextContent('food');
+
+      // Click "Add & Add Another" again
+      await user.click(screen.getByRole('button', { name: /add & add another/i }));
+
+      await waitFor(() => {
+        expect(mockOnSubmit).toHaveBeenCalledTimes(2);
+      });
+
+      // Dialog still open for third expense
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+
+    it('should close dialog with normal "Add Transaction" button', async () => {
+      const user = userEvent.setup();
+      render(
+        <AddPaymentDialog 
+          wallets={mockWallets} 
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      // Open dialog
+      await user.click(screen.getByRole('button', { name: /add transaction/i }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Fill form
+      await user.type(screen.getByLabelText(/merchant \/ payee/i), 'Store');
+      await user.type(screen.getByPlaceholderText('0.00'), '20.00');
+
+      const categoryButton = screen.getByRole('combobox', { name: /category/i });
+      await user.click(categoryButton);
+
+      await waitFor(() => {
+        expect(screen.getByRole('option', { name: 'food' })).toBeInTheDocument();
+      });
+      
+      await user.click(screen.getByRole('option', { name: 'food' }));
+
+      // Click regular "Add Transaction" button (there are two, one inside form)
+      const form = screen.getByRole('dialog').querySelector('form');
+      const submitButton = within(form!).getByRole('button', { name: /^add transaction$/i });
+      await user.click(submitButton);
+
+      // Dialog should close
+      await waitFor(() => {
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      });
+    });
+  });
 });
