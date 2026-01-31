@@ -384,7 +384,11 @@ async fn get_recent_payments_from_db(
                 tags
             }
             Err(e) => {
-                tracing::error!("Failed to retrieve tags for payment {}: {:?}", payment_id, e);
+                tracing::error!(
+                    "Failed to retrieve tags for payment {}: {:?}",
+                    payment_id,
+                    e
+                );
                 Vec::new()
             }
         };

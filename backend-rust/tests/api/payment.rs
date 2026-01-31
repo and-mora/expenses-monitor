@@ -397,36 +397,41 @@ async fn create_payment_with_tags_and_retrieve_returns_tags() {
     "#;
 
     let create_response = app.post_payment(body).await;
-    
+
     // Assert creation succeeded
     assert_eq!(200, create_response.status().as_u16());
     let create_json: serde_json::Value = create_response.json().await.unwrap();
-    
+
     // Verify tags in creation response
     assert!(create_json["tags"].is_array(), "Tags should be an array");
     let tags = create_json["tags"].as_array().unwrap();
     assert_eq!(2, tags.len(), "Should have 2 tags in creation response");
-    
+
     // Act - Retrieve payments
     let get_response = app.get_payments("?page=0&size=10").await;
-    
+
     // Assert retrieval succeeded
     assert_eq!(200, get_response.status().as_u16());
     let get_json: serde_json::Value = get_response.json().await.unwrap();
     let content = get_json["content"].as_array().unwrap();
-    
+
     // Find the payment we just created
-    let payment = content.iter()
+    let payment = content
+        .iter()
         .find(|p| p["description"] == "payment with tags")
         .expect("Payment not found");
-    
+
     // Verify tags are present in the GET response
-    assert!(payment["tags"].is_array(), "Tags should be present in payment");
+    assert!(
+        payment["tags"].is_array(),
+        "Tags should be present in payment"
+    );
     let retrieved_tags = payment["tags"].as_array().unwrap();
     assert_eq!(2, retrieved_tags.len(), "Should have 2 tags");
-    
+
     // Verify tag contents
-    let tag_keys: Vec<&str> = retrieved_tags.iter()
+    let tag_keys: Vec<&str> = retrieved_tags
+        .iter()
         .map(|t| t["key"].as_str().unwrap())
         .collect();
     assert!(tag_keys.contains(&"project"));
