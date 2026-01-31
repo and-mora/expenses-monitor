@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO expenses.payments_tags (payment_id, key, value)\n            VALUES ($1, $2, $3)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Varchar",
+        "Varchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "46e442b515fcd5a12cead4e5803988178849e3c69d78edb0a251934a5fa9ed4b"
+}

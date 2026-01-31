@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "delete from expenses.payment_tags where payment_id = $1",
+  "query": "delete from expenses.payments_tags where payment_id = $1",
   "describe": {
     "columns": [],
     "parameters": {
@@ -10,5 +10,5 @@
     },
     "nullable": []
   },
-  "hash": "2ef86ac3ef8dcafe7a042b70af7a8fd6a9aacc10a10f2762822c23d271d44b39"
+  "hash": "1a16e5354f7a1e8bc6de08d3ed0d9b5bd1a69b6661929df905ec40bf872fa374"
 }
