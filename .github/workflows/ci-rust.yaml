@@ -119,7 +119,7 @@ jobs:
             --no-default-features \
             --locked
 
-      - name: Create sqlx symlink
+      - name: Create sqlx wrapper script
         run: |
           if [ ! -f ~/.cargo/bin/sqlx ]; then
             cat > ~/.cargo/bin/sqlx << 'EOF'
@@ -127,7 +127,11 @@ jobs:
           exec cargo sqlx "$@"
           EOF
             chmod +x ~/.cargo/bin/sqlx
+            echo "Created sqlx wrapper script"
           fi
+          echo "Verifying sqlx command..."
+          which sqlx
+          sqlx --version
 
       - name: Install postgresql-client
         run: sudo apt-get update && sudo apt-get install postgresql-client -y
@@ -136,6 +140,16 @@ jobs:
         run: |
           cd backend-rust
           SKIP_DOCKER=true ./scripts/init_db.sh
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/expenses-monitor
+
+      - name: Verify database schema
+        run: |
+          cd backend-rust
+          echo "Checking database tables..."
+          PGPASSWORD=postgres psql -h localhost -U postgres -d expenses-monitor -c "\dt expenses.*"
+          echo "Checking migrations..."
+          PGPASSWORD=postgres psql -h localhost -U postgres -d expenses-monitor -c "SELECT * FROM _sqlx_migrations;"
 
       - name: Check sqlx-data.json is up-to-date
         run: |
@@ -210,7 +224,7 @@ jobs:
       - name: Add cargo bin to PATH
         run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
-      - name: Create sqlx symlink
+      - name: Create sqlx wrapper script
         run: |
           if [ ! -f ~/.cargo/bin/sqlx ]; then
             cat > ~/.cargo/bin/sqlx << 'EOF'
@@ -218,7 +232,11 @@ jobs:
           exec cargo sqlx "$@"
           EOF
             chmod +x ~/.cargo/bin/sqlx
+            echo "Created sqlx wrapper script"
           fi
+          echo "Verifying sqlx command..."
+          which sqlx
+          sqlx --version
 
       - name: Install postgresql-client
         run: sudo apt-get update && sudo apt-get install postgresql-client -y
@@ -227,6 +245,8 @@ jobs:
         run: |
           cd backend-rust
           SKIP_DOCKER=true ./scripts/init_db.sh
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/expenses-monitor
 
       - name: Generate code coverage
         run: cargo tarpaulin --verbose --workspace --manifest-path backend-rust/Cargo.toml
