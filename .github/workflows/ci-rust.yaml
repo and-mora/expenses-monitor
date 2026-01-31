@@ -9,7 +9,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   SQLX_VERSION: 0.8.0
-  SQLX_FEATURES: "rustls,postgres"
+  SQLX_FEATURES: "rustls,postgres,uuid,chrono"
 
 jobs:
   # Fast formatting check that doesn't need dependencies
@@ -85,7 +85,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - name: Check out repository code
+      - name: Checkout repository code
         uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
 
       - name: Install the Rust toolchain
@@ -140,8 +140,6 @@ jobs:
         run: |
           cd backend-rust
           SKIP_DOCKER=true ./scripts/init_db.sh
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
 
       - name: Verify database schema
         run: |
