@@ -252,11 +252,11 @@ async fn get_categories_from_db(
     let query = match category_type {
         Some("expense") => {
             // Return categories from transactions with negative amounts (expenses)
-            "select distinct category from expenses.payments where amount_in_cents < 0"
+            "select distinct category from expenses.payments where amount < 0"
         }
         Some("income") => {
             // Return categories from transactions with positive amounts (income)
-            "select distinct category from expenses.payments where amount_in_cents > 0"
+            "select distinct category from expenses.payments where amount > 0"
         }
         _ => {
             // Return all categories if no type specified or invalid type

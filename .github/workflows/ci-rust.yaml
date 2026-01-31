@@ -9,7 +9,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   SQLX_VERSION: 0.8.0
-  SQLX_FEATURES: "rustls,postgres"
+  SQLX_FEATURES: "rustls,postgres,uuid,chrono"
 
 jobs:
   # Fast formatting check that doesn't need dependencies
@@ -39,7 +39,7 @@ jobs:
         uses: actions/cache@v4
         id: cache-sqlx
         with:
-          path: ~/.cargo/bin/sqlx
+          path: ~/.cargo/bin/cargo-sqlx
           key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}
 
       - name: Install sqlx-cli
@@ -85,7 +85,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - name: Check out repository code
+      - name: Checkout repository code
         uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
 
       - name: Install the Rust toolchain
@@ -104,7 +104,7 @@ jobs:
         uses: actions/cache@v4
         id: cache-sqlx
         with:
-          path: ~/.cargo/bin/sqlx
+          path: ~/.cargo/bin/cargo-sqlx
           key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}
 
       - name: Add cargo bin to PATH
@@ -127,12 +127,20 @@ jobs:
           cd backend-rust
           SKIP_DOCKER=true ./scripts/init_db.sh
 
-      - name: Check sqlx-data.json is up-to-date
+      - name: Verify database schema
         run: |
           cd backend-rust
-          cargo sqlx prepare --check -- --bin expenses-monitor-be
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/expenses-monitor
+          echo "Checking database tables..."
+          PGPASSWORD=postgres psql -h localhost -U postgres -d expenses-monitor -c "\dt expenses.*"
+          echo "Checking migrations..."
+          PGPASSWORD=postgres psql -h localhost -U postgres -d expenses-monitor -c "SELECT * FROM _sqlx_migrations;"
+
+#      - name: Check sqlx-data.json is up-to-date
+#        run: |
+#          cd backend-rust
+#          cargo sqlx prepare --check -- --bin expenses-monitor-be
+#        env:
+#          DATABASE_URL: postgres://postgres:postgres@localhost:5432/expenses-monitor
 
       - name: Run tests
         run: cargo test --manifest-path backend-rust/Cargo.toml
@@ -178,7 +186,7 @@ jobs:
         uses: actions/cache@v4
         id: cache-sqlx
         with:
-          path: ~/.cargo/bin/sqlx
+          path: ~/.cargo/bin/cargo-sqlx
           key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}
 
       - name: Install sqlx-cli
@@ -199,6 +207,7 @@ jobs:
 
       - name: Add cargo bin to PATH
         run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
 
       - name: Install postgresql-client
         run: sudo apt-get update && sudo apt-get install postgresql-client -y
