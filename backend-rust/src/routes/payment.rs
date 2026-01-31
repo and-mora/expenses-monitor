@@ -10,8 +10,6 @@ use uuid::Uuid;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct TagDto {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    id: Option<Uuid>,
     key: String,
     value: String,
 }
@@ -198,7 +196,7 @@ pub async fn delete_payment(
 async fn delete_payment_query(connection_pool: &PgPool, payment_id: Uuid) -> Result<(), Error> {
     // First, delete all associated tags to avoid foreign key constraint violation
     sqlx::query!(
-        "delete from expenses.payment_tags where payment_id = $1",
+        "delete from expenses.payments_tags where payment_id = $1",
         payment_id
     )
     .execute(connection_pool)
@@ -419,35 +417,15 @@ async fn insert_payment_tags(
     connection_pool: &PgPool,
 ) -> Result<(), Error> {
     for tag in tags {
-        // Insert or get tag id
-        let tag_id = if let Some(id) = tag.id {
-            id
-        } else {
-            // Insert new tag or get existing one
-            let row = sqlx::query!(
-                r#"
-                INSERT INTO expenses.tags (key, value)
-                VALUES ($1, $2)
-                ON CONFLICT (key, value) DO UPDATE SET key = EXCLUDED.key
-                RETURNING id
-                "#,
-                tag.key,
-                tag.value
-            )
-            .fetch_one(connection_pool)
-            .await?;
-            row.id
-        };
-
-        // Link payment to tag
+        // Insert directly into payments_tags (denormalized structure)
         sqlx::query!(
             r#"
-            INSERT INTO expenses.payment_tags (payment_id, tag_id)
-            VALUES ($1, $2)
-            ON CONFLICT DO NOTHING
+            INSERT INTO expenses.payments_tags (payment_id, key, value)
+            VALUES ($1, $2, $3)
             "#,
             payment_id,
-            tag_id
+            tag.key,
+            tag.value
         )
         .execute(connection_pool)
         .await?;
@@ -462,10 +440,9 @@ async fn get_payment_tags(
 ) -> Result<Vec<TagResponseDto>, Error> {
     let tags = sqlx::query!(
         r#"
-        SELECT t.id, t.key, t.value
-        FROM expenses.tags t
-        INNER JOIN expenses.payment_tags pt ON pt.tag_id = t.id
-        WHERE pt.payment_id = $1
+        SELECT id, key, value
+        FROM expenses.payments_tags
+        WHERE payment_id = $1
         "#,
         payment_id
     )

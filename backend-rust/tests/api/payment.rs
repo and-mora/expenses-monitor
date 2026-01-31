@@ -165,11 +165,10 @@ async fn delete_payment_with_tags_succeeds() {
 
     let payment_id = saved.id;
 
-    // Create a tag for testing
-    let tag_id = uuid::Uuid::new_v4();
+    // Create a tag for testing (using denormalized payments_tags table)
     sqlx::query!(
-        "INSERT INTO expenses.tags (id, key, value) VALUES ($1, $2, $3)",
-        tag_id,
+        "INSERT INTO expenses.payments_tags (payment_id, key, value) VALUES ($1, $2, $3)",
+        payment_id,
         "category",
         "test-tag"
     )
@@ -177,19 +176,9 @@ async fn delete_payment_with_tags_succeeds() {
     .await
     .expect("Failed to insert tag");
 
-    // Associate the tag with the payment
-    sqlx::query!(
-        "INSERT INTO expenses.payment_tags (payment_id, tag_id) VALUES ($1, $2)",
-        payment_id,
-        tag_id
-    )
-    .execute(&app.db_pool)
-    .await
-    .expect("Failed to associate tag with payment");
-
-    // Verify the association exists
+    // Verify the tag exists
     let tag_count = sqlx::query!(
-        "SELECT COUNT(*) as count FROM expenses.payment_tags WHERE payment_id = $1",
+        "SELECT COUNT(*) as count FROM expenses.payments_tags WHERE payment_id = $1",
         payment_id
     )
     .fetch_one(&app.db_pool)
@@ -210,9 +199,9 @@ async fn delete_payment_with_tags_succeeds() {
         .expect("Failed to query payment");
     assert!(payment_exists.is_none(), "Payment should have been deleted");
 
-    // Verify the tag association was also deleted
+    // Verify the tag was also deleted (CASCADE)
     let tags_exist = sqlx::query!(
-        "SELECT COUNT(*) as count FROM expenses.payment_tags WHERE payment_id = $1",
+        "SELECT COUNT(*) as count FROM expenses.payments_tags WHERE payment_id = $1",
         payment_id
     )
     .fetch_one(&app.db_pool)
@@ -221,7 +210,7 @@ async fn delete_payment_with_tags_succeeds() {
     assert_eq!(
         tags_exist.count.unwrap(),
         0,
-        "Tag associations should have been deleted"
+        "Tags should have been deleted via CASCADE"
     );
 }
 
