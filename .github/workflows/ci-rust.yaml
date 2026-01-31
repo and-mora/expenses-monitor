@@ -119,20 +119,6 @@ jobs:
             --no-default-features \
             --locked
 
-      - name: Create sqlx wrapper script
-        run: |
-          if [ ! -f ~/.cargo/bin/sqlx ]; then
-            cat > ~/.cargo/bin/sqlx << 'EOF'
-          #!/bin/bash
-          exec cargo sqlx "$@"
-          EOF
-            chmod +x ~/.cargo/bin/sqlx
-            echo "Created sqlx wrapper script"
-          fi
-          echo "Verifying sqlx command..."
-          which sqlx
-          sqlx --version
-
       - name: Install postgresql-client
         run: sudo apt-get update && sudo apt-get install postgresql-client -y
 
@@ -224,19 +210,6 @@ jobs:
       - name: Add cargo bin to PATH
         run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
-      - name: Create sqlx wrapper script
-        run: |
-          if [ ! -f ~/.cargo/bin/sqlx ]; then
-            cat > ~/.cargo/bin/sqlx << 'EOF'
-          #!/bin/bash
-          exec cargo sqlx "$@"
-          EOF
-            chmod +x ~/.cargo/bin/sqlx
-            echo "Created sqlx wrapper script"
-          fi
-          echo "Verifying sqlx command..."
-          which sqlx
-          sqlx --version
 
       - name: Install postgresql-client
         run: sudo apt-get update && sudo apt-get install postgresql-client -y
@@ -247,7 +220,6 @@ jobs:
           SKIP_DOCKER=true ./scripts/init_db.sh
         env:
           POSTGRES_DB: postgres
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
 
       - name: Generate code coverage
         run: cargo tarpaulin --verbose --workspace --manifest-path backend-rust/Cargo.toml
