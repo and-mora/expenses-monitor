@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Dashboard from "./pages/Dashboard";
+import Transactions from "./pages/Transactions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -31,6 +32,7 @@ const App = () => (
           <AuthGuard>
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/transactions" element={<Transactions />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, within } from '@/test/utils';
+import { render, screen, waitFor, within, fireEvent } from '@/test/utils';
 import userEvent from '@testing-library/user-event';
 import { AddPaymentDialog } from './AddPaymentDialog';
 import type { Wallet } from '@/types/api';
@@ -592,6 +592,60 @@ describe('AddPaymentDialog', () => {
       await waitFor(() => {
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       });
+    });
+
+    it('should preserve selected date when using "Add & Add Another"', async () => {
+      const user = userEvent.setup();
+      render(
+        <AddPaymentDialog 
+          wallets={mockWallets} 
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      // Open dialog
+      await user.click(screen.getByRole('button', { name: /add transaction/i }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Get date input (it should have today's date by default)
+      const dateInput = screen.getByLabelText(/date/i) as HTMLInputElement;
+      const originalDate = dateInput.value;
+
+      // Fill transaction data
+      await user.type(screen.getByLabelText(/merchant \/ payee/i), 'Grocery Store');
+      await user.type(screen.getByPlaceholderText('0.00'), '50.00');
+      
+      // Select category
+      const categoryButton = screen.getByRole('combobox', { name: /category/i });
+      await user.click(categoryButton);
+      
+      await waitFor(() => {
+        expect(screen.getByRole('option', { name: 'food' })).toBeInTheDocument();
+      });
+      
+      await user.click(screen.getByRole('option', { name: 'food' }));
+
+      // Change the date to a different value using fireEvent
+      const customDate = '2026-01-15';
+      fireEvent.change(dateInput, { target: { value: customDate } });
+
+      // Click "Add & Add Another"
+      await user.click(screen.getByRole('button', { name: /add & add another/i }));
+
+      await waitFor(() => {
+        expect(mockOnSubmit).toHaveBeenCalledTimes(1);
+      });
+
+      // Dialog should still be open
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+      // The date should be preserved (not reset to today)
+      const dateInputAfter = screen.getByLabelText(/date/i) as HTMLInputElement;
+      expect(dateInputAfter.value).toBe(customDate);
+      expect(dateInputAfter.value).not.toBe(originalDate);
     });
   });
 });

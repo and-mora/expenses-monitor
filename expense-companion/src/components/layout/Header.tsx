@@ -1,5 +1,6 @@
 import { Wallet, LayoutDashboard, Receipt, Settings, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLocation, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -16,6 +17,7 @@ interface HeaderProps {
 
 export function Header({ className }: HeaderProps) {
   const { keycloak, logout } = useAuth();
+  const location = useLocation();
   const userName = keycloak.tokenParsed?.preferred_username || keycloak.tokenParsed?.name || 'User';
   const userEmail = keycloak.tokenParsed?.email || '';
 
@@ -34,9 +36,9 @@ export function Header({ className }: HeaderProps) {
 
         {/* Navigation */}
         <nav className="hidden md:flex items-center gap-1">
-          <NavItem icon={LayoutDashboard} label="Dashboard" active />
-          <NavItem icon={Receipt} label="Transactions" />
-          <NavItem icon={Settings} label="Settings" />
+          <NavItem icon={LayoutDashboard} label="Dashboard" to="/" active={location.pathname === '/'} />
+          <NavItem icon={Receipt} label="Transactions" to="/transactions" active={location.pathname === '/transactions'} />
+          <NavItem icon={Settings} label="Settings" to="/settings" active={location.pathname === '/settings'} />
         </nav>
 
         {/* User Menu */}
@@ -69,12 +71,14 @@ export function Header({ className }: HeaderProps) {
 interface NavItemProps {
   icon: React.ElementType;
   label: string;
+  to: string;
   active?: boolean;
 }
 
-function NavItem({ icon: Icon, label, active }: NavItemProps) {
+function NavItem({ icon: Icon, label, to, active }: NavItemProps) {
   return (
-    <button
+    <Link
+      to={to}
       className={`
         flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors
         ${active 
@@ -85,6 +89,6 @@ function NavItem({ icon: Icon, label, active }: NavItemProps) {
     >
       <Icon className="h-4 w-4" />
       {label}
-    </button>
+    </Link>
   );
 }
