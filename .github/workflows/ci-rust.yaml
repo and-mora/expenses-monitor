@@ -130,7 +130,7 @@ jobs:
       - name: Check sqlx-data.json is up-to-date
         run: |
           cd backend-rust
-          sqlx prepare --check -- --bin expenses-monitor-be
+          cargo sqlx prepare --check -- --bin expenses-monitor-be
 
       - name: Run tests
         run: cargo test --manifest-path backend-rust/Cargo.toml
