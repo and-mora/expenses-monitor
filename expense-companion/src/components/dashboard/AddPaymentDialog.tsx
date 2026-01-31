@@ -129,7 +129,7 @@ export function AddPaymentDialog({ wallets, onSubmit, isLoading }: AddPaymentDia
     onSubmit(paymentData);
     
     if (keepOpen) {
-      // Keep tags, category, wallet, and isExpense - only reset merchant, amount, description, and date
+      // Keep tags, category, wallet, isExpense, and accountingDate - only reset merchant, amount, description
       form.reset({
         merchantName: '',
         amount: '',
@@ -137,7 +137,7 @@ export function AddPaymentDialog({ wallets, onSubmit, isLoading }: AddPaymentDia
         description: '',
         wallet: values.wallet,
         isExpense: values.isExpense,
-        accountingDate: new Date(),
+        accountingDate: values.accountingDate, // Preserve selected date
       });
       // Tags are preserved in state
     } else {

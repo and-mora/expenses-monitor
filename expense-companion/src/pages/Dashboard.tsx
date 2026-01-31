@@ -27,17 +27,20 @@ const Dashboard = () => {
   const createWallet = useCreateWallet();
   const deleteWallet = useDeleteWallet();
 
-  // Calculate income, expenses, and total balance
-  const { incomeInCents, expensesInCents, totalInCents } = useMemo(() => {
+  // Calculate income and expenses from recent transactions (for "Recent Activity" stats)
+  // Total balance comes from the API's /api/balance endpoint
+  const { incomeInCents, expensesInCents } = useMemo(() => {
     const income = payments
       .filter(p => p.amountInCents > 0)
       .reduce((sum, p) => sum + p.amountInCents, 0);
     const expenses = payments
       .filter(p => p.amountInCents < 0)
       .reduce((sum, p) => sum + p.amountInCents, 0);
-    const total = income + expenses;
-    return { incomeInCents: income, expensesInCents: expenses, totalInCents: total };
+    return { incomeInCents: income, expensesInCents: expenses };
   }, [payments]);
+
+  // Use balance from API for total balance
+  const totalInCents = balance?.totalInCents || 0;
 
   const handleCreatePayment = async (data: Parameters<typeof createPayment.mutate>[0]) => {
     try {

@@ -230,6 +230,23 @@ class ApiClient {
     return response.content;
   }
 
+  async getPayments(page = 0, size = 50): Promise<{ content: Payment[], page: number, size: number }> {
+    if (USE_MOCK_DATA) {
+      const sorted = [...mockPayments]
+        .sort((a, b) => new Date(b.accountingDate).getTime() - new Date(a.accountingDate).getTime());
+      const start = page * size;
+      const end = start + size;
+      return {
+        content: sorted.slice(start, end),
+        page,
+        size,
+      };
+    }
+    return this.fetch<{ content: Payment[], page: number, size: number }>(
+      `/api/payments?page=${page}&size=${size}`
+    );
+  }
+
   async createPayment(payment: PaymentCreate): Promise<Payment> {
     console.log('[API] Creating payment with data:', JSON.stringify(payment, null, 2));
     
