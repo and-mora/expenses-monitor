@@ -241,9 +241,12 @@ const Transactions = () => {
                 
                 {/* Show page numbers */}
                 {(() => {
-                  const startPage = Math.max(0, currentPage - 1);
-                  const totalPages = Math.min(5, currentPage + 3);
-                  return [...Array(totalPages)].map((_, i) => {
+                  // Show up to 5 page numbers centered around current page
+                  const maxPagesToShow = 5;
+                  const startPage = Math.max(0, currentPage - Math.floor(maxPagesToShow / 2));
+                  const pagesToShow = maxPagesToShow;
+                  
+                  return [...Array(pagesToShow)].map((_, i) => {
                     const pageNum = startPage + i;
                     return (
                       <PaginationItem key={`page-${pageNum}`}>
