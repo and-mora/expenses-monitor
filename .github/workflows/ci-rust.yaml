@@ -141,7 +141,7 @@ jobs:
           cd backend-rust
           SKIP_DOCKER=true ./scripts/init_db.sh
         env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/expenses-monitor
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
 
       - name: Verify database schema
         run: |
