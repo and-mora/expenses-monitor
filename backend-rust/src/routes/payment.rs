@@ -134,11 +134,7 @@ pub async fn create_payment(
                 accounting_date: payment.accounting_date,
                 category: payment.category.as_ref().to_string(),
                 wallet: wallet_name,
-                tags: if response_tags.is_empty() {
-                    None
-                } else {
-                    Some(response_tags)
-                },
+                tags: response_tags,
             };
 
             HttpResponse::Ok().json(response)
@@ -319,8 +315,7 @@ pub struct PaymentResponseDto {
     category: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     wallet: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    tags: Option<Vec<TagResponseDto>>,
+    tags: Vec<TagResponseDto>,
 }
 
 #[derive(Serialize)]
@@ -383,9 +378,20 @@ async fn get_recent_payments_from_db(
     let mut result = Vec::new();
     for record in payments {
         let payment_id = record.id;
-        let tags = get_payment_tags(payment_id, connection_pool)
-            .await
-            .unwrap_or_default();
+        let tags = match get_payment_tags(payment_id, connection_pool).await {
+            Ok(tags) => {
+                tracing::debug!("Retrieved {} tags for payment {}", tags.len(), payment_id);
+                tags
+            }
+            Err(e) => {
+                tracing::error!(
+                    "Failed to retrieve tags for payment {}: {:?}",
+                    payment_id,
+                    e
+                );
+                Vec::new()
+            }
+        };
 
         result.push(PaymentResponseDto {
             id: payment_id,
@@ -395,7 +401,7 @@ async fn get_recent_payments_from_db(
             accounting_date: record.accounting_date.unwrap_or_default(),
             category: record.category.unwrap_or_default(),
             wallet: record.wallet_name,
-            tags: if tags.is_empty() { None } else { Some(tags) },
+            tags,
         });
     }
 
