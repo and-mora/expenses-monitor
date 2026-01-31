@@ -16,7 +16,7 @@ COPY . .
 ARG VITE_KEYCLOAK_URL=https://auth.expmonitor.freeddns.org
 ARG VITE_KEYCLOAK_REALM=expenses-monitor
 ARG VITE_KEYCLOAK_CLIENT_ID=frontend
-ARG VITE_API_BASE_URL=https://api.expmonitor.freeddns.org
+ARG VITE_API_BASE_URL=https://api-rust.expmonitor.freeddns.org
 ARG VITE_USE_MOCK_DATA=false
 ARG VITE_SOURCEMAPS=false
 

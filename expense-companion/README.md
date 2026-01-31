@@ -89,7 +89,7 @@ docker build -t expense-companion:latest \
   --build-arg VITE_KEYCLOAK_URL=https://auth.expmonitor.freeddns.org \
   --build-arg VITE_KEYCLOAK_REALM=expenses-monitor \
   --build-arg VITE_KEYCLOAK_CLIENT_ID=expenses-monitor-frontend \
-  --build-arg VITE_API_BASE_URL=https://api.expmonitor.freeddns.org \
+  --build-arg VITE_API_BASE_URL=https://api-rust.expmonitor.freeddns.org \
   .
 
 # Run container

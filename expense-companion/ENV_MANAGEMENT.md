@@ -13,7 +13,7 @@ Tutti i defaults di produzione sono definiti nel **Dockerfile**:
 ARG VITE_KEYCLOAK_URL=https://auth.expmonitor.freeddns.org
 ARG VITE_KEYCLOAK_REALM=expenses-monitor
 ARG VITE_KEYCLOAK_CLIENT_ID=expenses-monitor-frontend
-ARG VITE_API_BASE_URL=https://api.expmonitor.freeddns.org
+ARG VITE_API_BASE_URL=https://api-rust.expmonitor.freeddns.org
 ARG VITE_USE_MOCK_DATA=false
 ARG VITE_SOURCEMAPS=false
 ```
@@ -116,7 +116,7 @@ docker build \
 ```bash
 # Build separato per staging con valori diversi
 docker build \
-  --build-arg VITE_API_BASE_URL=https://staging-api.expmonitor.freeddns.org \
+  --build-arg VITE_API_BASE_URL=https://staging-api-rust.expmonitor.freeddns.org \
   -t expense-companion:staging \
   .
 ```
@@ -130,7 +130,7 @@ Le variabili `VITE_*` sono **sostituite nel codice** durante il build:
 const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 // Diventa dopo il build:
-const apiUrl = "https://api.expmonitor.freeddns.org";
+const apiUrl = "https://api-rust.expmonitor.freeddns.org";
 ```
 
 **Conseguenze**:
