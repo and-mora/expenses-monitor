@@ -140,6 +140,8 @@ jobs:
         run: |
           cd backend-rust
           SKIP_DOCKER=true ./scripts/init_db.sh
+        env:
+          POSTGRES_DB: postgres
 
       - name: Verify database schema
         run: |
@@ -244,6 +246,7 @@ jobs:
           cd backend-rust
           SKIP_DOCKER=true ./scripts/init_db.sh
         env:
+          POSTGRES_DB: postgres
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
 
       - name: Generate code coverage
