@@ -72,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16
+        image: postgres:15.8-alpine3.20
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -173,7 +173,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16
+        image: postgres:15.8-alpine3.20
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
