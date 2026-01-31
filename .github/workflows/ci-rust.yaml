@@ -104,7 +104,7 @@ jobs:
         uses: actions/cache@v4
         id: cache-sqlx
         with:
-          path: ~/.cargo/bin/sqlx
+          path: ~/.cargo/bin/cargo-sqlx
           key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}
 
       - name: Add cargo bin to PATH
@@ -178,7 +178,7 @@ jobs:
         uses: actions/cache@v4
         id: cache-sqlx
         with:
-          path: ~/.cargo/bin/sqlx
+          path: ~/.cargo/bin/cargo-sqlx
           key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}
 
       - name: Install sqlx-cli
