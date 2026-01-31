@@ -29,19 +29,19 @@ tracing-subscriber = { version = "0.3", features = ["registry", "env-filter"] }
 tracing-bunyan-formatter = "0.3"
 tracing-log = "0.2.0"
 tracing-actix-web = "0.7"
-# versions are not latest cause opentelemetry 0.24 is required by metrics instrumentation library
-tracing-opentelemetry = "0.25.0"
-opentelemetry = "0.24.0"
-opentelemetry_sdk = { version = "0.24.0", features = ["rt-async-std", "rt-tokio"] }
-opentelemetry-otlp = { version = "0.17.0", features = ["grpc-tonic"] }
-opentelemetry-semantic-conventions = "0.16.0"
+# OpenTelemetry 0.31 - latest stable version
+tracing-opentelemetry = "0.32.1"
+opentelemetry = "0.31.0"
+opentelemetry_sdk = { version = "0.31.0", features = ["rt-tokio"] }
+opentelemetry-otlp = { version = "0.31.0", features = ["grpc-tonic"] }
+opentelemetry-semantic-conventions = "0.31.0"
 chrono = { version = "0.4.38", features = ["serde"] }
 secrecy = { version = "0.10.2", features = ["serde"] }
 
-# metrics instrumentation
-actix-web-opentelemetry = { version = "0.19.0", features = ["metrics", "opentelemetry-prometheus", "metrics-prometheus"] }
-prometheus = "0.13.4"
-opentelemetry-prometheus = { version = "0.17.0" }
+# metrics instrumentation - using new crate (actix-web-opentelemetry is deprecated since 0.22)
+opentelemetry-instrumentation-actix-web = { version = "0.23.0", features = ["metrics"] }
+prometheus = "0.14.0"
+opentelemetry-prometheus = "0.31.0"
 
 unicode-segmentation = "1.11.0"
 
