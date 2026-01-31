@@ -119,6 +119,12 @@ jobs:
             --no-default-features \
             --locked
 
+      - name: Create sqlx symlink
+        run: |
+          if [ ! -f ~/.cargo/bin/sqlx ] && [ -f ~/.cargo/bin/cargo-sqlx ]; then
+            ln -s ~/.cargo/bin/cargo-sqlx ~/.cargo/bin/sqlx
+          fi
+
       - name: Install postgresql-client
         run: sudo apt-get update && sudo apt-get install postgresql-client -y
 
@@ -199,6 +205,12 @@ jobs:
 
       - name: Add cargo bin to PATH
         run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Create sqlx symlink
+        run: |
+          if [ ! -f ~/.cargo/bin/sqlx ] && [ -f ~/.cargo/bin/cargo-sqlx ]; then
+            ln -s ~/.cargo/bin/cargo-sqlx ~/.cargo/bin/sqlx
+          fi
 
       - name: Install postgresql-client
         run: sudo apt-get update && sudo apt-get install postgresql-client -y
