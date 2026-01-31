@@ -62,6 +62,9 @@ jobs:
         if: steps.cache-tarpaulin.outputs.cache-hit != 'true'
         run: cargo install cargo-tarpaulin
 
+      - name: Add cargo bin to PATH
+        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
   # Main test job with database - includes tests and clippy
   test:
     needs: setup
@@ -113,6 +116,9 @@ jobs:
             --no-default-features \
             --locked
 
+      - name: Add cargo bin to PATH
+        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
       - name: Install postgresql-client
         run: sudo apt-get update && sudo apt-get install postgresql-client -y
 
@@ -124,7 +130,7 @@ jobs:
       - name: Check sqlx-data.json is up-to-date
         run: |
           cd backend-rust
-          cargo sqlx prepare --check -- --bin backend-rust
+          sqlx prepare --check -- --bin expenses-monitor-be
 
       - name: Run tests
         run: cargo test --manifest-path backend-rust/Cargo.toml
@@ -186,6 +192,9 @@ jobs:
         with:
           path: ~/.cargo/bin/cargo-tarpaulin
           key: ${{ runner.os }}-cargo-tarpaulin
+
+      - name: Add cargo bin to PATH
+        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
       - name: Install postgresql-client
         run: sudo apt-get update && sudo apt-get install postgresql-client -y
