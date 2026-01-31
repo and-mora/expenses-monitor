@@ -107,6 +107,9 @@ jobs:
           path: ~/.cargo/bin/sqlx
           key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}
 
+      - name: Add cargo bin to PATH
+        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
       - name: Install sqlx-cli
         if: steps.cache-sqlx.outputs.cache-hit != 'true'
         run: |
@@ -115,9 +118,6 @@ jobs:
             --features ${{ env.SQLX_FEATURES }} \
             --no-default-features \
             --locked
-
-      - name: Add cargo bin to PATH
-        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
       - name: Install postgresql-client
         run: sudo apt-get update && sudo apt-get install postgresql-client -y
