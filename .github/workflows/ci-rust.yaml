@@ -121,8 +121,12 @@ jobs:
 
       - name: Create sqlx symlink
         run: |
-          if [ ! -f ~/.cargo/bin/sqlx ] && [ -f ~/.cargo/bin/cargo-sqlx ]; then
-            ln -s ~/.cargo/bin/cargo-sqlx ~/.cargo/bin/sqlx
+          if [ ! -f ~/.cargo/bin/sqlx ]; then
+            cat > ~/.cargo/bin/sqlx << 'EOF'
+          #!/bin/bash
+          exec cargo sqlx "$@"
+          EOF
+            chmod +x ~/.cargo/bin/sqlx
           fi
 
       - name: Install postgresql-client
@@ -208,8 +212,12 @@ jobs:
 
       - name: Create sqlx symlink
         run: |
-          if [ ! -f ~/.cargo/bin/sqlx ] && [ -f ~/.cargo/bin/cargo-sqlx ]; then
-            ln -s ~/.cargo/bin/cargo-sqlx ~/.cargo/bin/sqlx
+          if [ ! -f ~/.cargo/bin/sqlx ]; then
+            cat > ~/.cargo/bin/sqlx << 'EOF'
+          #!/bin/bash
+          exec cargo sqlx "$@"
+          EOF
+            chmod +x ~/.cargo/bin/sqlx
           fi
 
       - name: Install postgresql-client
