@@ -258,13 +258,16 @@ const Transactions = () => {
                   
                   return [...Array(pagesToShow)].map((_, i) => {
                     const pageNum = startPage + i;
-                    // Use stable index-based key to avoid duplicates during re-renders
+                    // Include currentPage in key to avoid collisions during page transitions
                     return (
-                      <PaginationItem key={`page-btn-${i}`}>
+                      <PaginationItem key={`pagination-current${currentPage}-page${pageNum}`}>
                         <PaginationLink
                           onClick={() => handlePageChange(pageNum)}
                           isActive={pageNum === currentPage}
                           className="cursor-pointer"
+                          aria-label={`Go to page ${pageNum + 1}`}
+                          aria-current={pageNum === currentPage ? 'page' : undefined}
+                          role="button"
                         >
                           {pageNum + 1}
                         </PaginationLink>
