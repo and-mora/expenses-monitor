@@ -79,7 +79,7 @@ export class ApiError extends Error {
  * Parse error response from API
  */
 export async function parseApiError(response: Response): Promise<ApiError> {
-  let errorData: any;
+  let errorData: { detail?: string; message?: string };
   
   try {
     errorData = await response.json();
@@ -191,7 +191,7 @@ export async function withTimeout<T>(
 /**
  * Request deduplication map
  */
-const pendingRequests = new Map<string, Promise<any>>();
+const pendingRequests = new Map<string, Promise<unknown>>();
 
 /**
  * Deduplicate concurrent identical requests

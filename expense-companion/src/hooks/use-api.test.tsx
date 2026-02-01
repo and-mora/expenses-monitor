@@ -147,8 +147,8 @@ describe('API Hooks - Pagination', () => {
       };
 
       vi.mocked(apiClient.getPayments)
-        .mockResolvedValueOnce(mockResponsePage0 as any)
-        .mockResolvedValueOnce(mockResponsePage1 as any);
+        .mockResolvedValueOnce(mockResponsePage0 as PaginatedResponse<Payment>)
+        .mockResolvedValueOnce(mockResponsePage1 as PaginatedResponse<Payment>);
 
       // Create separate QueryClients to ensure fresh cache for each test
       const queryClient1 = new QueryClient({

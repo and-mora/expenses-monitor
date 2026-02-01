@@ -267,8 +267,8 @@ describe('ErrorBoundary', () => {
       const user = userEvent.setup();
       
       // Mock window.location
-      delete (window as any).location;
-      (window as any).location = { href: '' };
+      delete (window as Window & { location: { href: string } }).location;
+      (window as Window & { location: { href: string } }).location = { href: '' };
 
       render(
         <ErrorBoundary>

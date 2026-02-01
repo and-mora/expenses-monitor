@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useRef, useCallback } from 'react';
 import keycloak from '@/config/keycloak';
 import type Keycloak from 'keycloak-js';
 
@@ -25,6 +25,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [authenticated, setAuthenticated] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const refreshToken = async () => {
+    try {
+      const refreshed = await keycloak.updateToken(TOKEN_REFRESH_MIN_VALIDITY);
+      if (refreshed) {
+        console.log('[Auth] Token refreshed successfully');
+        return true;
+      } else {
+        console.log('[Auth] Token is still valid');
+        return false;
+      }
+    } catch (error) {
+      console.error('[Auth] Failed to refresh token', error);
+      
+      // If refresh fails, redirect to login
+      console.log('[Auth] Redirecting to login due to token refresh failure');
+      setAuthenticated(false);
+      await keycloak.login();
+      return false;
+    }
+  };
+
+  const setupTokenRefresh = useCallback(() => {
+    // Clear any existing interval
+    if (refreshIntervalRef.current) {
+      clearInterval(refreshIntervalRef.current);
+    }
+
+    // Setup periodic token refresh check
+    refreshIntervalRef.current = setInterval(() => {
+      if (keycloak.authenticated) {
+        refreshToken();
+      }
+    }, TOKEN_REFRESH_INTERVAL);
+  }, []);
 
   useEffect(() => {
     // Initialize Keycloak
@@ -64,42 +99,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         clearInterval(refreshIntervalRef.current);
       }
     };
-  }, []);
-
-  const refreshToken = async () => {
-    try {
-      const refreshed = await keycloak.updateToken(TOKEN_REFRESH_MIN_VALIDITY);
-      if (refreshed) {
-        console.log('[Auth] Token refreshed successfully');
-        return true;
-      } else {
-        console.log('[Auth] Token is still valid');
-        return false;
-      }
-    } catch (error) {
-      console.error('[Auth] Failed to refresh token', error);
-      
-      // If refresh fails, redirect to login
-      console.log('[Auth] Redirecting to login due to token refresh failure');
-      setAuthenticated(false);
-      await keycloak.login();
-      return false;
-    }
-  };
-
-  const setupTokenRefresh = () => {
-    // Clear any existing interval
-    if (refreshIntervalRef.current) {
-      clearInterval(refreshIntervalRef.current);
-    }
-
-    // Setup periodic token refresh check
-    refreshIntervalRef.current = setInterval(() => {
-      if (keycloak.authenticated) {
-        refreshToken();
-      }
-    }, TOKEN_REFRESH_INTERVAL);
-  };
+  }, [setupTokenRefresh]);
 
   const login = () => {
     keycloak.login();
@@ -137,3 +137,5 @@ export function useAuth() {
   }
   return context;
 }
+
+// eslint-disable-next-line react-refresh/only-export-components

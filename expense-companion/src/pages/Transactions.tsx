@@ -51,7 +51,8 @@ const Transactions = () => {
 
   // Filter payments based on search and filters
   const filteredPayments = useMemo(() => {
-    return payments.filter((payment: Payment) => {
+    const paymentsArray = paymentsData?.content || [];
+    return paymentsArray.filter((payment: Payment) => {
       // Search filter (merchant name or description)
       const searchLower = searchQuery.toLowerCase();
       const matchesSearch = 
@@ -71,7 +72,7 @@ const Transactions = () => {
 
       return matchesSearch && matchesCategory && matchesWallet;
     });
-  }, [payments, searchQuery, selectedCategory, selectedWallet]);
+  }, [paymentsData?.content, searchQuery, selectedCategory, selectedWallet]);
 
   const handleCreatePayment = async (data: Parameters<typeof createPayment.mutate>[0]) => {
     try {

@@ -102,29 +102,29 @@ describe('Transactions Page', () => {
       data: { content: mockPayments, page: 0, size: 50 },
       isLoading: false,
       error: null,
-    } as any);
+    } as ReturnType<typeof useApiHooks.usePayments>);
 
     vi.mocked(useApiHooks.useWallets).mockReturnValue({
       data: mockWallets,
       isLoading: false,
       error: null,
-    } as any);
+    } as ReturnType<typeof useApiHooks.useWallets>);
 
     vi.mocked(useApiHooks.useCategories).mockReturnValue({
       data: mockCategories,
       isLoading: false,
       error: null,
-    } as any);
+    } as ReturnType<typeof useApiHooks.useCategories>);
 
     vi.mocked(useApiHooks.useCreatePayment).mockReturnValue({
       mutateAsync: vi.fn(),
       isPending: false,
-    } as any);
+    } as ReturnType<typeof useApiHooks.useCreatePayment>);
 
     vi.mocked(useApiHooks.useDeletePayment).mockReturnValue({
       mutateAsync: vi.fn(),
       isPending: false,
-    } as any);
+    } as ReturnType<typeof useApiHooks.useDeletePayment>);
   });
 
   describe('Rendering', () => {
@@ -361,7 +361,7 @@ describe('Transactions Page', () => {
         },
         isLoading: false,
         error: null,
-      } as any);
+      } as ReturnType<typeof useApiHooks.usePayments>);
 
       render(<Transactions />, { wrapper: createWrapper() });
 
@@ -388,7 +388,7 @@ describe('Transactions Page', () => {
         data: { content: mockPayments, page: 0, size: 50 },
         isLoading: false,
         error: null,
-      } as any);
+      } as ReturnType<typeof useApiHooks.usePayments>);
 
       render(<Transactions />, { wrapper: createWrapper() });
 
@@ -404,7 +404,7 @@ describe('Transactions Page', () => {
         data: { content: [], page: 0, size: 50 },
         isLoading: false,
         error: null,
-      } as any);
+      } as ReturnType<typeof useApiHooks.usePayments>);
 
       render(<Transactions />, { wrapper: createWrapper() });
 
@@ -421,7 +421,7 @@ describe('Transactions Page', () => {
         data: undefined,
         isLoading: true,
         error: null,
-      } as any);
+      } as ReturnType<typeof useApiHooks.usePayments>);
 
       render(<Transactions />, { wrapper: createWrapper() });
 
