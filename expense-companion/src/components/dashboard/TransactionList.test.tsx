@@ -84,25 +84,25 @@ describe('TransactionList', () => {
     const firstTransaction = screen.getByText('Grocery Store').closest('div');
     expect(firstTransaction).toBeInTheDocument();
 
-    // Find delete button (trash icon)
-    const deleteButtons = screen.getAllByRole('button');
-    const deleteButton = deleteButtons.find(btn => 
-      btn.querySelector('svg')?.classList.toString().includes('lucide')
-    );
+    // Find delete button by looking for trash-2 icon specifically
+    const deleteButtons = screen.getAllByRole('button').filter(btn => {
+      const svg = btn.querySelector('svg');
+      return svg?.classList.contains('lucide-trash-2');
+    });
 
-    if (deleteButton) {
-      await user.click(deleteButton);
-      // Wait a bit as the click might be debounced
-      await waitFor(() => {
-        expect(onDelete).toHaveBeenCalled();
-      }, { timeout: 1000 });
-    }
+    expect(deleteButtons.length).toBeGreaterThan(0);
+    await user.click(deleteButtons[0]);
+
+    // Wait for delete callback
+    await waitFor(() => {
+      expect(onDelete).toHaveBeenCalledWith(mockPayments[0].id);
+    }, { timeout: 2000 });
   });
 
   it('should open edit dialog when edit button is clicked', async () => {
     const user = userEvent.setup();
     
-    render(<TransactionList payments={mockPayments} />);
+    render(<TransactionList payments={mockPayments} onEdit={true} />);
 
     // Find and click edit button
     const editButtons = screen.getAllByRole('button');
@@ -123,6 +123,7 @@ describe('TransactionList', () => {
       <TransactionList 
         payments={mockPayments} 
         onDelete={onDelete}
+        onEdit={true}
         isDeleting={true}
       />
     );
@@ -154,9 +155,9 @@ describe('TransactionList', () => {
   it('should render category icons', () => {
     const { container } = render(<TransactionList payments={mockPayments} />);
 
-    // Should have multiple SVG icons (one per transaction + UI icons)
+    // Should have category icons (one per transaction)
     const icons = container.querySelectorAll('svg');
-    expect(icons.length).toBeGreaterThan(mockPayments.length);
+    expect(icons.length).toBeGreaterThanOrEqual(mockPayments.length);
   });
 
   it('should render scrollable area for long lists', () => {

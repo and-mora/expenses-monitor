@@ -65,7 +65,10 @@ describe('SpendingChart', () => {
     // Transport: 5000/23000 = 21.7%
     // Shopping: 8000/23000 = 34.8%
     
-    expect(screen.getByText(/43\.5%|21\.7%|34\.8%/)).toBeInTheDocument();
+    // Check each percentage individually
+    expect(screen.getByText(/43\.5/)).toBeInTheDocument();
+    expect(screen.getByText(/21\.7/)).toBeInTheDocument();
+    expect(screen.getByText(/34\.8/)).toBeInTheDocument();
   });
 
   it('should only show expenses, not income', () => {

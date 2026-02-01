@@ -13,11 +13,12 @@ describe('BalanceCard', () => {
     );
 
     expect(screen.getByText(/Total Balance/i)).toBeInTheDocument();
-    expect(screen.getByText('€500.00')).toBeInTheDocument();
+    // €500.00 appears twice (balance and expenses), use getAllByText
+    const amounts = screen.getAllByText('€500.00');
+    expect(amounts.length).toBe(2);
     expect(screen.getByText(/Income/i)).toBeInTheDocument();
     expect(screen.getByText('€1,000.00')).toBeInTheDocument();
     expect(screen.getByText(/Expenses/i)).toBeInTheDocument();
-    expect(screen.getByText('€500.00')).toBeInTheDocument();
   });
 
   it('should render with negative balance', () => {
@@ -54,9 +55,10 @@ describe('BalanceCard', () => {
       />
     );
 
-    expect(screen.getByText('$500.00')).toBeInTheDocument();
+    // $500.00 appears twice (balance and expenses)
+    const dollarAmounts = screen.getAllByText('$500.00');
+    expect(dollarAmounts.length).toBe(2);
     expect(screen.getByText('$1,000.00')).toBeInTheDocument();
-    expect(screen.getByText('$500.00')).toBeInTheDocument();
   });
 
   it('should apply custom className', () => {

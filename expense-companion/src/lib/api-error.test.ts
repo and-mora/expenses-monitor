@@ -318,13 +318,16 @@ describe('withRetry', () => {
   it('should throw after max attempts', async () => {
     const fn = vi.fn().mockRejectedValue(new ApiError('Server error', 500));
 
-    const promise = withRetry(fn, undefined, { maxAttempts: 3, delayMs: 100 });
+    // Create promise wrapped in expect immediately to catch rejection
+    const promise = expect(
+      withRetry(fn, undefined, { maxAttempts: 3, delayMs: 100 })
+    ).rejects.toThrow('Server error');
     
     // Advance timers for all retry attempts
     await vi.advanceTimersByTimeAsync(100);
     await vi.advanceTimersByTimeAsync(200);
     
-    await expect(promise).rejects.toThrow('Server error');
+    await promise;
     expect(fn).toHaveBeenCalledTimes(3);
   });
 
@@ -332,14 +335,17 @@ describe('withRetry', () => {
     const fn = vi.fn().mockRejectedValue(new ApiError('Server error', 500));
     const delayMs = 100;
 
-    const promise = withRetry(fn, undefined, { maxAttempts: 3, delayMs });
+    // Wrap promise in expect immediately to catch rejection
+    const promise = expect(
+      withRetry(fn, undefined, { maxAttempts: 3, delayMs })
+    ).rejects.toThrow();
 
     // First retry: 100ms * 1 = 100ms
     await vi.advanceTimersByTimeAsync(100);
     // Second retry: 100ms * 2 = 200ms
     await vi.advanceTimersByTimeAsync(200);
 
-    await expect(promise).rejects.toThrow();
+    await promise;
     expect(fn).toHaveBeenCalledTimes(3);
   });
 
