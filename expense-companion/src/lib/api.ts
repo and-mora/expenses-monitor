@@ -196,12 +196,24 @@ class ApiClient {
   }
 
   // Balance
-  async getBalance(): Promise<Balance> {
+  async getBalance(startDate?: string, endDate?: string): Promise<Balance> {
     if (USE_MOCK_DATA) {
       const total = mockPayments.reduce((sum, p) => sum + p.amountInCents, 0);
-      return { totalInCents: total };
+      const income = mockPayments
+        .filter(p => p.amountInCents > 0)
+        .reduce((sum, p) => sum + p.amountInCents, 0);
+      const expenses = mockPayments
+        .filter(p => p.amountInCents < 0)
+        .reduce((sum, p) => sum + p.amountInCents, 0);
+      return { totalInCents: total, incomeInCents: income, expensesInCents: expenses };
     }
-    return this.fetch<Balance>('/api/balance');
+    
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    const query = params.toString() ? `?${params.toString()}` : '';
+    
+    return this.fetch<Balance>(`/api/balance${query}`);
   }
 
   // Categories

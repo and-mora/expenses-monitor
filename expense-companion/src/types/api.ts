@@ -47,6 +47,8 @@ export interface WalletCreate {
 
 export interface Balance {
   totalInCents: number;
+  incomeInCents: number;
+  expensesInCents: number;
 }
 
 export interface ApiError {

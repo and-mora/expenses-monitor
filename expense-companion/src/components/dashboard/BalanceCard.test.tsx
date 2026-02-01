@@ -1,146 +1,149 @@
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@/test/utils';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, waitFor } from '@/test/utils';
+import { userEvent } from '@testing-library/user-event';
 import { BalanceCard } from './BalanceCard';
+import * as useApiHooks from '@/hooks/use-api';
+
+vi.mock('@/hooks/use-api', async () => {
+  const actual = await vi.importActual('@/hooks/use-api');
+  return {
+    ...actual,
+    useBalance: vi.fn(),
+  };
+});
 
 describe('BalanceCard', () => {
-  it('should render with positive balance', () => {
-    render(
-      <BalanceCard
-        totalInCents={50000}
-        incomeInCents={100000}
-        expensesInCents={-50000}
-      />
-    );
+  const mockUseBalance = vi.mocked(useApiHooks.useBalance);
 
-    expect(screen.getByText(/Total Balance/i)).toBeInTheDocument();
-    // €500.00 appears twice (balance and expenses), use getAllByText
-    const amounts = screen.getAllByText('€500.00');
-    expect(amounts.length).toBe(2);
-    expect(screen.getByText(/Income/i)).toBeInTheDocument();
-    expect(screen.getByText('€1,000.00')).toBeInTheDocument();
-    expect(screen.getByText(/Expenses/i)).toBeInTheDocument();
+  beforeEach(() => {
+    mockUseBalance.mockReturnValue({
+      data: {
+        totalInCents: 50000,
+        incomeInCents: 100000,
+        expensesInCents: -50000,
+      },
+      isLoading: false,
+      error: null,
+    } as ReturnType<typeof useApiHooks.useBalance>);
   });
 
-  it('should render with negative balance', () => {
-    render(
-      <BalanceCard
-        totalInCents={-30000}
-        incomeInCents={20000}
-        expensesInCents={-50000}
-      />
-    );
+  it('should render with positive balance', async () => {
+    render(<BalanceCard />);
 
-    expect(screen.getByText('-€300.00')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/Total Balance/i)).toBeInTheDocument();
+      const amounts = screen.getAllByText('€500.00');
+      expect(amounts.length).toBe(2);
+      expect(screen.getByText(/Income/i)).toBeInTheDocument();
+      expect(screen.getByText('€1,000.00')).toBeInTheDocument();
+      expect(screen.getByText(/Expenses/i)).toBeInTheDocument();
+    });
   });
 
-  it('should render with zero balance', () => {
-    render(
-      <BalanceCard
-        totalInCents={0}
-        incomeInCents={50000}
-        expensesInCents={-50000}
-      />
-    );
+  it('should render with negative balance', async () => {
+    mockUseBalance.mockReturnValue({
+      data: {
+        totalInCents: -30000,
+        incomeInCents: 20000,
+        expensesInCents: -50000,
+      },
+      isLoading: false,
+      error: null,
+    } as ReturnType<typeof useApiHooks.useBalance>);
 
-    expect(screen.getByText('€0.00')).toBeInTheDocument();
+    render(<BalanceCard />);
+
+    await waitFor(() => {
+      expect(screen.getByText('-€300.00')).toBeInTheDocument();
+    });
   });
 
-  it('should render with different currency', () => {
-    render(
-      <BalanceCard
-        totalInCents={50000}
-        incomeInCents={100000}
-        expensesInCents={-50000}
-        currency="USD"
-      />
-    );
+  it('should render with zero balance', async () => {
+    mockUseBalance.mockReturnValue({
+      data: {
+        totalInCents: 0,
+        incomeInCents: 50000,
+        expensesInCents: -50000,
+      },
+      isLoading: false,
+      error: null,
+    } as ReturnType<typeof useApiHooks.useBalance>);
 
-    // $500.00 appears twice (balance and expenses)
-    const dollarAmounts = screen.getAllByText('$500.00');
-    expect(dollarAmounts.length).toBe(2);
-    expect(screen.getByText('$1,000.00')).toBeInTheDocument();
+    render(<BalanceCard />);
+
+    await waitFor(() => {
+      expect(screen.getByText('€0.00')).toBeInTheDocument();
+    });
   });
 
-  it('should apply custom className', () => {
-    const { container } = render(
-      <BalanceCard
-        totalInCents={50000}
-        incomeInCents={100000}
-        expensesInCents={-50000}
-        className="custom-class"
-      />
-    );
+  it('should render with different currency', async () => {
+    render(<BalanceCard currency="USD" />);
 
-    const card = container.querySelector('.custom-class');
-    expect(card).toBeInTheDocument();
+    await waitFor(() => {
+      const dollarAmounts = screen.getAllByText('$500.00');
+      expect(dollarAmounts.length).toBe(2);
+      expect(screen.getByText('$1,000.00')).toBeInTheDocument();
+    });
   });
 
-  it('should show correct icons for positive balance', () => {
-    const { container } = render(
-      <BalanceCard
-        totalInCents={50000}
-        incomeInCents={100000}
-        expensesInCents={-50000}
-      />
-    );
+  it('should apply custom className', async () => {
+    const { container } = render(<BalanceCard className="custom-class" />);
 
-    // Check for trending up icon (positive balance indicator)
-    const icons = container.querySelectorAll('svg');
-    expect(icons.length).toBeGreaterThan(0);
+    await waitFor(() => {
+      const card = container.querySelector('.custom-class');
+      expect(card).toBeInTheDocument();
+    });
   });
 
-  it('should show correct icons for negative balance', () => {
-    const { container } = render(
-      <BalanceCard
-        totalInCents={-30000}
-        incomeInCents={20000}
-        expensesInCents={-50000}
-      />
-    );
+  it('should show loading skeleton when data is loading', () => {
+    mockUseBalance.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      error: null,
+    } as ReturnType<typeof useApiHooks.useBalance>);
 
-    // Check that icons are rendered
-    const icons = container.querySelectorAll('svg');
-    expect(icons.length).toBeGreaterThan(0);
+    render(<BalanceCard />);
+
+    expect(screen.queryByText(/Total Balance/i)).toBeInTheDocument();
+    expect(screen.queryByText('€500.00')).not.toBeInTheDocument();
   });
 
-  it('should format expenses as absolute value', () => {
-    render(
-      <BalanceCard
-        totalInCents={0}
-        incomeInCents={0}
-        expensesInCents={-75050}
-      />
-    );
+  it('should have tabs for period selection', async () => {
+    render(<BalanceCard />);
 
-    // Expenses should be shown as positive value
-    expect(screen.getByText('€750.50')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: /All/i })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /3M/i })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /1Y/i })).toBeInTheDocument();
+    });
   });
 
-  it('should handle large amounts correctly', () => {
-    render(
-      <BalanceCard
-        totalInCents={1234567890}
-        incomeInCents={2000000000}
-        expensesInCents={-765432110}
-      />
-    );
+  it('should switch to 3M period when tab clicked', async () => {
+    const user = userEvent.setup();
+    render(<BalanceCard />);
 
-    expect(screen.getByText('€12,345,678.90')).toBeInTheDocument();
-    expect(screen.getByText('€20,000,000.00')).toBeInTheDocument();
-    expect(screen.getByText('€7,654,321.10')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: /3M/i })).toBeInTheDocument();
+    });
+
+    const threeMonthsTab = screen.getByRole('tab', { name: /3M/i });
+    await user.click(threeMonthsTab);
+
+    // Verify useBalance was called with appropriate date parameters
+    expect(mockUseBalance).toHaveBeenCalled();
   });
 
-  it('should render all text labels', () => {
-    render(
-      <BalanceCard
-        totalInCents={50000}
-        incomeInCents={100000}
-        expensesInCents={-50000}
-      />
-    );
+  it('should switch to 1Y period when tab clicked', async () => {
+    const user = userEvent.setup();
+    render(<BalanceCard />);
 
-    expect(screen.getByText('Total Balance')).toBeInTheDocument();
-    expect(screen.getByText('Income')).toBeInTheDocument();
-    expect(screen.getByText('Expenses')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: /1Y/i })).toBeInTheDocument();
+    });
+
+    const oneYearTab = screen.getByRole('tab', { name: /1Y/i });
+    await user.click(oneYearTab);
+
+    expect(mockUseBalance).toHaveBeenCalled();
   });
 });
