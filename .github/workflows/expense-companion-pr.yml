@@ -5,7 +5,6 @@ on:
     branches: [ master ]
     paths:
       - 'expense-companion/**'
-      - '.github/workflows/expense-companion-pr.yml'
 
 jobs:
   test-and-coverage:

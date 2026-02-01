@@ -7,14 +7,17 @@ import {
   Heart, 
   TrendingUp,
   CircleDot,
-  Trash2
+  Trash2,
+  Edit2
 } from 'lucide-react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatCurrency, formatRelativeDate, capitalize } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { PaymentTags } from './PaymentTags';
+import { EditPaymentDialog } from './EditPaymentDialog';
 import type { Payment } from '@/types/api';
 
 const categoryIcons: Record<string, React.ElementType> = {
@@ -52,6 +55,8 @@ export function TransactionList({
   isDeleting,
   className 
 }: TransactionListProps) {
+  const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
+  
   return (
     <Card className={cn("border shadow-card", className)}>
       <CardHeader className="pb-3">
@@ -72,6 +77,7 @@ export function TransactionList({
                   key={payment.id} 
                   payment={payment} 
                   onDelete={onDelete}
+                  onEdit={setEditingPayment}
                   isDeleting={isDeleting}
                   style={{ animationDelay: `${index * 30}ms` }}
                 />
@@ -80,6 +86,12 @@ export function TransactionList({
           </div>
         </ScrollArea>
       </CardContent>
+      <EditPaymentDialog
+        payment={editingPayment}
+        open={!!editingPayment}
+        onOpenChange={(open) => !open && setEditingPayment(null)}
+        onSave={() => setEditingPayment(null)}
+      />
     </Card>
   );
 }
@@ -87,11 +99,12 @@ export function TransactionList({
 interface TransactionItemProps {
   payment: Payment;
   onDelete?: (id: string) => void;
+  onEdit?: (payment: Payment) => void;
   isDeleting?: boolean;
   style?: React.CSSProperties;
 }
 
-function TransactionItem({ payment, onDelete, isDeleting, style }: TransactionItemProps) {
+function TransactionItem({ payment, onDelete, onEdit, isDeleting, style }: TransactionItemProps) {
   const category = payment.category.toLowerCase();
   const Icon = categoryIcons[category] || categoryIcons.other;
   const colorClass = categoryColors[category] || categoryColors.other;
@@ -119,13 +132,25 @@ function TransactionItem({ payment, onDelete, isDeleting, style }: TransactionIt
         </p>
       </div>
       
-      <div className="text-right flex items-center gap-2">
+      <div className="text-right flex items-center gap-1">
         <span className={cn(
           "font-semibold font-mono tabular-nums",
           isIncome ? "text-income" : "text-expense"
         )}>
           {formatCurrency(payment.amountInCents, 'EUR', true)}
         </span>
+        
+        {onEdit && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
+            onClick={() => onEdit(payment)}
+            disabled={isDeleting}
+          >
+            <Edit2 className="h-4 w-4" />
+          </Button>
+        )}
         
         {onDelete && (
           <Button

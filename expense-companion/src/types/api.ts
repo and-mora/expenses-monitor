@@ -26,6 +26,16 @@ export interface PaymentCreate {
   tags?: Tag[];
 }
 
+export interface PaymentUpdate {
+  merchantName: string;
+  amountInCents: number;
+  category: string;
+  accountingDate: string;
+  description?: string;
+  wallet: string; // Wallet name (not ID!)
+  tags?: Tag[];
+}
+
 export interface Wallet {
   id: string; // UUID
   name: string; // Unique name

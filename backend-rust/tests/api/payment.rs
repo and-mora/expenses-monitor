@@ -426,3 +426,270 @@ async fn create_payment_with_tags_and_retrieve_returns_tags() {
     assert!(tag_keys.contains(&"project"));
     assert!(tag_keys.contains(&"type"));
 }
+#[tokio::test]
+async fn update_payment_returns_200() {
+    // Arrange
+    let app = spawn_app().await;
+
+    // Create initial payment
+    let create_body = r#"
+    {
+        "description": "original description",
+        "category": "food",
+        "amountInCents": -5000,
+        "merchantName": "Original Merchant",
+        "accountingDate": "2023-11-13T00:00:00.000"
+    }
+    "#;
+
+    let create_response = app.post_payment(create_body).await;
+    assert_eq!(200, create_response.status().as_u16());
+    let create_json: serde_json::Value = create_response.json().await.unwrap();
+    let payment_id = uuid::Uuid::parse_str(create_json["id"].as_str().unwrap()).unwrap();
+
+    // Act - Update the payment
+    let update_body = r#"
+    {
+        "description": "updated description",
+        "category": "transport",
+        "amountInCents": -7500,
+        "merchantName": "Updated Merchant",
+        "accountingDate": "2023-11-14T00:00:00.000"
+    }
+    "#;
+
+    let update_response = app.update_payment(payment_id, update_body).await;
+
+    // Assert
+    assert_eq!(200, update_response.status().as_u16());
+    let update_json: serde_json::Value = update_response.json().await.unwrap();
+    
+    assert_eq!(update_json["description"], "updated description");
+    assert_eq!(update_json["category"], "transport");
+    assert_eq!(update_json["amountInCents"], -7500);
+    assert_eq!(update_json["merchantName"], "Updated Merchant");
+
+    // Verify in database
+    let saved = sqlx::query!(
+        "SELECT description, category, amount, merchant_name FROM expenses.payments WHERE id = $1",
+        payment_id
+    )
+    .fetch_one(&app.db_pool)
+    .await
+    .expect("Failed to retrieve updated payment");
+
+    assert_eq!(saved.description.unwrap(), "updated description");
+    assert_eq!(saved.category.unwrap(), "transport");
+    assert_eq!(saved.amount.unwrap(), -7500);
+    assert_eq!(saved.merchant_name.unwrap(), "Updated Merchant");
+}
+
+#[tokio::test]
+async fn update_payment_with_tags_replaces_tags() {
+    // Arrange
+    let app = spawn_app().await;
+
+    // Create payment with initial tags
+    let create_body = r#"
+    {
+        "description": "payment with tags",
+        "category": "shopping",
+        "amountInCents": -3000,
+        "merchantName": "Store",
+        "accountingDate": "2023-11-13T00:00:00.000",
+        "tags": [
+            {"key": "old_tag", "value": "old_value"},
+            {"key": "remove_me", "value": "will_be_deleted"}
+        ]
+    }
+    "#;
+
+    let create_response = app.post_payment(create_body).await;
+    assert_eq!(200, create_response.status().as_u16());
+    let create_json: serde_json::Value = create_response.json().await.unwrap();
+    let payment_id = uuid::Uuid::parse_str(create_json["id"].as_str().unwrap()).unwrap();
+
+    // Verify initial tags count
+    let initial_tags = sqlx::query!(
+        "SELECT COUNT(*) as count FROM expenses.payments_tags WHERE payment_id = $1",
+        payment_id
+    )
+    .fetch_one(&app.db_pool)
+    .await
+    .unwrap();
+    assert_eq!(initial_tags.count.unwrap(), 2);
+
+    // Act - Update with new tags
+    let update_body = r#"
+    {
+        "description": "payment with updated tags",
+        "category": "shopping",
+        "amountInCents": -3000,
+        "merchantName": "Store",
+        "accountingDate": "2023-11-13T00:00:00.000",
+        "tags": [
+            {"key": "new_tag", "value": "new_value"}
+        ]
+    }
+    "#;
+
+    let update_response = app.update_payment(payment_id, update_body).await;
+
+    // Assert
+    assert_eq!(200, update_response.status().as_u16());
+    let update_json: serde_json::Value = update_response.json().await.unwrap();
+    
+    let updated_tags = update_json["tags"].as_array().unwrap();
+    assert_eq!(1, updated_tags.len(), "Should have only 1 tag after update");
+    assert_eq!(updated_tags[0]["key"], "new_tag");
+    assert_eq!(updated_tags[0]["value"], "new_value");
+
+    // Verify in database that old tags are gone
+    let final_tags = sqlx::query!(
+        "SELECT key, value FROM expenses.payments_tags WHERE payment_id = $1",
+        payment_id
+    )
+    .fetch_all(&app.db_pool)
+    .await
+    .unwrap();
+    
+    assert_eq!(1, final_tags.len());
+    assert_eq!(final_tags[0].key, "new_tag");
+    assert_eq!(final_tags[0].value, "new_value");
+}
+
+#[tokio::test]
+async fn update_payment_with_wallet() {
+    // Arrange
+    let app = spawn_app().await;
+
+    // Create wallet
+    let wallet_body = r#"{"name": "Test Wallet"}"#;
+    let wallet_response = app.create_wallet(wallet_body).await;
+    assert_eq!(200, wallet_response.status().as_u16());
+
+    // Create payment with wallet
+    let create_body = r#"
+    {
+        "description": "payment with wallet",
+        "category": "utilities",
+        "amountInCents": -10000,
+        "merchantName": "Electric Company",
+        "accountingDate": "2023-11-13T00:00:00.000",
+        "wallet": "Test Wallet"
+    }
+    "#;
+
+    let create_response = app.post_payment(create_body).await;
+    assert_eq!(200, create_response.status().as_u16());
+    let create_json: serde_json::Value = create_response.json().await.unwrap();
+    let payment_id = uuid::Uuid::parse_str(create_json["id"].as_str().unwrap()).unwrap();
+
+    // Act - Update payment with same wallet
+    let update_body = r#"
+    {
+        "description": "updated payment",
+        "category": "utilities",
+        "amountInCents": -12000,
+        "merchantName": "Electric Company",
+        "accountingDate": "2023-11-14T00:00:00.000",
+        "wallet": "Test Wallet"
+    }
+    "#;
+
+    let update_response = app.update_payment(payment_id, update_body).await;
+
+    // Assert
+    assert_eq!(200, update_response.status().as_u16());
+    let update_json: serde_json::Value = update_response.json().await.unwrap();
+    assert_eq!(update_json["wallet"], "Test Wallet");
+    assert_eq!(update_json["amountInCents"], -12000);
+}
+
+#[tokio::test]
+async fn update_payment_converts_expense_to_income() {
+    // Arrange
+    let app = spawn_app().await;
+
+    // Create expense
+    let create_body = r#"
+    {
+        "description": "expense",
+        "category": "food",
+        "amountInCents": -5000,
+        "merchantName": "Restaurant",
+        "accountingDate": "2023-11-13T00:00:00.000"
+    }
+    "#;
+
+    let create_response = app.post_payment(create_body).await;
+    assert_eq!(200, create_response.status().as_u16());
+    let create_json: serde_json::Value = create_response.json().await.unwrap();
+    let payment_id = uuid::Uuid::parse_str(create_json["id"].as_str().unwrap()).unwrap();
+
+    // Act - Convert to income by making amount positive
+    let update_body = r#"
+    {
+        "description": "now income",
+        "category": "income",
+        "amountInCents": 5000,
+        "merchantName": "Salary",
+        "accountingDate": "2023-11-13T00:00:00.000"
+    }
+    "#;
+
+    let update_response = app.update_payment(payment_id, update_body).await;
+
+    // Assert
+    assert_eq!(200, update_response.status().as_u16());
+    let update_json: serde_json::Value = update_response.json().await.unwrap();
+    assert_eq!(update_json["amountInCents"], 5000);
+    assert_eq!(update_json["category"], "income");
+
+    // Verify in database
+    let saved = sqlx::query!(
+        "SELECT amount, category FROM expenses.payments WHERE id = $1",
+        payment_id
+    )
+    .fetch_one(&app.db_pool)
+    .await
+    .unwrap();
+
+    assert_eq!(saved.amount.unwrap(), 5000);
+    assert_eq!(saved.category.unwrap(), "income");
+}
+
+#[rstest]
+#[case(r#"{"amountInCents": 0}"#)] // Missing required fields
+#[case(r#"{"description": "test", "category": "", "amountInCents": -100, "merchantName": "test", "accountingDate": "2023-11-13T00:00:00.000"}"#)] // Empty category
+#[tokio::test]
+async fn update_payment_returns_400_for_invalid_data(#[case] invalid_body: &str) {
+    // Arrange
+    let app = spawn_app().await;
+
+    // Create a valid payment first
+    let create_body = r#"
+    {
+        "description": "valid",
+        "category": "food",
+        "amountInCents": -100,
+        "merchantName": "test",
+        "accountingDate": "2023-11-13T00:00:00.000"
+    }
+    "#;
+
+    let create_response = app.post_payment(create_body).await;
+    let create_json: serde_json::Value = create_response.json().await.unwrap();
+    let payment_id = uuid::Uuid::parse_str(create_json["id"].as_str().unwrap()).unwrap();
+
+    // Act - Try to update with invalid data
+    let update_response = app.update_payment(payment_id, invalid_body).await;
+
+    // Assert
+    assert_eq!(
+        400,
+        update_response.status().as_u16(),
+        "API should return 400 for invalid payload: {}",
+        invalid_body
+    );
+}

@@ -113,6 +113,16 @@ impl TestApp {
             .await
             .expect("Failed to execute request.")
     }
+
+    pub async fn update_payment(&self, id: uuid::Uuid, body: &str) -> reqwest::Response {
+        reqwest::Client::new()
+            .put(&format!("{}/api/payments/{}", &self.address, id))
+            .header("Content-Type", "application/json")
+            .body(body.to_owned())
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
 }
 
 pub async fn spawn_app() -> TestApp {
