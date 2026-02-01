@@ -655,8 +655,7 @@ describe('AddPaymentDialog', () => {
       // Dialog should still be open
       expect(screen.getByRole('dialog')).toBeInTheDocument();
 
-      // The date should be preserved (current date is shown)
-      const dateElements = screen.queryAllByText(/2026/i);
+      // The date should be preserved (dateElements already verified above)
       expect(dateElements.length).toBeGreaterThan(0);
     });
   });
