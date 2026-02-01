@@ -27,13 +27,7 @@ pub async fn get_balance(
     query: web::Query<BalanceQuery>,
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
-    match get_balance_from_db(
-        connection_pool.deref(),
-        query.start_date,
-        query.end_date,
-    )
-    .await
-    {
+    match get_balance_from_db(connection_pool.deref(), query.start_date, query.end_date).await {
         Ok(balance) => HttpResponse::Ok().json(balance),
         Err(e) => {
             tracing::error!("Failed to execute query: {:?}", e);
@@ -72,7 +66,11 @@ async fn get_balance_from_db(
                 tracing::error!("Failed to execute query: {:?}", e);
                 e
             })?;
-            (result.total.unwrap_or(0), result.income.unwrap_or(0), result.expenses.unwrap_or(0))
+            (
+                result.total.unwrap_or(0),
+                result.income.unwrap_or(0),
+                result.expenses.unwrap_or(0),
+            )
         }
         (Some(start), None) => {
             let result = sqlx::query!(
@@ -92,7 +90,11 @@ async fn get_balance_from_db(
                 tracing::error!("Failed to execute query: {:?}", e);
                 e
             })?;
-            (result.total.unwrap_or(0), result.income.unwrap_or(0), result.expenses.unwrap_or(0))
+            (
+                result.total.unwrap_or(0),
+                result.income.unwrap_or(0),
+                result.expenses.unwrap_or(0),
+            )
         }
         (None, Some(end)) => {
             let result = sqlx::query!(
@@ -112,7 +114,11 @@ async fn get_balance_from_db(
                 tracing::error!("Failed to execute query: {:?}", e);
                 e
             })?;
-            (result.total.unwrap_or(0), result.income.unwrap_or(0), result.expenses.unwrap_or(0))
+            (
+                result.total.unwrap_or(0),
+                result.income.unwrap_or(0),
+                result.expenses.unwrap_or(0),
+            )
         }
         (None, None) => {
             let result = sqlx::query!(
@@ -130,7 +136,11 @@ async fn get_balance_from_db(
                 tracing::error!("Failed to execute query: {:?}", e);
                 e
             })?;
-            (result.total.unwrap_or(0), result.income.unwrap_or(0), result.expenses.unwrap_or(0))
+            (
+                result.total.unwrap_or(0),
+                result.income.unwrap_or(0),
+                result.expenses.unwrap_or(0),
+            )
         }
     };
 
