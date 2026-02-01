@@ -223,6 +223,7 @@ const Transactions = () => {
           <TransactionList
             payments={filteredPayments}
             onDelete={handleDeletePayment}
+            onEdit={true}
             isDeleting={deletePayment.isPending}
             className="max-w-none"
           />
