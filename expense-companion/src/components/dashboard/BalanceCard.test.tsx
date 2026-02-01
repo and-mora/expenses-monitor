@@ -120,6 +120,8 @@ describe('BalanceCard', () => {
 
   it('should switch to 3M period when tab clicked', async () => {
     const user = userEvent.setup();
+    mockUseBalance.mockClear();
+    
     render(<BalanceCard />);
 
     await waitFor(() => {
@@ -129,12 +131,19 @@ describe('BalanceCard', () => {
     const threeMonthsTab = screen.getByRole('tab', { name: /3M/i });
     await user.click(threeMonthsTab);
 
-    // Verify useBalance was called with appropriate date parameters
-    expect(mockUseBalance).toHaveBeenCalled();
+    // Verify useBalance was called with date range for 3 months
+    await waitFor(() => {
+      const lastCall = mockUseBalance.mock.calls[mockUseBalance.mock.calls.length - 1];
+      expect(lastCall).toBeDefined();
+      expect(lastCall[0]).toBeDefined(); // startDate
+      expect(lastCall[1]).toBeDefined(); // endDate
+    });
   });
 
   it('should switch to 1Y period when tab clicked', async () => {
     const user = userEvent.setup();
+    mockUseBalance.mockClear();
+    
     render(<BalanceCard />);
 
     await waitFor(() => {
@@ -144,6 +153,73 @@ describe('BalanceCard', () => {
     const oneYearTab = screen.getByRole('tab', { name: /1Y/i });
     await user.click(oneYearTab);
 
-    expect(mockUseBalance).toHaveBeenCalled();
+    // Verify useBalance was called with date range for 1 year
+    await waitFor(() => {
+      const lastCall = mockUseBalance.mock.calls[mockUseBalance.mock.calls.length - 1];
+      expect(lastCall).toBeDefined();
+      expect(lastCall[0]).toBeDefined(); // startDate
+      expect(lastCall[1]).toBeDefined(); // endDate
+    });
+  });
+  
+  it('should call useBalance without dates when period is "all"', async () => {
+    mockUseBalance.mockClear();
+    
+    render(<BalanceCard />);
+
+    await waitFor(() => {
+      // Initial render with "all" period should not pass dates
+      const firstCall = mockUseBalance.mock.calls[0];
+      expect(firstCall[0]).toBeUndefined(); // no startDate
+      expect(firstCall[1]).toBeUndefined(); // no endDate
+    });
+  });
+    
+  it('should handle undefined balance data', async () => {
+    mockUseBalance.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: null,
+    } as ReturnType<typeof useApiHooks.useBalance>);
+
+    const { container } = render(<BalanceCard />);
+
+    await waitFor(() => {
+      // Should render with fallback values (0)
+      expect(container.querySelector('.text-4xl')).toBeInTheDocument();
+    });
+  });
+  
+  it('should switch from all to 1Y to 3M periods', async () => {
+    const user = userEvent.setup();
+    mockUseBalance.mockClear();
+    
+    render(<BalanceCard />);
+
+    // Initial "all" period
+    await waitFor(() => {
+      const allTab = screen.getByRole('tab', { name: /All/i });
+      expect(allTab).toHaveAttribute('data-state', 'active');
+    });
+
+    // Switch to 1Y
+    const oneYearTab = screen.getByRole('tab', { name: /1Y/i });
+    await user.click(oneYearTab);
+
+    await waitFor(() => {
+      expect(oneYearTab).toHaveAttribute('data-state', 'active');
+      const lastCall = mockUseBalance.mock.calls[mockUseBalance.mock.calls.length - 1];
+      expect(lastCall[0]).toBeDefined(); // should have startDate
+    });
+
+    // Switch to 3M
+    const threeMonthsTab = screen.getByRole('tab', { name: /3M/i });
+    await user.click(threeMonthsTab);
+
+    await waitFor(() => {
+      expect(threeMonthsTab).toHaveAttribute('data-state', 'active');
+      const lastCall = mockUseBalance.mock.calls[mockUseBalance.mock.calls.length - 1];
+      expect(lastCall[0]).toBeDefined(); // should have startDate
+    });
   });
 });
