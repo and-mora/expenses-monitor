@@ -5,10 +5,6 @@ import { EditPaymentDialog } from './EditPaymentDialog';
 import type { Payment } from '@/types/api';
 
 describe('EditPaymentDialog', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   const mockPayment: Payment = {
     id: '123e4567-e89b-12d3-a456-426614174000',
     merchantName: 'Test Store',
@@ -58,7 +54,8 @@ describe('EditPaymentDialog', () => {
     });
 
     expect(screen.getByDisplayValue('Test Store')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('-50.00')).toBeInTheDocument();
+    const amountInput = screen.getByLabelText(/amount/i) as HTMLInputElement;
+    expect(amountInput.value).toBe('-50.00');
     expect(screen.getByDisplayValue('2026-01-15')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Test purchase')).toBeInTheDocument();
   });
@@ -77,7 +74,7 @@ describe('EditPaymentDialog', () => {
       expect(screen.getByRole('dialog')).toBeInTheDocument();
     });
 
-    // Verify tags component is rendered (actual tag text may vary based on TagInput component implementation)
+    // Verify tags component is rendered
     expect(screen.getByText(/tags/i)).toBeInTheDocument();
   });
 
@@ -122,7 +119,7 @@ describe('EditPaymentDialog', () => {
     expect(categoryButton).toBeInTheDocument();
   });
 
-  it('should validate required wallet', async () => {
+  it('should display wallet combobox', async () => {
     render(
       <EditPaymentDialog
         payment={mockPayment}
@@ -183,7 +180,7 @@ describe('EditPaymentDialog', () => {
     expect(screen.getByDisplayValue('New Store Name')).toBeInTheDocument();
   });
 
-  it('should update amount field', async () => {
+  it('should display amount field with correct value', async () => {
     render(
       <EditPaymentDialog
         payment={mockPayment}
@@ -287,5 +284,115 @@ describe('EditPaymentDialog', () => {
     expect(screen.getByLabelText(/amount/i)).toHaveValue(-50);
     expect(screen.getByDisplayValue('2026-01-15')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Test purchase')).toBeInTheDocument();
+  });
+
+  it('should successfully submit form with valid data', async () => {
+    const user = userEvent.setup();
+    render(
+      <EditPaymentDialog
+        payment={mockPayment}
+        open={true}
+        onOpenChange={mockOnOpenChange}
+        onSave={mockOnSave}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+
+    // Modify merchant name
+    const merchantInput = screen.getByLabelText(/merchant/i);
+    await user.clear(merchantInput);
+    await user.type(merchantInput, 'Updated Store');
+
+    // Submit form
+    const saveButton = screen.getByRole('button', { name: /save/i });
+    await user.click(saveButton);
+
+    // Wait for save callback
+    await waitFor(() => {
+      expect(mockOnSave).toHaveBeenCalled();
+    }, { timeout: 3000 });
+    
+    await waitFor(() => {
+      expect(mockOnOpenChange).toHaveBeenCalledWith(false);
+    });
+  });
+
+  it('should display date input', async () => {
+    render(
+      <EditPaymentDialog
+        payment={mockPayment}
+        open={true}
+        onOpenChange={mockOnOpenChange}
+        onSave={mockOnSave}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+
+    const dateInput = screen.getByLabelText(/date/i);
+    expect(dateInput).toBeInTheDocument();
+    expect(dateInput).toHaveValue('2026-01-15');
+  });
+
+  it('should show expense indicator for negative amounts', async () => {
+    render(
+      <EditPaymentDialog
+        payment={mockPayment}
+        open={true}
+        onOpenChange={mockOnOpenChange}
+        onSave={mockOnSave}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/expense/i)).toBeInTheDocument();
+  });
+
+  it('should show income indicator for positive amounts', async () => {
+    const incomePayment: Payment = {
+      ...mockPayment,
+      amountInCents: 5000,
+    };
+
+    render(
+      <EditPaymentDialog
+        payment={incomePayment}
+        open={true}
+        onOpenChange={mockOnOpenChange}
+        onSave={mockOnSave}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/income/i)).toBeInTheDocument();
+  });
+
+  it('should display save button', async () => {
+    render(
+      <EditPaymentDialog
+        payment={mockPayment}
+        open={true}
+        onOpenChange={mockOnOpenChange}
+        onSave={mockOnSave}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+
+    const saveButton = screen.getByRole('button', { name: /save/i });
+    expect(saveButton).toBeInTheDocument();
   });
 });
