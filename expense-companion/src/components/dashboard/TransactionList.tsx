@@ -87,6 +87,7 @@ export function TransactionList({
         </ScrollArea>
       </CardContent>
       <EditPaymentDialog
+        key={editingPayment?.id}
         payment={editingPayment}
         open={!!editingPayment}
         onOpenChange={(open) => !open && setEditingPayment(null)}

@@ -78,7 +78,8 @@ npm run lint                  # ESLint check
 3. Test user interactions, not implementation details
 4. Run tests during development: `npm run test:watch`
 5. **Run FULL test suite**: `npm test` (no filters)
-6. **Verify ALL tests pass** (including existing ones for non-regression) before completing work
+6. **Run linter**: `npm run lint` and fix all errors before commit
+7. **Verify ALL tests pass and NO lint errors** (including existing ones for non-regression) before completing work
 
 **Environment**: Never commit `.env.local`. Production defaults are ARG in [Dockerfile](expense-companion/Dockerfile#L3-L8). For local dev, copy `.env.example` and override `VITE_API_BASE_URL=http://localhost:8080`.
 
@@ -172,7 +173,8 @@ npm run lint                  # ESLint check
 5. **Run FULL test suite**: Execute `cargo test` (no filters) and verify ALL tests pass
 6. Update frontend API client in [expense-companion/src/lib/api.ts](expense-companion/src/lib/api.ts)
 7. **Add frontend tests**: Test API client integration and component usage
-8. **Run FULL frontend suite**: Execute `npm test` and verify all pass
+8. **Run linter**: Execute `npm run lint` and fix all errors
+9. **Run FULL frontend suite**: Execute `npm test` and verify all pass
 
 **Database migration**: Run [scripts/init_db.sh](backend-rust/scripts/init_db.sh) to apply migrations. CI uses `cargo sqlx prepare` to cache query metadata.
 
@@ -201,6 +203,7 @@ npm run lint                  # ESLint check
 - **React Testing Library** for component tests (user behavior, not implementation)
 - **Test location**: Co-locate tests with source (e.g., `Component.test.tsx` next to `Component.tsx`)
 - **Coverage**: Test user interactions, state changes, API integration, error handling
+- **Linting**: Run `npm run lint` after every change - fix all errors and warnings before commit
 - **Execution**: Run `npm test` (full suite, no filters) after every change to verify non-regression
 
 ### Test-First Mindset
@@ -228,4 +231,5 @@ Not currently implemented (future consideration)
 ⚠️ **CORS must match exactly** - Protocol, domain, and port all checked  
 ⚠️ **Sqlx requires DATABASE_URL** - Set for local dev or use `sqlx prepare` offline mode  
 ⚠️ **Tests are MANDATORY** - No code changes without tests. Run FULL test suite (no filters) to ensure non-regression  
+⚠️ **Linting is MANDATORY** - Frontend changes require `npm run lint` with zero errors before commit  
 ⚠️ **OpenAPI must be updated** - Any REST API change requires updating [docs/openapi.yaml](docs/openapi.yaml)

@@ -40,14 +40,16 @@ export function EditPaymentDialog({
 }: EditPaymentDialogProps) {
   const queryClient = useQueryClient();
 
-  // Form state
-  const [merchantName, setMerchantName] = useState('');
-  const [amountInCents, setAmountInCents] = useState(0);
-  const [category, setCategory] = useState('');
-  const [accountingDate, setAccountingDate] = useState('');
-  const [description, setDescription] = useState('');
-  const [wallet, setWallet] = useState('');
-  const [tags, setTags] = useState<Tag[]>([]);
+  // Form state - initialize from payment prop
+  const [merchantName, setMerchantName] = useState(payment?.merchantName || '');
+  const [amountInCents, setAmountInCents] = useState(payment?.amountInCents || 0);
+  const [category, setCategory] = useState(payment?.category || '');
+  const [accountingDate, setAccountingDate] = useState(
+    payment?.accountingDate ? payment.accountingDate.split('T')[0] : ''
+  );
+  const [description, setDescription] = useState(payment?.description || '');
+  const [wallet, setWallet] = useState(payment?.wallet || '');
+  const [tags, setTags] = useState<Tag[]>(payment?.tags || []);
 
   // Fetch categories and wallets
   const { data: categories = [] } = useQuery({
@@ -59,19 +61,6 @@ export function EditPaymentDialog({
     queryKey: ['wallets'],
     queryFn: () => apiClient.getWallets(),
   });
-
-  // Initialize form when payment changes
-  useEffect(() => {
-    if (payment) {
-      setMerchantName(payment.merchantName);
-      setAmountInCents(payment.amountInCents);
-      setCategory(payment.category);
-      setAccountingDate(payment.accountingDate.split('T')[0]); // Extract YYYY-MM-DD
-      setDescription(payment.description || '');
-      setWallet(payment.wallet);
-      setTags(payment.tags || []);
-    }
-  }, [payment]);
 
   const updateMutation = useMutation({
     mutationFn: (data: { id: string; payment: PaymentUpdate }) =>
