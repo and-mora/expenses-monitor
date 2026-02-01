@@ -75,16 +75,16 @@ export function BalanceCard({
                 All
               </TabsTrigger>
               <TabsTrigger 
-                value="3m"
-                className="data-[state=active]:bg-white data-[state=active]:text-primary text-xs px-3"
-              >
-                3M
-              </TabsTrigger>
-              <TabsTrigger 
                 value="1y"
                 className="data-[state=active]:bg-white data-[state=active]:text-primary text-xs px-3"
               >
                 1Y
+              </TabsTrigger>
+              <TabsTrigger 
+                value="3m"
+                className="data-[state=active]:bg-white data-[state=active]:text-primary text-xs px-3"
+              >
+                3M
               </TabsTrigger>
             </TabsList>
           </Tabs>
