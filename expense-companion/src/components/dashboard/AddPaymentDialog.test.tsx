@@ -624,10 +624,21 @@ describe('AddPaymentDialog', () => {
       
       await user.click(screen.getByRole('option', { name: 'food' }));
 
+      // Wait for combobox to close and form to be ready
+      await waitFor(() => {
+        expect(screen.queryByRole('option', { name: 'food' })).not.toBeInTheDocument();
+      });
+
       // Note: Date picker interaction is complex in test environment due to Calendar component
       // We'll verify the form submission preserves the initial date (Feb 1, 2026)
       // The date picker shows the default date
       expect(screen.getByText(/Feb 1, 2026/i)).toBeInTheDocument();
+
+      // Wait for the button to be enabled (form validation)
+      await waitFor(() => {
+        const button = screen.getByRole('button', { name: /add & add another/i });
+        expect(button).not.toBeDisabled();
+      });
 
       // Click "Add & Add Another"
       await user.click(screen.getByRole('button', { name: /add & add another/i }));

@@ -352,10 +352,10 @@ describe('Transactions Page', () => {
       const user = userEvent.setup();
       const mockUsePayments = vi.mocked(useApiHooks.usePayments);
       
-      // Mock full page of results
+      // Mock full page of results with unique IDs to avoid React key warnings
       mockUsePayments.mockReturnValue({
         data: { 
-          content: Array(50).fill(mockPayments[0]), 
+          content: Array(50).fill(null).map((_, i) => ({ ...mockPayments[0], id: `${i+1}` })), 
           page: 0, 
           size: 50 
         },
