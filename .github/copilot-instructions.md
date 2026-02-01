@@ -3,6 +3,28 @@
 ## Project Overview
 Personal finance tracking application with multiple frontends (Angular legacy, React companion), dual backend (Java Spring Boot being replaced by Rust Actix), PostgreSQL database, and full observability stack (Prometheus, Grafana, Loki, Tempo). Deployed on Kubernetes via ArgoCD GitOps.
 
+## 🚨 MANDATORY TESTING POLICY
+
+**CRITICAL**: Every code change, feature, or bug fix MUST include appropriate tests. This is non-negotiable.
+
+### Requirements
+1. **Unit Tests**: Always create unit tests for new functions, methods, or business logic
+2. **Integration Tests**: Required for new API endpoints, database operations, or service integrations
+3. **Test Execution**: Run **full test suite** (not just new tests) to verify correctness and non-regression
+4. **Test Coverage**: Aim for meaningful test coverage of happy paths and edge cases
+
+### Workflow
+```
+Implement feature → Write tests → Run tests → Verify passing → Commit
+```
+
+**Never** consider a task complete without:
+- ✅ Tests written and committed
+- ✅ Tests executed successfully
+- ✅ Test output verified
+
+If tests fail, fix the implementation or tests before proceeding.
+
 ## Architecture
 
 ### Service Boundaries
@@ -33,7 +55,14 @@ cargo run                     # Starts on port 8080
 cargo fmt && cargo clippy     # Required before commit (CI checks)
 ```
 
-**Database work**: Always create migrations in [backend-rust/migrations/](backend-rust/migrations/) with naming `YYYYMMDDHHMMSS_description.sql`. Use `sqlx::query!` macro (compile-time checked SQL).
+**Testing Workflow**:
+1. Write unit tests in `src/` modules using `#[cfg(test)]` mod tests
+2. Write integration tests in `tests/api/` for HTTP endpoints
+3. Run specific test during development: `cargo test <test_name>`
+4. **Run FULL test suite**: `cargo test` (no filters)
+5. **Verify ALL tests pass** (including existing ones for non-regression) before considering work complete
+
+**Database work**: Always create migrations in [backend-rust/migrations/](backend-rust/migrations/) with naming `YYYYMMDDHHMMSS_description.sql`. Use `sqlx::query!` macro (compile-time checked SQL). Create integration tests that verify migration effects.
 
 ### Frontend Companion
 ```bash
@@ -42,6 +71,14 @@ npm run dev                   # Vite dev server on port 5173
 npm test                      # Vitest with React Testing Library
 npm run lint                  # ESLint check
 ```
+
+**Testing Workflow**:
+1. Write unit tests for utilities and hooks in `*.test.ts(x)` files
+2. Write component tests using React Testing Library
+3. Test user interactions, not implementation details
+4. Run tests during development: `npm run test:watch`
+5. **Run FULL test suite**: `npm test` (no filters)
+6. **Verify ALL tests pass** (including existing ones for non-regression) before completing work
 
 **Environment**: Never commit `.env.local`. Production defaults are ARG in [Dockerfile](expense-companion/Dockerfile#L3-L8). For local dev, copy `.env.example` and override `VITE_API_BASE_URL=http://localhost:8080`.
 
@@ -76,12 +113,21 @@ npm run lint                  # ESLint check
 **Add new API endpoint**: 
 1. Create route function in [backend-rust/src/routes/](backend-rust/src/routes/)
 2. Register in [startup.rs](backend-rust/src/startup.rs#L86-L95) routes
-3. Add test in [backend-rust/tests/api/](backend-rust/tests/api/) using `spawn_app()` helper
-4. Update frontend API client in [expense-companion/src/lib/api.ts](expense-companion/src/lib/api.ts)
+3. **MANDATORY**: Update OpenAPI specification in [docs/openapi.yaml](docs/openapi.yaml) with new endpoint, request/response schemas, status codes
+4. **MANDATORY**: Add integration test in [backend-rust/tests/api/](backend-rust/tests/api/) using `spawn_app()` helper
+   - Test happy path (200/201 responses)
+   - Test validation errors (400 responses)
+   - Test edge cases
+5. **Run FULL test suite**: Execute `cargo test` (no filters) and verify ALL tests pass
+6. Update frontend API client in [expense-companion/src/lib/api.ts](expense-companion/src/lib/api.ts)
+7. **Add frontend tests**: Test API client integration and component usage
+8. **Run FULL frontend suite**: Execute `npm test` and verify all pass
 
 **Database migration**: Run [scripts/init_db.sh](backend-rust/scripts/init_db.sh) to apply migrations. CI uses `cargo sqlx prepare` to cache query metadata.
 
 **CORS issues**: Add origins in [startup.rs](backend-rust/src/startup.rs#L62-L75) allowed_origin() calls. Localhost ports for dev, production domains for prod.
+
+**Update REST API**: Any change to REST endpoints (new endpoint, modified request/response, status codes) MUST be documented in [docs/openapi.yaml](docs/openapi.yaml). Keep specification in sync with implementation.
 
 ## Observability
 
@@ -92,9 +138,36 @@ npm run lint                  # ESLint check
 
 ## Testing Strategy
 
-- **Backend**: Integration tests in [tests/api/](backend-rust/tests/api/) spin up real Postgres with test DB per test
-- **Frontend**: Vitest for unit tests, focus on business logic. UI component tests use Testing Library
-- **E2E**: Not currently implemented (future consideration)
+### Backend (Rust)
+- **Integration tests** in [tests/api/](backend-rust/tests/api/) spin up real Postgres with test DB per test
+- **Unit tests** within modules using `#[cfg(test)]` for business logic, domain validations, utilities
+- **Test structure**: Use `spawn_app()` helper from [tests/api/helpers.rs](backend-rust/tests/api/helpers.rs) for integration tests
+- **Coverage**: Every route handler must have integration test, every domain model validation must have unit test
+- **Execution**: Run `cargo test` (full suite, no filters) after every change to verify non-regression
+
+### Frontend (React)
+- **Vitest** for unit tests, focus on business logic and hooks
+- **React Testing Library** for component tests (user behavior, not implementation)
+- **Test location**: Co-locate tests with source (e.g., `Component.test.tsx` next to `Component.tsx`)
+- **Coverage**: Test user interactions, state changes, API integration, error handling
+- **Execution**: Run `npm test` (full suite, no filters) after every change to verify non-regression
+
+### Test-First Mindset
+When implementing new features:
+1. Write failing test first (optional but recommended)
+2. Implement feature
+3. **Run test and verify it passes**
+4. Refactor if needed
+5. **Re-run tests**
+
+### E2E
+Not currently implemented (future consideration)
+
+### When to Skip Tests
+**NEVER**. Even small changes need verification. Minimal acceptable test:
+- For bug fix: Test that reproduces bug + verifies fix
+- For new function: Test happy path
+- For new endpoint: Test successful request/response
 
 ## Warnings
 
@@ -102,4 +175,6 @@ npm run lint                  # ESLint check
 ⚠️ **Schema prefix required** - All queries must use `expenses.table_name`  
 ⚠️ **Token refresh critical** - Frontend has automatic refresh; backend validates JWT on every request  
 ⚠️ **CORS must match exactly** - Protocol, domain, and port all checked  
-⚠️ **Sqlx requires DATABASE_URL** - Set for local dev or use `sqlx prepare` offline mode
+⚠️ **Sqlx requires DATABASE_URL** - Set for local dev or use `sqlx prepare` offline mode  
+⚠️ **Tests are MANDATORY** - No code changes without tests. Run FULL test suite (no filters) to ensure non-regression  
+⚠️ **OpenAPI must be updated** - Any REST API change requires updating [docs/openapi.yaml](docs/openapi.yaml)
