@@ -463,7 +463,7 @@ async fn update_payment_returns_200() {
     // Assert
     assert_eq!(200, update_response.status().as_u16());
     let update_json: serde_json::Value = update_response.json().await.unwrap();
-    
+
     assert_eq!(update_json["description"], "updated description");
     assert_eq!(update_json["category"], "transport");
     assert_eq!(update_json["amountInCents"], -7500);
@@ -538,7 +538,7 @@ async fn update_payment_with_tags_replaces_tags() {
     // Assert
     assert_eq!(200, update_response.status().as_u16());
     let update_json: serde_json::Value = update_response.json().await.unwrap();
-    
+
     let updated_tags = update_json["tags"].as_array().unwrap();
     assert_eq!(1, updated_tags.len(), "Should have only 1 tag after update");
     assert_eq!(updated_tags[0]["key"], "new_tag");
@@ -552,7 +552,7 @@ async fn update_payment_with_tags_replaces_tags() {
     .fetch_all(&app.db_pool)
     .await
     .unwrap();
-    
+
     assert_eq!(1, final_tags.len());
     assert_eq!(final_tags[0].key, "new_tag");
     assert_eq!(final_tags[0].value, "new_value");

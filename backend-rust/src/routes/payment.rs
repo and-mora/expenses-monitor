@@ -316,10 +316,7 @@ pub async fn update_payment(
     }
 }
 
-#[tracing::instrument(
-    name = "Updating payment in database",
-    skip(payment, connection_pool)
-)]
+#[tracing::instrument(name = "Updating payment in database", skip(payment, connection_pool))]
 async fn update_payment_query(
     payment: &Payment,
     payment_id: Uuid,
