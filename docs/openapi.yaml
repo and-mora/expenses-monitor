@@ -164,6 +164,74 @@ paths:
           $ref: '#/components/responses/InternalServerError'
 
   /api/payments/{paymentId}:
+    put:
+      tags:
+        - Payments
+      summary: Update a payment
+      description: |
+        Update an existing payment by its ID. All fields must be provided (full replacement).
+        
+        **Features:**
+        - Replace all payment fields (merchant, amount, category, date, description, wallet)
+        - Replace tags: existing tags are removed and new ones are inserted
+        - Amount sign change: converts expenses to income or vice versa
+        - Wallet reassignment: change the wallet associated with the payment
+        
+        **Validation:**
+        - Merchant name required (1-255 chars)
+        - Amount in cents cannot be zero
+        - Category required (1-100 chars)
+        - Accounting date required (ISO 8601 format)
+        - Wallet name must exist in the database
+      operationId: updatePayment
+      parameters:
+        - name: paymentId
+          in: path
+          description: UUID of the payment to update
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 550e8400-e29b-41d4-a716-446655440000
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentUpdate'
+      responses:
+        '200':
+          description: Payment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Payment or wallet not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                paymentNotFound:
+                  summary: Payment not found
+                  value:
+                    code: "404"
+                    detail: "Payment not found"
+                walletNotFound:
+                  summary: Wallet not found
+                  value:
+                    code: "400"
+                    detail: "Wallet not found"
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
     delete:
       tags:
         - Payments
@@ -473,6 +541,56 @@ components:
         tags:
           type: array
           description: Optional key-value metadata tags
+          items:
+            $ref: '#/components/schemas/Tag'
+
+    PaymentUpdate:
+      type: object
+      required:
+        - merchantName
+        - amountInCents
+        - category
+        - accountingDate
+        - wallet
+      properties:
+        merchantName:
+          type: string
+          description: Name of the merchant or payee
+          minLength: 1
+          maxLength: 255
+          example: Amazon
+        amountInCents:
+          type: integer
+          format: int32
+          description: |
+            Payment amount in cents.
+            - Positive values represent income
+            - Negative values represent expenses
+            - Cannot be zero
+          example: -5499
+        category:
+          type: string
+          description: Payment category
+          minLength: 1
+          maxLength: 100
+          example: Shopping
+        accountingDate:
+          type: string
+          format: date-time
+          description: Date and time when the transaction occurred (ISO 8601 format)
+          example: "2026-01-22T10:30:00"
+        description:
+          type: string
+          description: Optional notes or description
+          maxLength: 1000
+          example: Monthly subscription
+        wallet:
+          type: string
+          description: Name of the wallet this payment belongs to (must exist in database)
+          example: Credit Card
+        tags:
+          type: array
+          description: Optional key-value metadata tags (replaces existing tags)
           items:
             $ref: '#/components/schemas/Tag'
 
