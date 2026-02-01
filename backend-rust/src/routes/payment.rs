@@ -217,6 +217,157 @@ async fn delete_payment_query(connection_pool: &PgPool, payment_id: Uuid) -> Res
     Ok(())
 }
 
+#[tracing::instrument(
+    name = "Updating a payment",
+    skip(path, payload, connection_pool),
+    fields(
+        payment_id = %path.clone(),
+        merchant_name = %payload.merchant_name,
+        category = %payload.category
+    )
+)]
+pub async fn update_payment(
+    path: web::Path<Uuid>,
+    payload: Json<PaymentDto>,
+    connection_pool: web::Data<PgPool>,
+) -> impl Responder {
+    let payment_id = path.into_inner();
+    let tags = payload.0.tags.clone();
+    let wallet_name_input = payload.0.wallet.clone();
+
+    // Audit log: log payment modification
+    tracing::info!("Updating payment with id: {}", payment_id);
+
+    // Resolve wallet_id from wallet name
+    let wallet_id = if let Some(name) = &wallet_name_input {
+        match get_wallet_id_by_name(name, connection_pool.deref()).await {
+            Ok(Some(id)) => Some(id),
+            Ok(None) => {
+                tracing::error!("Wallet not found: {}", name);
+                return HttpResponse::BadRequest().body(format!("Wallet '{}' not found", name));
+            }
+            Err(e) => {
+                tracing::error!("Failed to lookup wallet: {:?}", e);
+                return HttpResponse::InternalServerError().finish();
+            }
+        }
+    } else {
+        None
+    };
+
+    // Create payment with resolved wallet_id
+    let payment_data = payload.0;
+    let payment = match Payment::try_from_dto(payment_data, wallet_id) {
+        Ok(payment) => payment,
+        Err(_) => return HttpResponse::BadRequest().finish(),
+    };
+
+    // Update payment in database
+    match update_payment_query(&payment, payment_id, connection_pool.deref()).await {
+        Ok(_) => {
+            // Delete existing tags
+            if let Err(e) = delete_payment_tags(payment_id, connection_pool.deref()).await {
+                tracing::error!("Failed to delete existing tags: {:?}", e);
+                return HttpResponse::InternalServerError().finish();
+            }
+
+            // Insert new tags if provided
+            if let Some(tags) = tags {
+                if let Err(e) = insert_payment_tags(payment_id, tags, connection_pool.deref()).await
+                {
+                    tracing::error!("Failed to insert tags: {:?}", e);
+                    return HttpResponse::InternalServerError().finish();
+                }
+            }
+
+            // Fetch wallet name if wallet_id is provided
+            let wallet_name = if let Some(wid) = wallet_id {
+                get_wallet_name(wid, connection_pool.deref())
+                    .await
+                    .ok()
+                    .flatten()
+            } else {
+                None
+            };
+
+            // Fetch tags for response
+            let response_tags = get_payment_tags(payment_id, connection_pool.deref())
+                .await
+                .unwrap_or_default();
+
+            let response = PaymentResponseDto {
+                id: payment_id,
+                description: payment.description.as_ref().to_string(),
+                amount_in_cents: payment.amount_in_cents,
+                merchant_name: payment.merchant_name.as_ref().to_string(),
+                accounting_date: payment.accounting_date,
+                category: payment.category.as_ref().to_string(),
+                wallet: wallet_name,
+                tags: response_tags,
+            };
+
+            tracing::info!("Successfully updated payment: {}", payment_id);
+            HttpResponse::Ok().json(response)
+        }
+        Err(e) => {
+            tracing::error!("Failed to update payment: {:?}", e);
+            HttpResponse::InternalServerError().finish()
+        }
+    }
+}
+
+#[tracing::instrument(
+    name = "Updating payment in database",
+    skip(payment, connection_pool)
+)]
+async fn update_payment_query(
+    payment: &Payment,
+    payment_id: Uuid,
+    connection_pool: &PgPool,
+) -> Result<(), Error> {
+    sqlx::query!(
+        r#"
+        UPDATE expenses.payments
+        SET category = $1,
+            description = $2,
+            merchant_name = $3,
+            accounting_date = $4,
+            amount = $5,
+            wallet_id = $6
+        WHERE id = $7
+        "#,
+        payment.category.as_ref(),
+        payment.description.as_ref(),
+        payment.merchant_name.as_ref(),
+        payment.accounting_date,
+        payment.amount_in_cents,
+        payment.wallet_id,
+        payment_id
+    )
+    .execute(connection_pool)
+    .await
+    .map_err(|e| {
+        tracing::error!("Failed to execute update query: {:?}", e);
+        e
+    })?;
+    Ok(())
+}
+
+#[tracing::instrument(name = "Deleting payment tags", skip(connection_pool))]
+async fn delete_payment_tags(payment_id: Uuid, connection_pool: &PgPool) -> Result<(), Error> {
+    sqlx::query!(
+        "DELETE FROM expenses.payments_tags WHERE payment_id = $1",
+        payment_id
+    )
+    .execute(connection_pool)
+    .await
+    .map_err(|e| {
+        tracing::error!("Failed to delete payment tags: {:?}", e);
+        e
+    })?;
+    Ok(())
+}
+
 /*
  categories
 */

@@ -1,6 +1,7 @@
 import type { 
   Payment, 
-  PaymentCreate, 
+  PaymentCreate,
+  PaymentUpdate, 
   Wallet, 
   WalletCreate, 
   Balance,
@@ -272,6 +273,23 @@ class ApiClient {
       return;
     }
     await this.fetch(`/api/payments/${id}`, { method: 'DELETE' });
+  }
+
+  async updatePayment(id: string, payment: PaymentUpdate): Promise<Payment> {
+    console.log('[API] Updating payment:', id, 'with data:', JSON.stringify(payment, null, 2));
+    
+    if (USE_MOCK_DATA) {
+      const index = mockPayments.findIndex(p => p.id === id);
+      if (index > -1) {
+        mockPayments[index] = { ...payment, id };
+      }
+      console.log('[API] Mock payment updated:', mockPayments[index]);
+      return mockPayments[index];
+    }
+    return this.fetch<Payment>(`/api/payments/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payment),
+    });
   }
 
   // Wallets
