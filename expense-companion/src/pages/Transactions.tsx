@@ -242,15 +242,25 @@ const Transactions = () => {
                 
                 {/* Show page numbers */}
                 {(() => {
+                  // Calculate total possible pages based on current page and data
+                  // We know there's at least currentPage + 1 pages, and potentially more if we have PAGE_SIZE items
+                  const knownPages = currentPage + 1 + (payments.length === PAGE_SIZE ? 1 : 0);
+                  
                   // Show up to 5 page numbers centered around current page
                   const maxPagesToShow = 5;
-                  const startPage = Math.max(0, currentPage - Math.floor(maxPagesToShow / 2));
-                  const pagesToShow = maxPagesToShow;
+                  const totalPages = Math.max(knownPages, currentPage + 1);
+                  const pagesToShow = Math.min(maxPagesToShow, totalPages);
+                  
+                  // Center the current page in the visible range
+                  let startPage = Math.max(0, currentPage - Math.floor(pagesToShow / 2));
+                  // Adjust if we're at the end
+                  startPage = Math.min(startPage, Math.max(0, totalPages - pagesToShow));
                   
                   return [...Array(pagesToShow)].map((_, i) => {
                     const pageNum = startPage + i;
+                    // Use stable index-based key to avoid duplicates during re-renders
                     return (
-                      <PaginationItem key={`page-${pageNum}`}>
+                      <PaginationItem key={`page-btn-${i}`}>
                         <PaginationLink
                           onClick={() => handlePageChange(pageNum)}
                           isActive={pageNum === currentPage}
