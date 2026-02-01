@@ -104,39 +104,39 @@ describe('Dashboard Page', () => {
       data: mockBalance,
       isLoading: false,
       error: null,
-    } as any);
+    } as ReturnType<typeof useApiHooks.useBalance>);
 
     vi.mocked(useApiHooks.useRecentPayments).mockReturnValue({
       data: mockRecentPayments,
       isLoading: false,
       error: null,
-    } as any);
+    } as ReturnType<typeof useApiHooks.useRecentPayments>);
 
     vi.mocked(useApiHooks.useWallets).mockReturnValue({
       data: mockWallets,
       isLoading: false,
       error: null,
-    } as any);
+    } as ReturnType<typeof useApiHooks.useWallets>);
 
     vi.mocked(useApiHooks.useCreatePayment).mockReturnValue({
       mutateAsync: vi.fn(),
       isPending: false,
-    } as any);
+    } as ReturnType<typeof useApiHooks.useCreatePayment>);
 
     vi.mocked(useApiHooks.useDeletePayment).mockReturnValue({
       mutateAsync: vi.fn(),
       isPending: false,
-    } as any);
+    } as ReturnType<typeof useApiHooks.useDeletePayment>);
 
     vi.mocked(useApiHooks.useCreateWallet).mockReturnValue({
       mutateAsync: vi.fn(),
       isPending: false,
-    } as any);
+    } as ReturnType<typeof useApiHooks.useCreateWallet>);
 
     vi.mocked(useApiHooks.useDeleteWallet).mockReturnValue({
       mutateAsync: vi.fn(),
       isPending: false,
-    } as any);
+    } as ReturnType<typeof useApiHooks.useDeleteWallet>);
   });
 
   describe('Balance Display', () => {
@@ -187,7 +187,7 @@ describe('Dashboard Page', () => {
         data: { totalInCents: 0 },
         isLoading: false,
         error: null,
-      } as any);
+      } as ReturnType<typeof useApiHooks.useBalance>);
 
       render(<Dashboard />, { wrapper: createWrapper() });
 
@@ -201,7 +201,7 @@ describe('Dashboard Page', () => {
         data: { totalInCents: -10000 },
         isLoading: false,
         error: null,
-      } as any);
+      } as ReturnType<typeof useApiHooks.useBalance>);
 
       render(<Dashboard />, { wrapper: createWrapper() });
 
@@ -216,7 +216,7 @@ describe('Dashboard Page', () => {
         data: undefined,
         isLoading: false,
         error: null,
-      } as any);
+      } as ReturnType<typeof useApiHooks.useBalance>);
 
       render(<Dashboard />, { wrapper: createWrapper() });
 
@@ -249,14 +249,14 @@ describe('Dashboard Page', () => {
         data: recentTransactionsWithDifferentSum,
         isLoading: false,
         error: null,
-      } as any);
+      } as ReturnType<typeof useApiHooks.useRecentPayments>);
 
       // Total balance is much larger due to historical transactions
       vi.mocked(useApiHooks.useBalance).mockReturnValue({
         data: { totalInCents: 1000000 }, // €10,000
         isLoading: false,
         error: null,
-      } as any);
+      } as ReturnType<typeof useApiHooks.useBalance>);
 
       render(<Dashboard />, { wrapper: createWrapper() });
 
@@ -323,19 +323,19 @@ describe('Dashboard Page', () => {
         data: undefined,
         isLoading: true,
         error: null,
-      } as any);
+      } as ReturnType<typeof useApiHooks.useBalance>);
 
       vi.mocked(useApiHooks.useRecentPayments).mockReturnValue({
         data: undefined,
         isLoading: true,
         error: null,
-      } as any);
+      } as ReturnType<typeof useApiHooks.useRecentPayments>);
 
       vi.mocked(useApiHooks.useWallets).mockReturnValue({
         data: undefined,
         isLoading: true,
         error: null,
-      } as any);
+      } as ReturnType<typeof useApiHooks.useWallets>);
 
       render(<Dashboard />, { wrapper: createWrapper() });
 
@@ -359,7 +359,7 @@ describe('Dashboard Page', () => {
         data: [],
         isLoading: false,
         error: null,
-      } as any);
+      } as ReturnType<typeof useApiHooks.useWallets>);
 
       render(<Dashboard />, { wrapper: createWrapper() });
 

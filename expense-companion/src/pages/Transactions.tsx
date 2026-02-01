@@ -51,7 +51,8 @@ const Transactions = () => {
 
   // Filter payments based on search and filters
   const filteredPayments = useMemo(() => {
-    return payments.filter((payment: Payment) => {
+    const paymentsArray = paymentsData?.content || [];
+    return paymentsArray.filter((payment: Payment) => {
       // Search filter (merchant name or description)
       const searchLower = searchQuery.toLowerCase();
       const matchesSearch = 
@@ -71,7 +72,7 @@ const Transactions = () => {
 
       return matchesSearch && matchesCategory && matchesWallet;
     });
-  }, [payments, searchQuery, selectedCategory, selectedWallet]);
+  }, [paymentsData?.content, searchQuery, selectedCategory, selectedWallet]);
 
   const handleCreatePayment = async (data: Parameters<typeof createPayment.mutate>[0]) => {
     try {
@@ -241,16 +242,32 @@ const Transactions = () => {
                 
                 {/* Show page numbers */}
                 {(() => {
-                  const startPage = Math.max(0, currentPage - 1);
-                  const totalPages = Math.min(5, currentPage + 3);
-                  return [...Array(totalPages)].map((_, i) => {
+                  // Calculate total possible pages based on current page and data
+                  // We know there's at least currentPage + 1 pages, and potentially more if we have PAGE_SIZE items
+                  const knownPages = currentPage + 1 + (payments.length === PAGE_SIZE ? 1 : 0);
+                  
+                  // Show up to 5 page numbers centered around current page
+                  const maxPagesToShow = 5;
+                  const totalPages = Math.max(knownPages, currentPage + 1);
+                  const pagesToShow = Math.min(maxPagesToShow, totalPages);
+                  
+                  // Center the current page in the visible range
+                  let startPage = Math.max(0, currentPage - Math.floor(pagesToShow / 2));
+                  // Adjust if we're at the end
+                  startPage = Math.min(startPage, Math.max(0, totalPages - pagesToShow));
+                  
+                  return [...Array(pagesToShow)].map((_, i) => {
                     const pageNum = startPage + i;
+                    // Include currentPage in key to avoid collisions during page transitions
                     return (
-                      <PaginationItem key={`page-${pageNum}`}>
+                      <PaginationItem key={`pagination-current${currentPage}-page${pageNum}`}>
                         <PaginationLink
                           onClick={() => handlePageChange(pageNum)}
                           isActive={pageNum === currentPage}
                           className="cursor-pointer"
+                          aria-label={`Go to page ${pageNum + 1}`}
+                          aria-current={pageNum === currentPage ? 'page' : undefined}
+                          role="button"
                         >
                           {pageNum + 1}
                         </PaginationLink>

@@ -624,10 +624,21 @@ describe('AddPaymentDialog', () => {
       
       await user.click(screen.getByRole('option', { name: 'food' }));
 
+      // Wait for combobox to close and form to be ready
+      await waitFor(() => {
+        expect(screen.queryByRole('option', { name: 'food' })).not.toBeInTheDocument();
+      });
+
       // Note: Date picker interaction is complex in test environment due to Calendar component
       // We'll verify the form submission preserves the initial date (Feb 1, 2026)
       // The date picker shows the default date
       expect(screen.getByText(/Feb 1, 2026/i)).toBeInTheDocument();
+
+      // Wait for the button to be enabled (form validation)
+      await waitFor(() => {
+        const button = screen.getByRole('button', { name: /add & add another/i });
+        expect(button).not.toBeDisabled();
+      });
 
       // Click "Add & Add Another"
       await user.click(screen.getByRole('button', { name: /add & add another/i }));
@@ -645,6 +656,218 @@ describe('AddPaymentDialog', () => {
 
       // The date should be preserved (should still show Feb 1, 2026)
       expect(screen.getByText(/Feb 1, 2026/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('Keyboard Navigation', () => {
+    it('should support Tab key navigation through form fields', async () => {
+      const user = userEvent.setup();
+      render(
+        <AddPaymentDialog 
+          wallets={mockWallets} 
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      // Open dialog
+      await user.click(screen.getByRole('button', { name: /add transaction/i }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Tab through form fields and verify focus order
+      // Note: Both Expense and Income buttons are focusable
+      await user.tab();
+      expect(screen.getByRole('button', { name: /income/i })).toHaveFocus();
+
+      await user.tab();
+      expect(screen.getByPlaceholderText('0.00')).toHaveFocus();
+
+      await user.tab();
+      const dateButton = screen.getByRole('button', { name: /^date$/i });
+      expect(dateButton).toHaveFocus();
+
+      await user.tab();
+      expect(screen.getByPlaceholderText(/supermarket/i)).toHaveFocus();
+
+      await user.tab();
+      expect(screen.getByRole('combobox', { name: /category/i })).toHaveFocus();
+    });
+
+    it('should submit form with Enter key when valid', async () => {
+      const user = userEvent.setup();
+      render(
+        <AddPaymentDialog 
+          wallets={mockWallets} 
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      // Open dialog
+      await user.click(screen.getByRole('button', { name: /add transaction/i }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Fill merchant name
+      const merchantInput = screen.getByPlaceholderText(/supermarket/i);
+      await user.type(merchantInput, 'Test Store');
+
+      // Fill amount
+      const amountInput = screen.getByPlaceholderText('0.00');
+      await user.type(amountInput, '50.00');
+
+      // Select category with keyboard
+      const categoryButton = screen.getByRole('combobox', { name: /category/i });
+      await user.click(categoryButton);
+      
+      await waitFor(() => {
+        expect(screen.getByRole('option', { name: 'food' })).toBeInTheDocument();
+      });
+
+      await user.keyboard('{ArrowDown}');
+      await user.keyboard('{Enter}');
+
+      // Focus the submit button and press Enter
+      const submitButton = screen.getByRole('button', { name: /^add transaction$/i, exact: false });
+      submitButton.focus();
+      await user.keyboard('{Enter}');
+
+      await waitFor(() => {
+        expect(mockOnSubmit).toHaveBeenCalledWith(
+          expect.objectContaining({
+            merchantName: 'Test Store',
+            amountInCents: -5000,
+            // Category could be any of the available categories
+          })
+        );
+      });
+    });
+
+    it('should close dialog with Escape key', async () => {
+      const user = userEvent.setup();
+      render(
+        <AddPaymentDialog 
+          wallets={mockWallets} 
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      // Open dialog
+      await user.click(screen.getByRole('button', { name: /add transaction/i }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Press Escape key
+      await user.keyboard('{Escape}');
+
+      await waitFor(() => {
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      });
+    });
+
+    it('should navigate category combobox with arrow keys', async () => {
+      const user = userEvent.setup();
+      render(
+        <AddPaymentDialog 
+          wallets={mockWallets} 
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      // Open dialog
+      await user.click(screen.getByRole('button', { name: /add transaction/i }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Open category combobox
+      const categoryButton = screen.getByRole('combobox', { name: /category/i });
+      await user.click(categoryButton);
+
+      await waitFor(() => {
+        expect(screen.getByRole('option', { name: 'food' })).toBeInTheDocument();
+      });
+
+      // Verify combobox is expanded
+      expect(categoryButton).toHaveAttribute('aria-expanded', 'true');
+
+      // Navigate with arrow keys
+      await user.keyboard('{ArrowDown}');
+      await user.keyboard('{ArrowDown}');
+
+      // Select with Enter
+      await user.keyboard('{Enter}');
+
+      await waitFor(() => {
+        expect(categoryButton).toHaveAttribute('aria-expanded', 'false');
+      });
+    });
+
+    it('should trap focus within modal dialog', async () => {
+      const user = userEvent.setup();
+      render(
+        <AddPaymentDialog 
+          wallets={mockWallets} 
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      // Open dialog
+      await user.click(screen.getByRole('button', { name: /add transaction/i }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Get first and last interactive elements
+      const closeButton = screen.getByRole('button', { name: /close/i });
+
+      // Tab through several elements
+      for (let i = 0; i < 15; i++) {
+        await user.tab();
+      }
+
+      // Focus should be trapped and remain within dialog
+      const focusedElement = document.activeElement;
+      expect(focusedElement).toBeInstanceOf(HTMLElement);
+      
+      // Verify focus is still within the dialog
+      const dialog = screen.getByRole('dialog');
+      expect(dialog.contains(focusedElement)).toBe(true);
+    });
+
+    it('should support Shift+Tab for reverse navigation', async () => {
+      const user = userEvent.setup();
+      render(
+        <AddPaymentDialog 
+          wallets={mockWallets} 
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      // Open dialog
+      await user.click(screen.getByRole('button', { name: /add transaction/i }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Tab forward twice
+      await user.tab(); // Income button
+      await user.tab(); // Amount input
+      
+      const amountInput = screen.getByPlaceholderText('0.00');
+      expect(amountInput).toHaveFocus();
+
+      // Shift+Tab to go back
+      await user.tab({ shift: true });
+      expect(screen.getByRole('button', { name: /income/i })).toHaveFocus();
     });
   });
 });

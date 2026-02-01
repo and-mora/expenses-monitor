@@ -22,7 +22,7 @@ interface AllTheProvidersProps {
   children: React.ReactNode;
 }
 
-function AllTheProviders({ children }: AllTheProvidersProps) {
+export function AllTheProviders({ children }: AllTheProvidersProps) {
   const queryClient = createTestQueryClient();
 
   return (
@@ -41,6 +41,7 @@ function customRender(
   return render(ui, { wrapper: AllTheProviders, ...options });
 }
 
-// Re-export everything
+/* eslint-disable react-refresh/only-export-components */
+// Re-export everything from testing-library
 export * from '@testing-library/react';
 export { customRender as render };

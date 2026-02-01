@@ -102,29 +102,29 @@ describe('Transactions Page', () => {
       data: { content: mockPayments, page: 0, size: 50 },
       isLoading: false,
       error: null,
-    } as any);
+    } as ReturnType<typeof useApiHooks.usePayments>);
 
     vi.mocked(useApiHooks.useWallets).mockReturnValue({
       data: mockWallets,
       isLoading: false,
       error: null,
-    } as any);
+    } as ReturnType<typeof useApiHooks.useWallets>);
 
     vi.mocked(useApiHooks.useCategories).mockReturnValue({
       data: mockCategories,
       isLoading: false,
       error: null,
-    } as any);
+    } as ReturnType<typeof useApiHooks.useCategories>);
 
     vi.mocked(useApiHooks.useCreatePayment).mockReturnValue({
       mutateAsync: vi.fn(),
       isPending: false,
-    } as any);
+    } as ReturnType<typeof useApiHooks.useCreatePayment>);
 
     vi.mocked(useApiHooks.useDeletePayment).mockReturnValue({
       mutateAsync: vi.fn(),
       isPending: false,
-    } as any);
+    } as ReturnType<typeof useApiHooks.useDeletePayment>);
   });
 
   describe('Rendering', () => {
@@ -352,16 +352,16 @@ describe('Transactions Page', () => {
       const user = userEvent.setup();
       const mockUsePayments = vi.mocked(useApiHooks.usePayments);
       
-      // Mock full page of results
+      // Mock full page of results with unique IDs to avoid React key warnings
       mockUsePayments.mockReturnValue({
         data: { 
-          content: Array(50).fill(mockPayments[0]), 
+          content: Array(50).fill(null).map((_, i) => ({ ...mockPayments[0], id: `${i+1}` })), 
           page: 0, 
           size: 50 
         },
         isLoading: false,
         error: null,
-      } as any);
+      } as ReturnType<typeof useApiHooks.usePayments>);
 
       render(<Transactions />, { wrapper: createWrapper() });
 
@@ -388,7 +388,7 @@ describe('Transactions Page', () => {
         data: { content: mockPayments, page: 0, size: 50 },
         isLoading: false,
         error: null,
-      } as any);
+      } as ReturnType<typeof useApiHooks.usePayments>);
 
       render(<Transactions />, { wrapper: createWrapper() });
 
@@ -404,7 +404,7 @@ describe('Transactions Page', () => {
         data: { content: [], page: 0, size: 50 },
         isLoading: false,
         error: null,
-      } as any);
+      } as ReturnType<typeof useApiHooks.usePayments>);
 
       render(<Transactions />, { wrapper: createWrapper() });
 
@@ -421,7 +421,7 @@ describe('Transactions Page', () => {
         data: undefined,
         isLoading: true,
         error: null,
-      } as any);
+      } as ReturnType<typeof useApiHooks.usePayments>);
 
       render(<Transactions />, { wrapper: createWrapper() });
 
