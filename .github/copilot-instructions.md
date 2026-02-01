@@ -78,7 +78,8 @@ npm run lint                  # ESLint check
 3. Test user interactions, not implementation details
 4. Run tests during development: `npm run test:watch`
 5. **Run FULL test suite**: `npm test` (no filters)
-6. **Verify ALL tests pass** (including existing ones for non-regression) before completing work
+6. **Run linter**: `npm run lint` and fix all errors before commit
+7. **Verify ALL tests pass and NO lint errors** (including existing ones for non-regression) before completing work
 
 **Environment**: Never commit `.env.local`. Production defaults are ARG in [Dockerfile](expense-companion/Dockerfile#L3-L8). For local dev, copy `.env.example` and override `VITE_API_BASE_URL=http://localhost:8080`.
 
@@ -101,6 +102,57 @@ npm run lint                  # ESLint check
 - **API client**: Centralized in [src/lib/api.ts](expense-companion/src/lib/api.ts) with mock data fallback
 - **Routing**: All routes in [App.tsx](expense-companion/src/App.tsx#L32-L35), wrapped in `<AuthGuard>`
 
+### UI/UX Consistency Guidelines
+
+**CRITICAL**: Every new frontend feature MUST maintain visual and behavioral consistency with existing components.
+
+#### Toast Notifications
+- **Library**: Use **Sonner only** (`import { toast } from 'sonner'`) for all toast notifications
+- **Never mix**: Do not use shadcn/ui `useToast` hook - causes inconsistent positioning and styling
+- **Success toasts**: `toast.success("Message")` - appears top-center with green styling
+- **Error toasts**: `toast.error("Message")` - appears top-center with red styling
+- **Info toasts**: `toast.info("Message")` - appears top-center with blue styling
+- **Reference**: See [Dashboard.tsx](expense-companion/src/components/dashboard/Dashboard.tsx) and [EditPaymentDialog.tsx](expense-companion/src/components/dashboard/EditPaymentDialog.tsx) for correct usage
+
+#### Icon Consistency
+- **Library**: Use **lucide-react** exclusively for icons
+- **Size**: Standard icon size is `h-4 w-4` (16px) for inline icons, `h-5 w-5` (20px) for buttons
+- **Colors**: Use theme colors via Tailwind classes (e.g., `text-primary`, `text-muted-foreground`, `text-destructive`)
+- **Interactive states**: Add hover effects consistently (e.g., `hover:text-primary` for clickable icons)
+- **Spacing**: Use consistent spacing around icons (`mr-2` for icon-before-text, `ml-2` for icon-after-text)
+
+#### Button Styles
+- **Primary actions**: `<Button variant="default">` (blue background)
+- **Secondary actions**: `<Button variant="outline">` (border with transparent bg)
+- **Destructive actions**: `<Button variant="destructive">` (red background)
+- **Ghost actions**: `<Button variant="ghost">` (no background, hover effect)
+- **Sizes**: Use `size="sm"` for compact UIs, `size="default"` for standard forms, `size="lg"` for prominent CTAs
+
+#### Modal/Dialog Patterns
+- **Mobile-first**: Use `Sheet` component for mobile-friendly modals that slide from bottom/side
+- **Desktop dialogs**: Use `Dialog` for desktop-centric modals that appear centered
+- **Responsive**: Prefer `Sheet` for forms and actions that benefit from full-screen mobile experience
+- **Close behavior**: Always include close button and handle Escape key
+- **Reference**: See [EditPaymentDialog.tsx](expense-companion/src/components/dashboard/EditPaymentDialog.tsx) for Sheet usage
+
+#### Form Validation Feedback
+- **Inline errors**: Show validation errors below input fields using `<FormMessage>` from shadcn/ui
+- **Toast for actions**: Use toast notifications for form submission success/failure, not inline
+- **Error style**: Red text (`text-destructive`) with clear error message
+- **Required fields**: Mark with asterisk (*) or "Required" label
+
+#### Color Palette
+- **Stick to theme**: Use Tailwind theme colors defined in [tailwind.config.js](expense-companion/tailwind.config.js)
+- **Semantic colors**: `primary` (blue), `destructive` (red), `success` (green), `muted` (gray)
+- **Avoid hardcoded colors**: Do not use arbitrary values like `#FF0000`, use theme colors instead
+
+#### Before Implementing New UI
+1. **Search existing components**: Check if similar UI already exists in codebase
+2. **Reuse patterns**: Copy styling and behavior from existing components (e.g., if adding toast, check existing toast usage)
+3. **Verify libraries**: Confirm you're using the same libraries as existing code (Sonner for toasts, lucide-react for icons)
+4. **Test cross-component**: Verify your new UI doesn't clash with existing components on the same page
+5. **Responsive check**: Test on mobile (viewport < 768px) and desktop to ensure consistent experience
+
 ### Database Schema
 - Schema name: `expenses` (not public)
 - Money stored as `amount_in_cents` (INTEGER) to avoid floating point issues
@@ -121,7 +173,8 @@ npm run lint                  # ESLint check
 5. **Run FULL test suite**: Execute `cargo test` (no filters) and verify ALL tests pass
 6. Update frontend API client in [expense-companion/src/lib/api.ts](expense-companion/src/lib/api.ts)
 7. **Add frontend tests**: Test API client integration and component usage
-8. **Run FULL frontend suite**: Execute `npm test` and verify all pass
+8. **Run linter**: Execute `npm run lint` and fix all errors
+9. **Run FULL frontend suite**: Execute `npm test` and verify all pass
 
 **Database migration**: Run [scripts/init_db.sh](backend-rust/scripts/init_db.sh) to apply migrations. CI uses `cargo sqlx prepare` to cache query metadata.
 
@@ -150,6 +203,7 @@ npm run lint                  # ESLint check
 - **React Testing Library** for component tests (user behavior, not implementation)
 - **Test location**: Co-locate tests with source (e.g., `Component.test.tsx` next to `Component.tsx`)
 - **Coverage**: Test user interactions, state changes, API integration, error handling
+- **Linting**: Run `npm run lint` after every change - fix all errors and warnings before commit
 - **Execution**: Run `npm test` (full suite, no filters) after every change to verify non-regression
 
 ### Test-First Mindset
@@ -177,4 +231,5 @@ Not currently implemented (future consideration)
 ⚠️ **CORS must match exactly** - Protocol, domain, and port all checked  
 ⚠️ **Sqlx requires DATABASE_URL** - Set for local dev or use `sqlx prepare` offline mode  
 ⚠️ **Tests are MANDATORY** - No code changes without tests. Run FULL test suite (no filters) to ensure non-regression  
+⚠️ **Linting is MANDATORY** - Frontend changes require `npm run lint` with zero errors before commit  
 ⚠️ **OpenAPI must be updated** - Any REST API change requires updating [docs/openapi.yaml](docs/openapi.yaml)

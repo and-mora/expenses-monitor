@@ -1,0 +1,54 @@
+### Simplified workflow of Deploy on VM, dedicated mainly to database which do not required to build a dedicated image
+
+name: Deploy DB
+
+on:
+  workflow_dispatch:
+    inputs:
+      enabled:
+        required: false
+        type: string
+        default: true
+      version:
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      enabled:
+        required: true
+        type: string
+        default: false
+    secrets:
+      VM_HOST:
+        required: true
+      VM_USERNAME:
+        required: true
+      VM_PRIVATE_KEY:
+        required: true
+      VM_PORT:
+        required: true
+
+jobs:
+  k8sDeploy:
+    name: k8sDeploy
+    runs-on: ubuntu-latest
+    if: inputs.enabled == 'true'
+    environment: prod
+    steps:
+      - name: 'Deploy on k8s'
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 #v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME }}
+          key: ${{ secrets.VM_PRIVATE_KEY }}
+          port: ${{ secrets.VM_PORT }}
+          fingerprint: ${{ secrets.HOST_FINGERPRINT }}
+          script: |
+            mkdir -p expenses-monitor/database/k8s && cd expenses-monitor/database/k8s
+            wget -O Chart.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/database/k8s/helm/Chart.yaml
+            wget -O values.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/${{ inputs.version }}/database/k8s/helm/values.yaml
+            helm dependency build
+            helm upgrade --install postgresql charts/* -f values.yaml --wait --timeout 300s

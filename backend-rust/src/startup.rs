@@ -1,7 +1,7 @@
 use crate::configuration::Settings;
 use crate::routes::{
     create_payment, create_wallet, delete_payment, delete_wallet, get_balance, get_categories,
-    get_recent_payments, get_wallets, greet, health_check, metrics,
+    get_recent_payments, get_wallets, greet, health_check, metrics, update_payment,
 };
 use crate::telemetry::init_meter;
 use actix_cors::Cors;
@@ -70,7 +70,7 @@ pub fn run(
             .allowed_origin("http://127.0.0.1:3000")
             .allowed_origin("https://expenses.expmonitor.freeddns.org") // Production frontend
             .allowed_origin("https://expmonitor.freeddns.org") // Legacy frontend (if still in use)
-            .allowed_methods(vec!["GET", "POST", "DELETE", "OPTIONS"])
+            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
             .allowed_headers(vec![
                 http::header::AUTHORIZATION,
                 http::header::ACCEPT,
@@ -88,6 +88,7 @@ pub fn run(
             .route("/greet", web::get().to(greet))
             .route("/api/payments", web::get().to(get_recent_payments))
             .route("/api/payments", web::post().to(create_payment))
+            .route("/api/payments/{id}", web::put().to(update_payment))
             .route("/api/payments/{id}", web::delete().to(delete_payment))
             .route("/api/balance", web::get().to(get_balance))
             .route("/api/wallets", web::get().to(get_wallets))
