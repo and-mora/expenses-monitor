@@ -76,6 +76,14 @@ impl TestApp {
             .expect("Failed to execute request.")
     }
 
+    pub async fn get_balance_with_query(&self, query: &str) -> reqwest::Response {
+        reqwest::Client::new()
+            .get(&format!("{}/api/balance{}", &self.address, query))
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
+
     pub async fn create_wallet(&self, body: &str) -> reqwest::Response {
         reqwest::Client::new()
             .post(&format!("{}/api/wallets", &self.address))
