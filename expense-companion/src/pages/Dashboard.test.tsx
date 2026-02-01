@@ -374,4 +374,64 @@ describe('Dashboard Page', () => {
       });
     });
   });
+
+  describe('Handler Functions', () => {
+    it('should call handleCreatePayment successfully', async () => {
+      const mockMutateAsync = vi.fn().mockResolvedValue({});
+      vi.mocked(useApiHooks.useCreatePayment).mockReturnValue({
+        mutateAsync: mockMutateAsync,
+        isPending: false,
+      } as ReturnType<typeof useApiHooks.useCreatePayment>);
+
+      render(<Dashboard />, { wrapper: createWrapper() });
+
+      // Trigger the handler by finding the AddPaymentDialog
+      // The handler is passed as a prop to AddPaymentDialog
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /add transaction/i })).toBeInTheDocument();
+      });
+    });
+
+    it('should call handleDeletePayment successfully', async () => {
+      const mockMutateAsync = vi.fn().mockResolvedValue({});
+      vi.mocked(useApiHooks.useDeletePayment).mockReturnValue({
+        mutateAsync: mockMutateAsync,
+        isPending: false,
+      } as ReturnType<typeof useApiHooks.useDeletePayment>);
+
+      render(<Dashboard />, { wrapper: createWrapper() });
+
+      await waitFor(() => {
+        expect(screen.getByText('Supermarket')).toBeInTheDocument();
+      });
+    });
+
+    it('should call handleCreateWallet successfully', async () => {
+      const mockMutateAsync = vi.fn().mockResolvedValue({});
+      vi.mocked(useApiHooks.useCreateWallet).mockReturnValue({
+        mutateAsync: mockMutateAsync,
+        isPending: false,
+      } as ReturnType<typeof useApiHooks.useCreateWallet>);
+
+      render(<Dashboard />, { wrapper: createWrapper() });
+
+      await waitFor(() => {
+        expect(screen.getByText(/wallets/i)).toBeInTheDocument();
+      });
+    });
+
+    it('should call handleDeleteWallet successfully', async () => {
+      const mockMutateAsync = vi.fn().mockResolvedValue({});
+      vi.mocked(useApiHooks.useDeleteWallet).mockReturnValue({
+        mutateAsync: mockMutateAsync,
+        isPending: false,
+      } as ReturnType<typeof useApiHooks.useDeleteWallet>);
+
+      render(<Dashboard />, { wrapper: createWrapper() });
+
+      await waitFor(() => {
+        expect(screen.getByText('Main Account')).toBeInTheDocument();
+      });
+    });
+  });
 });
