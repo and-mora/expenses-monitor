@@ -45,6 +45,7 @@ const categoryColors: Record<string, string> = {
 interface TransactionListProps {
   payments: Payment[];
   onDelete?: (id: string) => void;
+  onEdit?: boolean; // Enable edit functionality
   isDeleting?: boolean;
   className?: string;
 }
@@ -52,6 +53,7 @@ interface TransactionListProps {
 export function TransactionList({ 
   payments, 
   onDelete, 
+  onEdit = false,
   isDeleting,
   className 
 }: TransactionListProps) {
@@ -62,9 +64,9 @@ export function TransactionList({
       <CardHeader className="pb-3">
         <CardTitle className="text-lg font-semibold">Recent Transactions</CardTitle>
       </CardHeader>
-      <CardContent className="p-0">
+      <CardContent className="px-3 py-0">
         <ScrollArea className="h-[400px]">
-          <div className="px-6 pb-6 space-y-1">
+          <div className="pb-6 space-y-1">
             {payments.length === 0 ? (
               <div className="py-12 text-center text-muted-foreground">
                 <CircleDot className="h-12 w-12 mx-auto mb-3 opacity-40" />
@@ -77,7 +79,7 @@ export function TransactionList({
                   key={payment.id} 
                   payment={payment} 
                   onDelete={onDelete}
-                  onEdit={setEditingPayment}
+                  onEdit={onEdit ? setEditingPayment : undefined}
                   isDeleting={isDeleting}
                   style={{ animationDelay: `${index * 30}ms` }}
                 />
@@ -86,13 +88,15 @@ export function TransactionList({
           </div>
         </ScrollArea>
       </CardContent>
-      <EditPaymentDialog
-        key={editingPayment?.id}
-        payment={editingPayment}
-        open={!!editingPayment}
-        onOpenChange={(open) => !open && setEditingPayment(null)}
-        onSave={() => setEditingPayment(null)}
-      />
+      {onEdit && (
+        <EditPaymentDialog
+          key={editingPayment?.id}
+          payment={editingPayment}
+          open={!!editingPayment}
+          onOpenChange={(open) => !open && setEditingPayment(null)}
+          onSave={() => setEditingPayment(null)}
+        />
+      )}
     </Card>
   );
 }

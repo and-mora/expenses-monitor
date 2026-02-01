@@ -149,4 +149,17 @@ export const handlers = [
     mockWallets.splice(index, 1);
     return new HttpResponse(null, { status: 204 });
   }),
+
+  // Update payment
+  http.put(`${API_BASE_URL}/api/payments/:id`, async ({ params, request }) => {
+    const { id } = params;
+    const body = await request.json() as Partial<Payment>;
+    const index = mockPayments.findIndex(p => p.id === id);
+    if (index === -1) {
+      return new HttpResponse(null, { status: 404 });
+    }
+    const updatedPayment = { ...mockPayments[index], ...body, id: id as string };
+    mockPayments[index] = updatedPayment;
+    return HttpResponse.json(updatedPayment, { status: 200 });
+  }),
 ];
