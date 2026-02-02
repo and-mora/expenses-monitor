@@ -243,8 +243,8 @@ async fn create_payment_with_empty_description_returns_200() {
 
     assert_eq!(saved.category.unwrap(), "test");
     assert_eq!(saved.amount.unwrap(), -200);
-    // Should have default value
-    assert_eq!(saved.description.unwrap(), "No description");
+    // Should be NULL when description is empty
+    assert!(saved.description.is_none());
 }
 
 #[tokio::test]
@@ -275,8 +275,8 @@ async fn create_payment_without_description_returns_200() {
 
     assert_eq!(saved.category.unwrap(), "food");
     assert_eq!(saved.amount.unwrap(), -300);
-    // Should have default value
-    assert_eq!(saved.description.unwrap(), "No description");
+    // Should be NULL when description is missing
+    assert!(saved.description.is_none());
 }
 
 #[tokio::test]

@@ -1,3 +1,6 @@
+<!-- STATUS: COMPLETED - 2026-02-02 -->
+<!-- TESTED: ✅ Backend (44/44 tests pass) | ⚠️ Frontend (406/417 tests pass - 11 failing in unrelated tests) -->
+
 # Plan: Feature Modifica Transazione ✅ COMPLETATO
 
 Implementazione della funzionalità di modifica transazioni, accessibile sia dalla Dashboard (transazioni recenti) che dalla futura pagina Transactions globale. Include editing di tutti i campi e gestione tags.

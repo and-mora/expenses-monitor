@@ -1,3 +1,6 @@
+<!-- STATUS: COMPLETED -->
+<!-- NOTE: Questo prompt ha guidato modifiche iniziali. Alcune features sono state completate in altri prompt successivi. -->
+
 # Plan: Modifiche Frontend Expense-Companion
 
 Tre miglioramenti per expense-companion: correzione bug reset data, nuova pagina Transactions con filtri, e fix calcolo bilancio corretto dalla homepage.

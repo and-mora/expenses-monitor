@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 // domain model
 pub struct Payment {
-    pub description: PaymentDescription,
+    pub description: Option<PaymentDescription>,
     pub category: PaymentCategory,
     pub amount_in_cents: i32,
     pub merchant_name: PaymentMerchant,
