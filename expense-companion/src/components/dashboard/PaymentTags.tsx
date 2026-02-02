@@ -33,9 +33,10 @@ interface PaymentTagsProps {
   tags: Tag[];
   maxVisible?: number;
   className?: string;
+  variant?: 'compact' | 'full'; // compact: show only key, full: show key: value
 }
 
-export function PaymentTags({ tags, maxVisible = 3, className }: PaymentTagsProps) {
+export function PaymentTags({ tags, maxVisible = 3, className, variant = 'compact' }: PaymentTagsProps) {
   if (!tags || tags.length === 0) return null;
 
   const visibleTags = tags.slice(0, maxVisible);
@@ -46,7 +47,7 @@ export function PaymentTags({ tags, maxVisible = 3, className }: PaymentTagsProp
     <TooltipProvider delayDuration={300}>
       <div className={cn("flex items-center gap-1 flex-wrap", className)}>
         {visibleTags.map((tag) => (
-          <TagBadge key={`${tag.key}-${tag.value}`} tag={tag} />
+          <TagBadge key={`${tag.key}-${tag.value}`} tag={tag} variant={variant} />
         ))}
         
         {hasHiddenTags && (
@@ -85,10 +86,12 @@ export function PaymentTags({ tags, maxVisible = 3, className }: PaymentTagsProp
 
 interface TagBadgeProps {
   tag: Tag;
+  variant?: 'compact' | 'full';
 }
 
-function TagBadge({ tag }: TagBadgeProps) {
+function TagBadge({ tag, variant = 'compact' }: TagBadgeProps) {
   const colorClass = tagColorVariants[getTagColorIndex(tag.key)];
+  const displayText = variant === 'full' ? `${tag.key}: ${tag.value}` : tag.key;
   const fullDescription = `${tag.key}: ${tag.value}`;
   
   return (
@@ -99,16 +102,19 @@ function TagBadge({ tag }: TagBadgeProps) {
             variant="outline"
             className={cn(
               "text-[10px] px-1.5 py-0 h-5 cursor-default font-medium border transition-colors",
+              variant === 'full' && "h-auto py-0.5",
               colorClass
             )}
           >
-            {tag.key}
+            {displayText}
           </Badge>
         </div>
       </TooltipTrigger>
-      <TooltipContent side="top" className="max-w-[200px]">
-        <p className="text-xs wrap-break-word">{fullDescription}</p>
-      </TooltipContent>
+      {variant === 'compact' && (
+        <TooltipContent side="top" className="max-w-[200px]">
+          <p className="text-xs wrap-break-word">{fullDescription}</p>
+        </TooltipContent>
+      )}
     </Tooltip>
   );
 }

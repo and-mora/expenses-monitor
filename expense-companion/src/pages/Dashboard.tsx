@@ -63,10 +63,10 @@ const Dashboard = () => {
   const isLoading = paymentsLoading || walletsLoading;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <Header className="border-b bg-card/80 backdrop-blur-xs sticky top-0 z-50" />
       
-      <main className="container px-4 py-6 md:px-6 md:py-8">
+      <main className="container px-4 py-6 pb-20 md:px-6 md:py-8 md:pb-8">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
@@ -114,6 +114,8 @@ const Dashboard = () => {
                 payments={payments}
                 onDelete={handleDeletePayment}
                 isDeleting={deletePayment.isPending}
+                variant="compact"
+                title="Recent Transactions"
               />
             )}
           </div>

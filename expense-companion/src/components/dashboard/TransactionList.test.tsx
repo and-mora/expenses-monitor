@@ -48,6 +48,34 @@ describe('TransactionList', () => {
     expect(screen.getByText('Gas Station')).toBeInTheDocument();
   });
 
+  it('should hide title when title prop is null', () => {
+    render(<TransactionList payments={mockPayments} title={null} />);
+
+    expect(screen.queryByText('Recent Transactions')).not.toBeInTheDocument();
+    expect(screen.getByText('Grocery Store')).toBeInTheDocument();
+  });
+
+  it('should show custom title when provided', () => {
+    render(<TransactionList payments={mockPayments} title="All Transactions" />);
+
+    expect(screen.getByText('All Transactions')).toBeInTheDocument();
+    expect(screen.queryByText('Recent Transactions')).not.toBeInTheDocument();
+  });
+
+  it('should hide title when title prop is null', () => {
+    render(<TransactionList payments={mockPayments} title={null} />);
+
+    expect(screen.queryByText('Recent Transactions')).not.toBeInTheDocument();
+    expect(screen.getByText('Grocery Store')).toBeInTheDocument();
+  });
+
+  it('should show custom title when provided', () => {
+    render(<TransactionList payments={mockPayments} title="All Transactions" />);
+
+    expect(screen.queryByText('Recent Transactions')).not.toBeInTheDocument();
+    expect(screen.getByText('All Transactions')).toBeInTheDocument();
+  });
+
   it('should display empty state when no payments', () => {
     render(<TransactionList payments={[]} />);
 
@@ -227,5 +255,180 @@ describe('TransactionList', () => {
 
     expect(screen.getByText('Store')).toBeInTheDocument();
     // Should still render with fallback icon/color
+  });
+
+  describe('Title prop', () => {
+    it('should show default title when title prop not provided', () => {
+      render(<TransactionList payments={mockPayments} />);
+
+      expect(screen.getByText('Recent Transactions')).toBeInTheDocument();
+    });
+
+    it('should show custom title when provided', () => {
+      render(<TransactionList payments={mockPayments} title="My Custom Title" />);
+
+      expect(screen.getByText('My Custom Title')).toBeInTheDocument();
+      expect(screen.queryByText('Recent Transactions')).not.toBeInTheDocument();
+    });
+
+    it('should hide header when title is null', () => {
+      render(<TransactionList payments={mockPayments} title={null} />);
+
+      expect(screen.queryByText('Recent Transactions')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Detailed variant with expandable cards', () => {
+    it('should show wallet and precise date in detailed variant', () => {
+      render(<TransactionList payments={mockPayments} variant="detailed" />);
+
+      // Should show wallet names (all 3 payments have "Main Account")
+      const walletElements = screen.getAllByText('Main Account');
+      expect(walletElements).toHaveLength(3);
+      
+      // Should show precise dates (YYYY-MM-DD format)
+      expect(screen.getByText('2026-01-30')).toBeInTheDocument();
+      expect(screen.getByText('2026-01-28')).toBeInTheDocument();
+      expect(screen.getByText('2026-01-29')).toBeInTheDocument();
+    });
+
+    it('should not show wallet and precise date in compact variant', () => {
+      render(<TransactionList payments={mockPayments} variant="compact" />);
+
+      // Wallet name should not be visible (it's in the data but not displayed)
+      const walletElements = screen.queryAllByText('Main Account');
+      expect(walletElements).toHaveLength(0);
+      
+      // Precise dates should not be visible
+      expect(screen.queryByText('2026-01-30')).not.toBeInTheDocument();
+    });
+
+    it('should expand card when clicked in detailed variant', async () => {
+      const user = userEvent.setup();
+      
+      render(<TransactionList payments={mockPayments} variant="detailed" />);
+
+      // Initially, expanded content should not be visible
+      expect(screen.queryByText('Description')).not.toBeInTheDocument();
+      expect(screen.queryByText('Weekly groceries')).not.toBeInTheDocument();
+
+      // Click on the first transaction
+      const firstTransaction = screen.getByText('Grocery Store').closest('div')?.parentElement;
+      expect(firstTransaction).toBeInTheDocument();
+      await user.click(firstTransaction!);
+
+      // Expanded content should now be visible
+      await waitFor(() => {
+        expect(screen.getByText('Description')).toBeInTheDocument();
+        expect(screen.getByText('Weekly groceries')).toBeInTheDocument();
+      });
+    });
+
+    it('should show all tags when card is expanded', async () => {
+      const user = userEvent.setup();
+      
+      render(<TransactionList payments={mockPayments} variant="detailed" />);
+
+      // Click on transaction with tags
+      const transactionWithTags = screen.getByText('Gas Station').closest('div')?.parentElement;
+      await user.click(transactionWithTags!);
+
+      // Should show Tags section with full tag display (key: value)
+      await waitFor(() => {
+        expect(screen.getByText('Tags')).toBeInTheDocument();
+        // Tags are shown in full format with both key and value
+        expect(screen.getByText('vehicle: car')).toBeInTheDocument();
+        expect(screen.getByText('trip: work')).toBeInTheDocument();
+      });
+    });
+
+    it('should show transaction ID when card is expanded', async () => {
+      const user = userEvent.setup();
+      
+      render(<TransactionList payments={mockPayments} variant="detailed" />);
+
+      // Click on first transaction
+      const firstTransaction = screen.getByText('Grocery Store').closest('div')?.parentElement;
+      await user.click(firstTransaction!);
+
+      // Should show transaction ID
+      await waitFor(() => {
+        expect(screen.getByText('Transaction ID')).toBeInTheDocument();
+        expect(screen.getByText('1')).toBeInTheDocument();
+      });
+    });
+
+    it('should collapse card when clicked again', async () => {
+      const user = userEvent.setup();
+      
+      render(<TransactionList payments={mockPayments} variant="detailed" />);
+
+      // Expand card
+      const firstTransaction = screen.getByText('Grocery Store').closest('div')?.parentElement;
+      await user.click(firstTransaction!);
+      
+      await waitFor(() => {
+        expect(screen.getByText('Description')).toBeInTheDocument();
+      });
+
+      // Collapse card by clicking again
+      await user.click(firstTransaction!);
+      
+      await waitFor(() => {
+        expect(screen.queryByText('Description')).not.toBeInTheDocument();
+      });
+    });
+
+    it('should only allow one card to be expanded at a time', async () => {
+      const user = userEvent.setup();
+      
+      render(<TransactionList payments={mockPayments} variant="detailed" />);
+
+      // Expand first card
+      const firstTransaction = screen.getByText('Grocery Store').closest('div')?.parentElement;
+      await user.click(firstTransaction!);
+      
+      await waitFor(() => {
+        expect(screen.getByText('Weekly groceries')).toBeInTheDocument();
+      });
+
+      // Expand second card
+      const secondTransaction = screen.getByText('Salary').closest('div')?.parentElement;
+      await user.click(secondTransaction!);
+      
+      await waitFor(() => {
+        expect(screen.getByText('Monthly salary')).toBeInTheDocument();
+      });
+
+      // First card should be collapsed now
+      expect(screen.queryByText('Weekly groceries')).not.toBeInTheDocument();
+    });
+
+    it('should show chevron icon for expandable cards', () => {
+      render(<TransactionList payments={mockPayments} variant="detailed" />);
+
+      // Should have chevron down icons (cards not expanded)
+      const chevronButtons = screen.getAllByRole('button').filter(btn => {
+        const svg = btn.querySelector('svg');
+        return svg?.classList.contains('lucide-chevron-down');
+      });
+
+      // Should have 3 expandable cards (all have descriptions or tags)
+      expect(chevronButtons.length).toBeGreaterThan(0);
+    });
+
+    it('should not be expandable in compact variant', async () => {
+      const user = userEvent.setup();
+      
+      render(<TransactionList payments={mockPayments} variant="compact" />);
+
+      // Click on transaction
+      const firstTransaction = screen.getByText('Grocery Store').closest('div');
+      await user.click(firstTransaction!);
+
+      // Should not show expanded content
+      expect(screen.queryByText('Description')).not.toBeInTheDocument();
+      expect(screen.queryByText('Weekly groceries')).not.toBeInTheDocument();
+    });
   });
 });
