@@ -36,6 +36,8 @@ async fn get_balance_returns_correct_amount() {
     assert_eq!(200, response.status().as_u16());
     let balance: BalanceResponse = response.json().await.unwrap();
     assert_eq!(-500, balance.total_in_cents);
+    assert_eq!(500, balance.income_in_cents);
+    assert_eq!(-1000, balance.expenses_in_cents);
 }
 
 #[tokio::test]
@@ -50,4 +52,6 @@ async fn get_balance_returns_zero_when_no_payments() {
     assert_eq!(200, response.status().as_u16());
     let balance: BalanceResponse = response.json().await.unwrap();
     assert_eq!(0, balance.total_in_cents);
+    assert_eq!(0, balance.income_in_cents);
+    assert_eq!(0, balance.expenses_in_cents);
 }

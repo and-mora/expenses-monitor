@@ -72,9 +72,28 @@ paths:
     get:
       tags:
         - Balance
-      summary: Get current balance
-      description: Returns the total balance calculated as the sum of all payment amounts
+      summary: Get current balance with optional date filtering
+      description: |
+        Returns the total balance, income, and expenses calculated from payments.
+        Optionally filter by date range using startDate and/or endDate parameters.
       operationId: getBalance
+      parameters:
+        - name: startDate
+          in: query
+          description: Filter payments from this date (inclusive, format YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2025-01-01"
+        - name: endDate
+          in: query
+          description: Filter payments up to this date (inclusive, format YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2025-12-31"
       responses:
         '200':
           description: Current balance retrieved successfully
@@ -429,14 +448,28 @@ components:
       type: object
       required:
         - totalInCents
+        - incomeInCents
+        - expensesInCents
       properties:
         totalInCents:
           type: integer
           format: int32
-          description: Total balance in cents (sum of all payment amounts)
+          description: Total balance in cents (sum of all payment amounts = income + expenses)
           example: 125000
+        incomeInCents:
+          type: integer
+          format: int32
+          description: Total income in cents (sum of all positive payment amounts)
+          example: 200000
+        expensesInCents:
+          type: integer
+          format: int32
+          description: Total expenses in cents (sum of all negative payment amounts, represented as negative value)
+          example: -75000
       example:
         totalInCents: 125000
+        incomeInCents: 200000
+        expensesInCents: -75000
 
     Payment:
       type: object

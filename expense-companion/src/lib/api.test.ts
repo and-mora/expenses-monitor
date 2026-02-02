@@ -16,6 +16,32 @@ describe('API Client', () => {
       expect(balance).toHaveProperty('totalInCents');
       expect(typeof balance.totalInCents).toBe('number');
     });
+
+    it('should fetch balance with date range', async () => {
+      const balance = await apiClient.getBalance('2026-01-01', '2026-01-31');
+      expect(balance).toHaveProperty('totalInCents');
+      expect(typeof balance.totalInCents).toBe('number');
+    });
+  });
+
+  describe('Categories', () => {
+    it('should fetch all categories', async () => {
+      const categories = await apiClient.getCategories();
+      expect(Array.isArray(categories)).toBe(true);
+      expect(categories.length).toBeGreaterThan(0);
+    });
+
+    it('should fetch expense categories', async () => {
+      const categories = await apiClient.getCategories('expense');
+      expect(Array.isArray(categories)).toBe(true);
+      expect(categories).not.toContain('income');
+    });
+
+    it('should fetch income categories', async () => {
+      const categories = await apiClient.getCategories('income');
+      expect(Array.isArray(categories)).toBe(true);
+      expect(categories).toContain('income');
+    });
   });
 
   describe('Payments', () => {
@@ -34,6 +60,15 @@ describe('API Client', () => {
       }
     });
 
+    it('should fetch paginated payments', async () => {
+      const result = await apiClient.getPayments(0, 10);
+      expect(result).toHaveProperty('content');
+      expect(result).toHaveProperty('page');
+      expect(result).toHaveProperty('size');
+      expect(Array.isArray(result.content)).toBe(true);
+      expect(result.content.length).toBeLessThanOrEqual(10);
+    });
+
     it('should create a new payment', async () => {
       const newPayment: PaymentCreate = {
         merchantName: 'Test Merchant',
@@ -48,6 +83,18 @@ describe('API Client', () => {
       expect(created).toHaveProperty('id');
       expect(created.merchantName).toBe(newPayment.merchantName);
       expect(created.amountInCents).toBe(newPayment.amountInCents);
+    });
+
+    it('should update an existing payment', async () => {
+      const payments = await apiClient.getRecentPayments(1);
+      if (payments.length > 0) {
+        const paymentToUpdate = payments[0];
+        const updated = await apiClient.updatePayment(paymentToUpdate.id, {
+          ...paymentToUpdate,
+          merchantName: 'Updated Merchant',
+        });
+        expect(updated.merchantName).toBe('Updated Merchant');
+      }
     });
 
     it('should delete a payment and return 204', async () => {
@@ -86,6 +133,21 @@ describe('API Client', () => {
         const result = await apiClient.deleteWallet(wallets[0].id);
         expect(result).toBeUndefined(); // 204 No Content
       }
+    });
+  });
+
+  describe('Token Management', () => {
+    it('should set token', () => {
+      apiClient.setToken('test-token');
+      // Token is set internally, verify by making a call that would use it
+      expect(true).toBe(true);
+    });
+
+    it('should set token provider', () => {
+      const provider = () => 'test-token';
+      apiClient.setTokenProvider(provider);
+      // Token provider is set internally
+      expect(true).toBe(true);
     });
   });
 

@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/Header';
 import { BalanceCard } from '@/components/dashboard/BalanceCard';
@@ -7,7 +6,6 @@ import { AddPaymentDialog } from '@/components/dashboard/AddPaymentDialog';
 import { SpendingChart } from '@/components/dashboard/SpendingChart';
 import { WalletList } from '@/components/dashboard/WalletList';
 import { 
-  useBalance, 
   useRecentPayments, 
   useWallets, 
   useCreatePayment, 
@@ -18,7 +16,6 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 
 const Dashboard = () => {
-  const { data: balance, isLoading: balanceLoading } = useBalance();
   const { data: payments = [], isLoading: paymentsLoading } = useRecentPayments();
   const { data: wallets = [], isLoading: walletsLoading } = useWallets();
   
@@ -26,21 +23,6 @@ const Dashboard = () => {
   const deletePayment = useDeletePayment();
   const createWallet = useCreateWallet();
   const deleteWallet = useDeleteWallet();
-
-  // Calculate income and expenses from recent transactions (for "Recent Activity" stats)
-  // Total balance comes from the API's /api/balance endpoint
-  const { incomeInCents, expensesInCents } = useMemo(() => {
-    const income = payments
-      .filter(p => p.amountInCents > 0)
-      .reduce((sum, p) => sum + p.amountInCents, 0);
-    const expenses = payments
-      .filter(p => p.amountInCents < 0)
-      .reduce((sum, p) => sum + p.amountInCents, 0);
-    return { incomeInCents: income, expensesInCents: expenses };
-  }, [payments]);
-
-  // Use balance from API for total balance
-  const totalInCents = balance?.totalInCents || 0;
 
   const handleCreatePayment = async (data: Parameters<typeof createPayment.mutate>[0]) => {
     try {
@@ -78,7 +60,7 @@ const Dashboard = () => {
     }
   };
 
-  const isLoading = balanceLoading || paymentsLoading || walletsLoading;
+  const isLoading = paymentsLoading || walletsLoading;
 
   return (
     <div className="min-h-screen bg-background">
@@ -111,12 +93,7 @@ const Dashboard = () => {
               </>
             ) : (
               <>
-                <BalanceCard
-                  totalInCents={totalInCents}
-                  currency="EUR"
-                  incomeInCents={incomeInCents}
-                  expensesInCents={expensesInCents}
-                />
+                <BalanceCard currency="EUR" />
                 <WalletList
                   wallets={wallets}
                   onCreateWallet={handleCreateWallet}

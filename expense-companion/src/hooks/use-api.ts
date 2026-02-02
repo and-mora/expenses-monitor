@@ -11,10 +11,10 @@ export const queryKeys = {
 };
 
 // Balance hooks
-export function useBalance() {
+export function useBalance(startDate?: string, endDate?: string) {
   return useQuery({
-    queryKey: queryKeys.balance,
-    queryFn: () => apiClient.getBalance(),
+    queryKey: [...queryKeys.balance, startDate, endDate],
+    queryFn: () => apiClient.getBalance(startDate, endDate),
     staleTime: 30000, // 30 seconds
   });
 }
