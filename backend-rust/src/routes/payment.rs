@@ -507,14 +507,7 @@ pub async fn get_recent_payments(
     let offset = params.page * params.size;
     let filters = PaymentFilters::from(params.deref());
 
-    match get_recent_payments_from_db(
-        connection_pool.deref(),
-        params.size,
-        offset,
-        filters,
-    )
-    .await
-    {
+    match get_recent_payments_from_db(connection_pool.deref(), params.size, offset, filters).await {
         Ok(payments) => {
             let response = PagedResponse {
                 content: payments,
@@ -543,7 +536,7 @@ async fn get_recent_payments_from_db(
     // Build dynamic WHERE clause conditions with proper parameter indexing
     let mut conditions = Vec::new();
     let mut param_index = 3; // Start after limit ($1) and offset ($2)
-    
+
     let date_from_param_idx = if filters.date_from.is_some() {
         let idx = param_index;
         conditions.push(format!("DATE(p.accounting_date) >= ${}::date", idx));
@@ -552,7 +545,7 @@ async fn get_recent_payments_from_db(
     } else {
         None
     };
-    
+
     let date_to_param_idx = if filters.date_to.is_some() {
         let idx = param_index;
         conditions.push(format!("DATE(p.accounting_date) <= ${}::date", idx));
@@ -561,7 +554,7 @@ async fn get_recent_payments_from_db(
     } else {
         None
     };
-    
+
     let category_param_idx = if filters.category.is_some() {
         let idx = param_index;
         conditions.push(format!("p.category = ${}", idx));
@@ -570,7 +563,7 @@ async fn get_recent_payments_from_db(
     } else {
         None
     };
-    
+
     let wallet_param_idx = if filters.wallet.is_some() {
         let idx = param_index;
         conditions.push(format!("w.name = ${}", idx));
@@ -579,10 +572,13 @@ async fn get_recent_payments_from_db(
     } else {
         None
     };
-    
+
     let search_param_idx = if filters.search.is_some() {
         let idx = param_index;
-        conditions.push(format!("(LOWER(p.merchant_name) LIKE ${} OR LOWER(p.description) LIKE ${})", idx, idx));
+        conditions.push(format!(
+            "(LOWER(p.merchant_name) LIKE ${} OR LOWER(p.description) LIKE ${})",
+            idx, idx
+        ));
         Some(idx)
     } else {
         None
@@ -607,15 +603,18 @@ async fn get_recent_payments_from_db(
     );
 
     // Build query with proper parameters in order
-    let mut query = sqlx::query_as::<_, (
-        Uuid,
-        Option<String>,
-        Option<String>,
-        Option<String>,
-        Option<NaiveDateTime>,
-        Option<i32>,
-        Option<String>,
-    )>(&query_str)
+    let mut query = sqlx::query_as::<
+        _,
+        (
+            Uuid,
+            Option<String>,
+            Option<String>,
+            Option<String>,
+            Option<NaiveDateTime>,
+            Option<i32>,
+            Option<String>,
+        ),
+    >(&query_str)
     .bind(limit)
     .bind(offset);
 
