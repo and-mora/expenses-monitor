@@ -110,8 +110,10 @@ paths:
     get:
       tags:
         - Payments
-      summary: Get payments
-      description: Retrieve a paginated list of payments, ordered by accounting date (most recent first)
+      summary: Get payments with filtering
+      description: |
+        Retrieve a paginated list of payments, ordered by accounting date (most recent first).
+        Supports filtering by date range, category, wallet, and search text.
       operationId: getPayments
       parameters:
         - name: page
@@ -131,6 +133,43 @@ paths:
             default: 50
             minimum: 1
             maximum: 1000
+        - name: dateFrom
+          in: query
+          description: Filter payments from this date (inclusive, format YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2023-01-01"
+        - name: dateTo
+          in: query
+          description: Filter payments up to this date (inclusive, format YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2023-12-31"
+        - name: category
+          in: query
+          description: Filter by payment category (exact match)
+          required: false
+          schema:
+            type: string
+            example: "food"
+        - name: wallet
+          in: query
+          description: Filter by wallet name (exact match)
+          required: false
+          schema:
+            type: string
+            example: "Main Account"
+        - name: search
+          in: query
+          description: Search in merchant name or description (case-insensitive partial match)
+          required: false
+          schema:
+            type: string
+            example: "restaurant"
       responses:
         '200':
           description: Paginated list of payments
