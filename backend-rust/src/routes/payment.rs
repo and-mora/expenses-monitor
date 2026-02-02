@@ -33,12 +33,12 @@ pub struct PaymentDto {
 impl Payment {
     fn try_from_dto(dto: PaymentDto, wallet_id: Option<Uuid>) -> Result<Self, String> {
         let category_name = PaymentCategory::parse(dto.category.clone())?;
-        // Use a default value for empty/missing description
-        let description_str = dto
+        // Parse description only if provided and non-empty
+        let description = dto
             .description
             .filter(|s| !s.trim().is_empty())
-            .unwrap_or_else(|| String::from("No description"));
-        let description = PaymentDescription::parse(description_str)?;
+            .map(PaymentDescription::parse)
+            .transpose()?;
         let merchant_name = PaymentMerchant::parse(dto.merchant_name.clone())?;
         Ok(Self {
             description,
@@ -126,7 +126,7 @@ pub async fn create_payment(
 
             let response = PaymentResponseDto {
                 id: payment_id,
-                description: payment.description.as_ref().to_string(),
+                description: payment.description.as_ref().map(|d| d.as_ref().to_string()),
                 amount_in_cents: payment.amount_in_cents,
                 merchant_name: payment.merchant_name.as_ref().to_string(),
                 accounting_date: payment.accounting_date,
@@ -152,7 +152,7 @@ async fn insert_payment(payment: &Payment, connection_pool: &PgPool) -> Result<U
     let row = sqlx::query!(
         "insert into expenses.payments (category, description, merchant_name, accounting_date, amount, wallet_id) values ($1, $2, $3, $4, $5, $6) RETURNING id",
         payment.category.as_ref(),
-        payment.description.as_ref(),
+        payment.description.as_ref().map(|d| d.as_ref()),
         payment.merchant_name.as_ref(),
         payment.accounting_date,
         payment.amount_in_cents,
@@ -297,7 +297,7 @@ pub async fn update_payment(
 
             let response = PaymentResponseDto {
                 id: payment_id,
-                description: payment.description.as_ref().to_string(),
+                description: payment.description.as_ref().map(|d| d.as_ref().to_string()),
                 amount_in_cents: payment.amount_in_cents,
                 merchant_name: payment.merchant_name.as_ref().to_string(),
                 accounting_date: payment.accounting_date,
@@ -334,7 +334,7 @@ async fn update_payment_query(
         WHERE id = $7
         "#,
         payment.category.as_ref(),
-        payment.description.as_ref(),
+        payment.description.as_ref().map(|d| d.as_ref()),
         payment.merchant_name.as_ref(),
         payment.accounting_date,
         payment.amount_in_cents,
@@ -479,7 +479,8 @@ pub struct TagResponseDto {
 #[derive(Serialize)]
 pub struct PaymentResponseDto {
     id: Uuid,
-    description: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    description: Option<String>,
     #[serde(rename = "amountInCents")]
     amount_in_cents: i32,
     #[serde(rename = "merchantName")]
@@ -660,7 +661,7 @@ async fn get_recent_payments_from_db(
 
         result.push(PaymentResponseDto {
             id: payment_id,
-            description: record.2.unwrap_or_default(),
+            description: record.2,
             amount_in_cents: record.5.unwrap_or(0),
             merchant_name: record.3.unwrap_or_default(),
             accounting_date: record.4.unwrap_or_default(),

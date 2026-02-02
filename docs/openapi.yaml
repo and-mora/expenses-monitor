@@ -605,6 +605,7 @@ components:
           type: string
           description: Optional notes or description
           maxLength: 1000
+          nullable: true
           example: Monthly subscription
         wallet:
           type: string
@@ -655,6 +656,7 @@ components:
           type: string
           description: Optional notes or description
           maxLength: 1000
+          nullable: true
           example: Monthly subscription
         wallet:
           type: string
