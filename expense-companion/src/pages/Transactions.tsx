@@ -21,6 +21,14 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import {
   Pagination,
   PaginationContent,
   PaginationItem,
@@ -28,7 +36,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import { Search, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Search, X, Filter, Plus } from 'lucide-react';
 
 const PAGE_SIZE = 50;
 
@@ -39,6 +48,7 @@ const Transactions = () => {
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(0);
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
 
   // Build filters object for API
   const filters = useMemo(() => {
@@ -104,7 +114,18 @@ const Transactions = () => {
     setDateFrom('');
     setDateTo('');
     setCurrentPage(0);
+    setFilterSheetOpen(false);
   };
+
+  // Count active filters (excluding search)
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (selectedCategory !== 'all') count++;
+    if (selectedWallet !== 'all') count++;
+    if (dateFrom) count++;
+    if (dateTo) count++;
+    return count;
+  }, [selectedCategory, selectedWallet, dateFrom, dateTo]);
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
@@ -118,9 +139,9 @@ const Transactions = () => {
     <div className="min-h-screen bg-background overflow-x-hidden">
       <Header className="border-b bg-card/80 backdrop-blur-xs sticky top-0 z-50" />
       
-      <main className="container px-4 py-6 pb-20 md:px-6 md:py-8 md:pb-8 max-w-7xl">
-        {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <main className="container px-4 py-6 pb-24 md:px-6 md:py-8 md:pb-8 max-w-7xl">
+        {/* Page Header - Desktop Only */}
+        <div className="hidden md:flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Transactions</h1>
             <p className="text-muted-foreground mt-1">
@@ -136,10 +157,164 @@ const Transactions = () => {
           )}
         </div>
 
+        {/* Mobile Header - Compact */}
+        <div className="md:hidden mb-4">
+          <h1 className="text-xl font-bold tracking-tight">Transactions</h1>
+        </div>
+
         {/* Filters Section */}
-        <div className="mb-6 space-y-4">
-          {/* Search Bar */}
-          <div className="relative">
+        <div className="mb-4 md:mb-6 space-y-3 md:space-y-4">
+          {/* Mobile: Search Bar + Filter Button */}
+          <div className="flex gap-2 md:hidden">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(0);
+                }}
+                className="pl-9 pr-9"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setCurrentPage(0);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            
+            {/* Filter Sheet Trigger */}
+            <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="default" className="relative" aria-label="Filter transactions">
+                  <Filter className="h-4 w-4" />
+                  {activeFiltersCount > 0 && (
+                    <Badge 
+                      variant="destructive" 
+                      className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                    >
+                      {activeFiltersCount}
+                    </Badge>
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
+                <SheetHeader>
+                  <SheetTitle>Filter Transactions</SheetTitle>
+                  <SheetDescription>
+                    Apply filters to refine your transaction list
+                  </SheetDescription>
+                </SheetHeader>
+                
+                <div className="mt-6 space-y-4">
+                  {/* Category Filter */}
+                  <div className="space-y-2">
+                    <label htmlFor="category-filter" className="text-sm font-medium">Category</label>
+                    <Select
+                      value={selectedCategory}
+                      onValueChange={(value) => {
+                        setSelectedCategory(value);
+                        setCurrentPage(0);
+                      }}
+                    >
+                      <SelectTrigger id="category-filter" aria-label="Category filter">
+                        <SelectValue placeholder="All Categories" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Categories</SelectItem>
+                        {categories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category.charAt(0).toUpperCase() + category.slice(1)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Wallet Filter */}
+                  <div className="space-y-2">
+                    <label htmlFor="wallet-filter" className="text-sm font-medium">Wallet</label>
+                    <Select
+                      value={selectedWallet}
+                      onValueChange={(value) => {
+                        setSelectedWallet(value);
+                        setCurrentPage(0);
+                      }}
+                    >
+                      <SelectTrigger id="wallet-filter" aria-label="Wallet filter">
+                        <SelectValue placeholder="All Wallets" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Wallets</SelectItem>
+                        {wallets.map((wallet) => (
+                          <SelectItem key={wallet.id} value={wallet.name}>
+                            {wallet.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Date From Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">From Date</label>
+                    <Input
+                      type="date"
+                      value={dateFrom}
+                      onChange={(e) => {
+                        setDateFrom(e.target.value);
+                        setCurrentPage(0);
+                      }}
+                    />
+                  </div>
+
+                  {/* Date To Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">To Date</label>
+                    <Input
+                      type="date"
+                      value={dateTo}
+                      onChange={(e) => {
+                        setDateTo(e.target.value);
+                        setCurrentPage(0);
+                      }}
+                    />
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 pt-4">
+                    <Button
+                      variant="outline"
+                      onClick={clearFilters}
+                      className="flex-1"
+                      disabled={!hasActiveFilters}
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Clear
+                    </Button>
+                    <Button
+                      onClick={() => setFilterSheetOpen(false)}
+                      className="flex-1"
+                    >
+                      Apply Filters
+                    </Button>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+
+          {/* Desktop: Full Search Bar */}
+          <div className="relative hidden md:block">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by merchant or description..."
@@ -165,8 +340,8 @@ const Transactions = () => {
             )}
           </div>
 
-          {/* Filter Controls */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          {/* Desktop: Filter Controls */}
+          <div className="hidden md:flex flex-col sm:flex-row gap-3">
             {/* Category Filter */}
             <Select
               value={selectedCategory}
@@ -247,17 +422,38 @@ const Transactions = () => {
           </div>
 
           {/* Results Count */}
-          <div className="text-sm text-muted-foreground">
+          <div className="text-xs md:text-sm text-muted-foreground">
             {isLoading ? (
               <Skeleton className="h-4 w-32" />
             ) : (
               <>
-                Showing {payments.length} transaction
-                {payments.length !== 1 ? 's' : ''} on page {currentPageNumber + 1}
+                <span className="hidden sm:inline">Showing </span>
+                {payments.length} transaction{payments.length !== 1 ? 's' : ''}
+                <span className="hidden sm:inline"> on page {currentPageNumber + 1}</span>
               </>
             )}
           </div>
         </div>
+
+        {/* Mobile Floating Action Button */}
+        {!walletsLoading && wallets.length > 0 && (
+          <div className="md:hidden fixed bottom-20 right-4 z-40">
+            <AddPaymentDialog 
+              wallets={wallets} 
+              onSubmit={handleCreatePayment}
+              isLoading={createPayment.isPending}
+              trigger={
+                <Button 
+                  size="lg" 
+                  className="h-14 w-14 rounded-full shadow-lg"
+                  aria-label="Add transaction"
+                >
+                  <Plus className="h-6 w-6" />
+                </Button>
+              }
+            />
+          </div>
+        )}
 
         {/* Transactions List */}
         {isLoading ? (
@@ -341,7 +537,7 @@ const Transactions = () => {
           </div>
         )}
 
-        {!isLoading && payments.length === 0 && (
+        {!isLoading && payments.length === 0 && !hasActiveFilters && (
           <div className="text-center py-12 text-muted-foreground">
             <p className="text-lg font-medium">No transactions yet</p>
             <p className="text-sm mt-1">Add your first transaction to get started</p>
@@ -353,4 +549,3 @@ const Transactions = () => {
 };
 
 export default Transactions;
-

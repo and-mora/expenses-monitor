@@ -76,9 +76,10 @@ interface AddPaymentDialogProps {
     tags?: Tag[];
   }) => void;
   isLoading?: boolean;
+  trigger?: React.ReactNode;
 }
 
-export function AddPaymentDialog({ wallets, onSubmit, isLoading }: AddPaymentDialogProps) {
+export function AddPaymentDialog({ wallets, onSubmit, isLoading, trigger }: AddPaymentDialogProps) {
   const [open, setOpen] = useState(false);
   const [isExpense, setIsExpense] = useState(true);
   const [tags, setTags] = useState<Tag[]>([]);
@@ -162,10 +163,12 @@ export function AddPaymentDialog({ wallets, onSubmit, isLoading }: AddPaymentDia
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="lg" className="gap-2 shadow-soft">
-          <Plus className="h-5 w-5" />
-          Add Transaction
-        </Button>
+        {trigger || (
+          <Button size="lg" className="gap-2 shadow-soft">
+            <Plus className="h-5 w-5" />
+            Add Transaction
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>

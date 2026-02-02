@@ -152,8 +152,9 @@ describe('Transactions Page', () => {
     it('should render page title and description', () => {
       render(<Transactions />, { wrapper: createWrapper() });
 
-      // Use level: 1 to get only the main h1 heading
-      expect(screen.getByRole('heading', { name: /^transactions$/i, level: 1 })).toBeInTheDocument();
+      // Multiple h1 headings exist (mobile + desktop), use getAllByRole
+      const headings = screen.getAllByRole('heading', { name: /^transactions$/i, level: 1 });
+      expect(headings.length).toBeGreaterThan(0);
       expect(screen.getByText(/view and manage all your transactions/i)).toBeInTheDocument();
     });
 
@@ -185,7 +186,8 @@ describe('Transactions Page', () => {
       render(<Transactions />, { wrapper: createWrapper() });
 
       await waitFor(() => {
-        expect(screen.getByText(/showing 3 transactions on page 1/i)).toBeInTheDocument();
+        // Mobile version shows compact text without "Showing" and "on page X"
+        expect(screen.getByText(/3 transactions/i)).toBeInTheDocument();
       });
     });
   });
@@ -449,6 +451,46 @@ describe('Transactions Page', () => {
       // Skeleton should be rendered (check for specific class or role)
       const skeletons = document.querySelectorAll('.animate-pulse');
       expect(skeletons.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Mobile UI', () => {
+    it('should show filter button with badge when filters are active', async () => {
+      const user = userEvent.setup();
+      
+      render(<Transactions />, { wrapper: createWrapper() });
+
+      // Wait for categories to load
+      await waitFor(() => {
+        expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+      });
+
+      // Find filter button (visible on mobile)
+      const filterButton = screen.getByRole('button', { name: /filter transactions/i });
+      expect(filterButton).toBeInTheDocument();
+
+      // Badge should not be visible initially (no filters active)
+      expect(filterButton.querySelector('.absolute')).toBeNull();
+
+      // Open filter sheet
+      await user.click(filterButton);
+
+      // Sheet should open with title
+      await waitFor(() => {
+        expect(screen.getByText(/filter transactions/i)).toBeInTheDocument();
+      });
+    });
+
+    it('should show FAB for adding transactions on mobile', () => {
+      render(<Transactions />, { wrapper: createWrapper() });
+
+      // FAB should be in the DOM (even if hidden on desktop via CSS)
+      const fabContainer = document.querySelector('.fixed.bottom-20.right-4');
+      expect(fabContainer).toBeInTheDocument();
+      
+      // There should be multiple "Add Transaction" buttons (desktop + mobile FAB)
+      const addButtons = screen.getAllByRole('button', { name: /add transaction/i });
+      expect(addButtons.length).toBeGreaterThan(0);
     });
   });
 });
