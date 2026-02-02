@@ -693,3 +693,284 @@ async fn update_payment_returns_400_for_invalid_data(#[case] invalid_body: &str)
         invalid_body
     );
 }
+
+#[tokio::test]
+async fn get_payments_filters_by_category() {
+    // Arrange
+    let app = spawn_app().await;
+
+    // Create payments with different categories
+    app.post_payment(
+        r#"{
+        "description": "Food expense",
+        "category": "food",
+        "amountInCents": -1000,
+        "merchantName": "Restaurant",
+        "accountingDate": "2023-06-15T00:00:00.000"
+    }"#,
+    )
+    .await;
+
+    app.post_payment(
+        r#"{
+        "description": "Transport expense",
+        "category": "transport",
+        "amountInCents": -500,
+        "merchantName": "Taxi",
+        "accountingDate": "2023-06-15T00:00:00.000"
+    }"#,
+    )
+    .await;
+
+    // Act - Filter by food category
+    let response = app.get_payments("?page=0&size=10&category=food").await;
+
+    // Assert
+    assert_eq!(200, response.status().as_u16());
+    let json: serde_json::Value = response.json().await.unwrap();
+    let content = json["content"].as_array().unwrap();
+    assert_eq!(1, content.len());
+    assert_eq!("food", content[0]["category"]);
+}
+
+#[tokio::test]
+async fn get_payments_filters_by_wallet() {
+    // Arrange
+    let app = spawn_app().await;
+
+    // Create wallets
+    app.post_wallet(r#"{"name": "Cash"}"#).await;
+    app.post_wallet(r#"{"name": "Credit Card"}"#).await;
+
+    // Create payments with different wallets
+    app.post_payment(
+        r#"{
+        "description": "Cash expense",
+        "category": "food",
+        "amountInCents": -1000,
+        "merchantName": "Restaurant",
+        "accountingDate": "2023-06-15T00:00:00.000",
+        "wallet": "Cash"
+    }"#,
+    )
+    .await;
+
+    app.post_payment(
+        r#"{
+        "description": "Card expense",
+        "category": "food",
+        "amountInCents": -2000,
+        "merchantName": "Store",
+        "accountingDate": "2023-06-15T00:00:00.000",
+        "wallet": "Credit Card"
+    }"#,
+    )
+    .await;
+
+    // Act - Filter by Cash wallet
+    let response = app.get_payments("?page=0&size=10&wallet=Cash").await;
+
+    // Assert
+    assert_eq!(200, response.status().as_u16());
+    let json: serde_json::Value = response.json().await.unwrap();
+    let content = json["content"].as_array().unwrap();
+    assert_eq!(1, content.len());
+    assert_eq!("Cash", content[0]["wallet"]);
+}
+
+#[tokio::test]
+async fn get_payments_filters_by_search_merchant() {
+    // Arrange
+    let app = spawn_app().await;
+
+    app.post_payment(
+        r#"{
+        "description": "test",
+        "category": "food",
+        "amountInCents": -1000,
+        "merchantName": "SuperMarket ABC",
+        "accountingDate": "2023-06-15T00:00:00.000"
+    }"#,
+    )
+    .await;
+
+    app.post_payment(
+        r#"{
+        "description": "test",
+        "category": "food",
+        "amountInCents": -500,
+        "merchantName": "Restaurant XYZ",
+        "accountingDate": "2023-06-15T00:00:00.000"
+    }"#,
+    )
+    .await;
+
+    // Act - Search for "market" in merchant name
+    let response = app.get_payments("?page=0&size=10&search=market").await;
+
+    // Assert
+    assert_eq!(200, response.status().as_u16());
+    let json: serde_json::Value = response.json().await.unwrap();
+    let content = json["content"].as_array().unwrap();
+    assert_eq!(1, content.len());
+    assert!(content[0]["merchantName"]
+        .as_str()
+        .unwrap()
+        .to_lowercase()
+        .contains("market"));
+}
+
+#[tokio::test]
+async fn get_payments_filters_by_search_description() {
+    // Arrange
+    let app = spawn_app().await;
+
+    app.post_payment(
+        r#"{
+        "description": "Weekly groceries shopping",
+        "category": "food",
+        "amountInCents": -1000,
+        "merchantName": "Store",
+        "accountingDate": "2023-06-15T00:00:00.000"
+    }"#,
+    )
+    .await;
+
+    app.post_payment(
+        r#"{
+        "description": "Fuel for car",
+        "category": "transport",
+        "amountInCents": -500,
+        "merchantName": "Gas Station",
+        "accountingDate": "2023-06-15T00:00:00.000"
+    }"#,
+    )
+    .await;
+
+    // Act - Search for "groceries" in description
+    let response = app.get_payments("?page=0&size=10&search=groceries").await;
+
+    // Assert
+    assert_eq!(200, response.status().as_u16());
+    let json: serde_json::Value = response.json().await.unwrap();
+    let content = json["content"].as_array().unwrap();
+    assert_eq!(1, content.len());
+    assert!(content[0]["description"]
+        .as_str()
+        .unwrap()
+        .to_lowercase()
+        .contains("groceries"));
+}
+
+#[tokio::test]
+async fn get_payments_filters_by_date_range() {
+    // Arrange
+    let app = spawn_app().await;
+
+    app.post_payment(
+        r#"{
+        "description": "Old payment",
+        "category": "food",
+        "amountInCents": -1000,
+        "merchantName": "Store",
+        "accountingDate": "2023-01-15T00:00:00.000"
+    }"#,
+    )
+    .await;
+
+    app.post_payment(
+        r#"{
+        "description": "Recent payment",
+        "category": "food",
+        "amountInCents": -1500,
+        "merchantName": "Store",
+        "accountingDate": "2023-06-15T00:00:00.000"
+    }"#,
+    )
+    .await;
+
+    app.post_payment(
+        r#"{
+        "description": "Future payment",
+        "category": "food",
+        "amountInCents": -2000,
+        "merchantName": "Store",
+        "accountingDate": "2023-12-15T00:00:00.000"
+    }"#,
+    )
+    .await;
+
+    // Act - Filter by date range (June 2023)
+    let response = app
+        .get_payments("?page=0&size=10&dateFrom=2023-06-01&dateTo=2023-06-30")
+        .await;
+
+    // Assert
+    assert_eq!(200, response.status().as_u16());
+    let json: serde_json::Value = response.json().await.unwrap();
+    let content = json["content"].as_array().unwrap();
+    assert_eq!(1, content.len());
+    assert_eq!("Recent payment", content[0]["description"]);
+}
+
+#[tokio::test]
+async fn get_payments_combines_multiple_filters() {
+    // Arrange
+    let app = spawn_app().await;
+
+    app.post_wallet(r#"{"name": "Main Account"}"#).await;
+
+    app.post_payment(
+        r#"{
+        "description": "Food at restaurant",
+        "category": "food",
+        "amountInCents": -1000,
+        "merchantName": "Restaurant ABC",
+        "accountingDate": "2023-06-15T00:00:00.000",
+        "wallet": "Main Account"
+    }"#,
+    )
+    .await;
+
+    app.post_payment(
+        r#"{
+        "description": "Food at market",
+        "category": "food",
+        "amountInCents": -1500,
+        "merchantName": "SuperMarket",
+        "accountingDate": "2023-06-15T00:00:00.000",
+        "wallet": "Main Account"
+    }"#,
+    )
+    .await;
+
+    app.post_payment(
+        r#"{
+        "description": "Transport",
+        "category": "transport",
+        "amountInCents": -500,
+        "merchantName": "Taxi",
+        "accountingDate": "2023-06-15T00:00:00.000",
+        "wallet": "Main Account"
+    }"#,
+    )
+    .await;
+
+    // Act - Filter by category=food, wallet=Main Account, search=restaurant
+    let response = app
+        .get_payments("?page=0&size=10&category=food&wallet=Main%20Account&search=restaurant")
+        .await;
+
+    // Assert
+    assert_eq!(200, response.status().as_u16());
+    let json: serde_json::Value = response.json().await.unwrap();
+    let content = json["content"].as_array().unwrap();
+    assert_eq!(1, content.len());
+    assert_eq!("food", content[0]["category"]);
+    assert_eq!("Main Account", content[0]["wallet"]);
+    assert!(content[0]["merchantName"]
+        .as_str()
+        .unwrap()
+        .to_lowercase()
+        .contains("restaurant"));
+}

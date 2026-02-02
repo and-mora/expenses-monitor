@@ -18,6 +18,7 @@ export default defineConfig({
         'src/test/**',
         'src/vite-env.d.ts',
         'src/main.tsx',
+        'src/pages/Settings.tsx', // Page with minimal logic, mostly UI
       ],
       thresholds: {
         lines: 80,

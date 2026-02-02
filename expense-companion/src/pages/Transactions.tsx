@@ -29,7 +29,6 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { Search, X } from 'lucide-react';
-import type { Payment } from '@/types/api';
 
 const PAGE_SIZE = 50;
 
@@ -37,9 +36,40 @@ const Transactions = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedWallet, setSelectedWallet] = useState<string>('all');
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateTo, setDateTo] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(0);
 
-  const { data: paymentsData, isLoading: paymentsLoading } = usePayments(currentPage, PAGE_SIZE);
+  // Build filters object for API
+  const filters = useMemo(() => {
+    const apiFilters: {
+      category?: string;
+      wallet?: string;
+      search?: string;
+      dateFrom?: string;
+      dateTo?: string;
+    } = {};
+    
+    if (selectedCategory !== 'all') {
+      apiFilters.category = selectedCategory;
+    }
+    if (selectedWallet !== 'all') {
+      apiFilters.wallet = selectedWallet;
+    }
+    if (searchQuery) {
+      apiFilters.search = searchQuery;
+    }
+    if (dateFrom) {
+      apiFilters.dateFrom = dateFrom;
+    }
+    if (dateTo) {
+      apiFilters.dateTo = dateTo;
+    }
+    
+    return Object.keys(apiFilters).length > 0 ? apiFilters : undefined;
+  }, [searchQuery, selectedCategory, selectedWallet, dateFrom, dateTo]);
+
+  const { data: paymentsData, isLoading: paymentsLoading } = usePayments(currentPage, PAGE_SIZE, filters);
   const { data: wallets = [], isLoading: walletsLoading } = useWallets();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
   
@@ -48,31 +78,6 @@ const Transactions = () => {
 
   const payments = paymentsData?.content || [];
   const currentPageNumber = paymentsData?.page || 0;
-
-  // Filter payments based on search and filters
-  const filteredPayments = useMemo(() => {
-    const paymentsArray = paymentsData?.content || [];
-    return paymentsArray.filter((payment: Payment) => {
-      // Search filter (merchant name or description)
-      const searchLower = searchQuery.toLowerCase();
-      const matchesSearch = 
-        !searchQuery ||
-        payment.merchantName.toLowerCase().includes(searchLower) ||
-        payment.description?.toLowerCase().includes(searchLower);
-
-      // Category filter
-      const matchesCategory = 
-        selectedCategory === 'all' || 
-        payment.category === selectedCategory;
-
-      // Wallet filter
-      const matchesWallet = 
-        selectedWallet === 'all' || 
-        payment.wallet === selectedWallet;
-
-      return matchesSearch && matchesCategory && matchesWallet;
-    });
-  }, [paymentsData?.content, searchQuery, selectedCategory, selectedWallet]);
 
   const handleCreatePayment = async (data: Parameters<typeof createPayment.mutate>[0]) => {
     try {
@@ -96,6 +101,8 @@ const Transactions = () => {
     setSearchQuery('');
     setSelectedCategory('all');
     setSelectedWallet('all');
+    setDateFrom('');
+    setDateTo('');
     setCurrentPage(0);
   };
 
@@ -104,7 +111,7 @@ const Transactions = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const hasActiveFilters = searchQuery || selectedCategory !== 'all' || selectedWallet !== 'all';
+  const hasActiveFilters = searchQuery || selectedCategory !== 'all' || selectedWallet !== 'all' || dateFrom || dateTo;
   const isLoading = paymentsLoading || walletsLoading || categoriesLoading;
 
   return (
@@ -137,7 +144,10 @@ const Transactions = () => {
             <Input
               placeholder="Search by merchant or description..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(0);
+              }}
               className="pl-9 pr-9"
             />
             {searchQuery && (
@@ -145,7 +155,10 @@ const Transactions = () => {
                 variant="ghost"
                 size="sm"
                 className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-                onClick={() => setSearchQuery('')}
+                onClick={() => {
+                  setSearchQuery('');
+                  setCurrentPage(0);
+                }}
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -157,7 +170,10 @@ const Transactions = () => {
             {/* Category Filter */}
             <Select
               value={selectedCategory}
-              onValueChange={setSelectedCategory}
+              onValueChange={(value) => {
+                setSelectedCategory(value);
+                setCurrentPage(0);
+              }}
             >
               <SelectTrigger className="w-full sm:w-[200px]">
                 <SelectValue placeholder="All Categories" />
@@ -175,7 +191,10 @@ const Transactions = () => {
             {/* Wallet Filter */}
             <Select
               value={selectedWallet}
-              onValueChange={setSelectedWallet}
+              onValueChange={(value) => {
+                setSelectedWallet(value);
+                setCurrentPage(0);
+              }}
             >
               <SelectTrigger className="w-full sm:w-[200px]">
                 <SelectValue placeholder="All Wallets" />
@@ -189,6 +208,30 @@ const Transactions = () => {
                 ))}
               </SelectContent>
             </Select>
+
+            {/* Date From Filter */}
+            <Input
+              type="date"
+              placeholder="From date"
+              value={dateFrom}
+              onChange={(e) => {
+                setDateFrom(e.target.value);
+                setCurrentPage(0);
+              }}
+              className="w-full sm:w-[180px]"
+            />
+
+            {/* Date To Filter */}
+            <Input
+              type="date"
+              placeholder="To date"
+              value={dateTo}
+              onChange={(e) => {
+                setDateTo(e.target.value);
+                setCurrentPage(0);
+              }}
+              className="w-full sm:w-[180px]"
+            />
 
             {/* Clear Filters Button */}
             {hasActiveFilters && (
@@ -209,8 +252,8 @@ const Transactions = () => {
               <Skeleton className="h-4 w-32" />
             ) : (
               <>
-                Showing {filteredPayments.length} transaction
-                {filteredPayments.length !== 1 ? 's' : ''} on page {currentPageNumber + 1}
+                Showing {payments.length} transaction
+                {payments.length !== 1 ? 's' : ''} on page {currentPageNumber + 1}
               </>
             )}
           </div>
@@ -221,7 +264,7 @@ const Transactions = () => {
           <Skeleton className="h-[600px] rounded-xl" />
         ) : (
           <TransactionList
-            payments={filteredPayments}
+            payments={payments}
             onDelete={handleDeletePayment}
             onEdit={true}
             isDeleting={deletePayment.isPending}
@@ -289,7 +332,7 @@ const Transactions = () => {
         )}
 
         {/* Empty State */}
-        {!isLoading && filteredPayments.length === 0 && payments.length > 0 && (
+        {!isLoading && payments.length === 0 && hasActiveFilters && (
           <div className="text-center py-12 text-muted-foreground">
             <p className="text-lg font-medium">No transactions found</p>
             <p className="text-sm mt-1">Try adjusting your filters</p>

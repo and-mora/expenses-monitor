@@ -60,7 +60,9 @@ cargo fmt && cargo clippy     # Required before commit (CI checks)
 2. Write integration tests in `tests/api/` for HTTP endpoints
 3. Run specific test during development: `cargo test <test_name>`
 4. **Run FULL test suite**: `cargo test` (no filters)
-5. **Verify ALL tests pass** (including existing ones for non-regression) before considering work complete
+5. **Format code**: `cargo fmt` (ensures consistent code style)
+6. **Run linter**: `cargo clippy` (checks for common mistakes and improvements)
+7. **Verify ALL tests pass** (including existing ones for non-regression) and code is formatted before considering work complete
 
 **Database work**: Always create migrations in [backend-rust/migrations/](backend-rust/migrations/) with naming `YYYYMMDDHHMMSS_description.sql`. Use `sqlx::query!` macro (compile-time checked SQL). Create integration tests that verify migration effects.
 
