@@ -97,12 +97,33 @@ describe('Transactions Page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     
-    // Default mock implementations
-    vi.mocked(useApiHooks.usePayments).mockReturnValue({
-      data: { content: mockPayments, page: 0, size: 50 },
-      isLoading: false,
-      error: null,
-    } as ReturnType<typeof useApiHooks.usePayments>);
+    // Default mock implementations - simulate server-side filtering
+    vi.mocked(useApiHooks.usePayments).mockImplementation((page, size, filters) => {
+      let filteredPayments = [...mockPayments];
+
+      // Simulate server-side filtering
+      if (filters) {
+        if (filters.search) {
+          const searchLower = filters.search.toLowerCase();
+          filteredPayments = filteredPayments.filter(p =>
+            p.merchantName.toLowerCase().includes(searchLower) ||
+            (p.description && p.description.toLowerCase().includes(searchLower))
+          );
+        }
+        if (filters.category) {
+          filteredPayments = filteredPayments.filter(p => p.category === filters.category);
+        }
+        if (filters.wallet) {
+          filteredPayments = filteredPayments.filter(p => p.wallet === filters.wallet);
+        }
+      }
+
+      return {
+        data: { content: filteredPayments, page: 0, size: 50 },
+        isLoading: false,
+        error: null,
+      } as ReturnType<typeof useApiHooks.usePayments>;
+    });
 
     vi.mocked(useApiHooks.useWallets).mockReturnValue({
       data: mockWallets,
@@ -371,7 +392,7 @@ describe('Transactions Page', () => {
 
       // Verify usePayments was called with page 1
       await waitFor(() => {
-        expect(mockUsePayments).toHaveBeenCalledWith(1, 50);
+        expect(mockUsePayments).toHaveBeenCalledWith(1, 50, undefined);
       });
     });
 

@@ -243,10 +243,44 @@ class ApiClient {
     return response.content;
   }
 
-  async getPayments(page = 0, size = 50): Promise<{ content: Payment[], page: number, size: number }> {
+  async getPayments(
+    page = 0, 
+    size = 50, 
+    filters?: {
+      dateFrom?: string;
+      dateTo?: string;
+      category?: string;
+      wallet?: string;
+      search?: string;
+    }
+  ): Promise<{ content: Payment[], page: number, size: number }> {
     if (USE_MOCK_DATA) {
-      const sorted = [...mockPayments]
-        .sort((a, b) => new Date(b.accountingDate).getTime() - new Date(a.accountingDate).getTime());
+      let filtered = [...mockPayments];
+      
+      // Apply filters to mock data
+      if (filters?.category) {
+        filtered = filtered.filter(p => p.category === filters.category);
+      }
+      if (filters?.wallet) {
+        filtered = filtered.filter(p => p.wallet === filters.wallet);
+      }
+      if (filters?.search) {
+        const searchLower = filters.search.toLowerCase();
+        filtered = filtered.filter(p => 
+          p.merchantName.toLowerCase().includes(searchLower) ||
+          p.description?.toLowerCase().includes(searchLower)
+        );
+      }
+      if (filters?.dateFrom) {
+        filtered = filtered.filter(p => p.accountingDate >= filters.dateFrom!);
+      }
+      if (filters?.dateTo) {
+        filtered = filtered.filter(p => p.accountingDate <= filters.dateTo!);
+      }
+      
+      const sorted = filtered.sort((a, b) => 
+        new Date(b.accountingDate).getTime() - new Date(a.accountingDate).getTime()
+      );
       const start = page * size;
       const end = start + size;
       return {
@@ -255,8 +289,31 @@ class ApiClient {
         size,
       };
     }
+    
+    // Build query parameters
+    const params = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+    });
+    
+    if (filters?.dateFrom) {
+      params.append('dateFrom', filters.dateFrom);
+    }
+    if (filters?.dateTo) {
+      params.append('dateTo', filters.dateTo);
+    }
+    if (filters?.category) {
+      params.append('category', filters.category);
+    }
+    if (filters?.wallet) {
+      params.append('wallet', filters.wallet);
+    }
+    if (filters?.search) {
+      params.append('search', filters.search);
+    }
+    
     return this.fetch<{ content: Payment[], page: number, size: number }>(
-      `/api/payments?page=${page}&size=${size}`
+      `/api/payments?${params.toString()}`
     );
   }
 

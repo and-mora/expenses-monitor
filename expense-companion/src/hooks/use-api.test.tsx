@@ -78,7 +78,7 @@ describe('API Hooks - Pagination', () => {
         expect(result.current.isLoading).toBe(false);
       });
 
-      expect(apiClient.getPayments).toHaveBeenCalledWith(0, 50);
+      expect(apiClient.getPayments).toHaveBeenCalledWith(0, 50, undefined);
       expect(result.current.data).toEqual(mockResponse);
     });
 
@@ -99,7 +99,7 @@ describe('API Hooks - Pagination', () => {
         expect(result.current.isLoading).toBe(false);
       });
 
-      expect(apiClient.getPayments).toHaveBeenCalledWith(2, 25);
+      expect(apiClient.getPayments).toHaveBeenCalledWith(2, 25, undefined);
       expect(result.current.data?.page).toBe(2);
       expect(result.current.data?.size).toBe(25);
     });
@@ -228,8 +228,8 @@ describe('API Hooks - Pagination', () => {
 
       // Should have called API twice (once for each page)
       expect(apiClient.getPayments).toHaveBeenCalledTimes(2);
-      expect(apiClient.getPayments).toHaveBeenCalledWith(0, 50);
-      expect(apiClient.getPayments).toHaveBeenCalledWith(1, 50);
+      expect(apiClient.getPayments).toHaveBeenCalledWith(0, 50, undefined);
+      expect(apiClient.getPayments).toHaveBeenCalledWith(1, 50, undefined);
     });
   });
 
@@ -307,7 +307,7 @@ describe('API Hooks - Pagination', () => {
 
       await waitFor(() => {
         const cacheKeys = queryClient.getQueryCache().getAll().map(q => q.queryKey);
-        expect(cacheKeys).toContainEqual(['payments', 'paged', 0, 50]);
+        expect(cacheKeys).toContainEqual(['payments', 'paged', 0, 50, undefined]);
       });
 
       // Fetch page 1
@@ -315,8 +315,8 @@ describe('API Hooks - Pagination', () => {
 
       await waitFor(() => {
         const cacheKeys = queryClient.getQueryCache().getAll().map(q => q.queryKey);
-        expect(cacheKeys).toContainEqual(['payments', 'paged', 0, 50]);
-        expect(cacheKeys).toContainEqual(['payments', 'paged', 1, 50]);
+        expect(cacheKeys).toContainEqual(['payments', 'paged', 0, 50, undefined]);
+        expect(cacheKeys).toContainEqual(['payments', 'paged', 1, 50, undefined]);
       });
     });
 
@@ -346,7 +346,7 @@ describe('API Hooks - Pagination', () => {
       await waitFor(() => {
         const cacheKeys = queryClient.getQueryCache().getAll().map(q => q.queryKey);
         expect(cacheKeys).toContainEqual(['payments', 'recent', 50]);
-        expect(cacheKeys).toContainEqual(['payments', 'paged', 0, 50]);
+        expect(cacheKeys).toContainEqual(['payments', 'paged', 0, 50, undefined]);
       });
     });
   });

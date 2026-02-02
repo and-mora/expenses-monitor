@@ -37,10 +37,20 @@ export function useRecentPayments(limit = 50) {
   });
 }
 
-export function usePayments(page = 0, size = 50) {
+export function usePayments(
+  page = 0, 
+  size = 50,
+  filters?: {
+    dateFrom?: string;
+    dateTo?: string;
+    category?: string;
+    wallet?: string;
+    search?: string;
+  }
+) {
   return useQuery({
-    queryKey: [...queryKeys.payments, 'paged', page, size],
-    queryFn: () => apiClient.getPayments(page, size),
+    queryKey: [...queryKeys.payments, 'paged', page, size, filters],
+    queryFn: () => apiClient.getPayments(page, size, filters),
     staleTime: 10000, // 10 seconds
   });
 }
