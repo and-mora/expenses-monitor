@@ -109,6 +109,7 @@
   --animate-accordion-up: accordion-up 0.2s ease-out;
   --animate-fade-in: fade-in 0.3s ease-out;
   --animate-slide-up: slide-up 0.3s ease-out;
+  --animate-slide-down: slide-down 0.2s ease-out;
   --animate-scale-in: scale-in 0.2s ease-out;
   --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
 
@@ -144,6 +145,16 @@
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+  @keyframes slide-down {
+    from {
+      opacity: 0;
+      max-height: 0;
+    }
+    to {
+      opacity: 1;
+      max-height: 500px;
     }
   }
   @keyframes scale-in {

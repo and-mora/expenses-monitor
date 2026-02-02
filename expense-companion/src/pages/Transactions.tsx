@@ -115,10 +115,10 @@ const Transactions = () => {
   const isLoading = paymentsLoading || walletsLoading || categoriesLoading;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <Header className="border-b bg-card/80 backdrop-blur-xs sticky top-0 z-50" />
       
-      <main className="container px-4 py-6 md:px-6 md:py-8 max-w-7xl">
+      <main className="container px-4 py-6 pb-20 md:px-6 md:py-8 md:pb-8 max-w-7xl">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
@@ -269,6 +269,8 @@ const Transactions = () => {
             onEdit={true}
             isDeleting={deletePayment.isPending}
             className="max-w-none"
+            variant="detailed"
+            title={null}
           />
         )}
 

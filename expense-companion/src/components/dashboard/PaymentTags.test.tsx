@@ -200,4 +200,51 @@ describe('PaymentTags', () => {
       expect(screen.getByText('+1')).toBeInTheDocument();
     });
   });
+
+  describe('Variant Prop', () => {
+    it('should show only key in compact variant (default)', () => {
+      render(<PaymentTags tags={mockTags.slice(0, 1)} variant="compact" />);
+      
+      // Should show only key
+      expect(screen.getByText('category')).toBeInTheDocument();
+      // Should not show full format directly
+      expect(screen.queryByText('category: food')).not.toBeInTheDocument();
+    });
+
+    it('should show key: value in full variant', () => {
+      render(<PaymentTags tags={mockTags.slice(0, 2)} variant="full" />);
+      
+      // Should show full format with key: value
+      expect(screen.getByText('category: food')).toBeInTheDocument();
+      expect(screen.getByText('merchant: Grocery Store')).toBeInTheDocument();
+    });
+
+    it('should not show tooltip in full variant', async () => {
+      const user = userEvent.setup();
+      render(<PaymentTags tags={[mockTags[0]]} variant="full" />);
+      
+      const tagBadge = screen.getByText('category: food');
+      await user.hover(tagBadge);
+      
+      // In full variant, no additional tooltip needed since value is already shown
+      // Wait a bit to ensure no tooltip appears
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // The only "category: food" text should be the badge itself
+      const allMatches = screen.getAllByText('category: food');
+      expect(allMatches).toHaveLength(1);
+    });
+
+    it('should show tooltip in compact variant', async () => {
+      const user = userEvent.setup();
+      render(<PaymentTags tags={[mockTags[0]]} variant="compact" />);
+      
+      const tagBadge = screen.getByText('category');
+      await user.hover(tagBadge);
+      
+      // Should show full description in tooltip
+      const tooltips = await screen.findAllByText('category: food');
+      expect(tooltips.length).toBeGreaterThan(0);
+    });
+  });
 });
