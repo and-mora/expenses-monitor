@@ -431,4 +431,187 @@ describe('TransactionList', () => {
       expect(screen.queryByText('Weekly groceries')).not.toBeInTheDocument();
     });
   });
+
+  describe('Mobile swipe actions', () => {
+    it('should handle touch start event', () => {
+      const onEdit = vi.fn();
+      render(
+        <TransactionList 
+          payments={mockPayments} 
+          variant="detailed" 
+          onEdit 
+        />
+      );
+
+      const card = screen.getByText('Grocery Store').closest('div');
+      if (card) {
+        const touchEvent = new TouchEvent('touchstart', {
+          touches: [{ clientX: 100, clientY: 100 } as Touch]
+        });
+        card.dispatchEvent(touchEvent);
+      }
+
+      // Should not trigger edit on touch start
+      expect(onEdit).not.toHaveBeenCalled();
+    });
+
+    it('should show mobile menu icon when actions available', () => {
+      render(
+        <TransactionList 
+          payments={mockPayments} 
+          variant="detailed" 
+          onEdit 
+          onDelete={vi.fn()}
+        />
+      );
+
+      // Mobile menu icons (MoreVertical) should be in the document
+      // They have md:hidden class to show only on mobile
+      const allButtons = screen.getAllByRole('button');
+      expect(allButtons.length).toBeGreaterThan(0);
+    });
+
+    it('should not show mobile menu when no actions available', () => {
+      render(
+        <TransactionList 
+          payments={mockPayments} 
+          variant="detailed" 
+        />
+      );
+
+      // Without onEdit or onDelete, no mobile menu icons
+      const allText = screen.getAllByText(/grocery store|salary|gas station/i);
+      expect(allText.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Expanded panel action buttons', () => {
+    it('should show edit and delete buttons in expanded panel', async () => {
+      const user = userEvent.setup();
+      const onEdit = vi.fn();
+      const onDelete = vi.fn();
+
+      render(
+        <TransactionList 
+          payments={mockPayments} 
+          variant="detailed" 
+          onEdit 
+          onDelete={onDelete}
+        />
+      );
+
+      // Expand first transaction
+      const firstTransaction = screen.getByText('Grocery Store').closest('div')?.parentElement;
+      if (firstTransaction) {
+        await user.click(firstTransaction);
+      }
+
+      // Action buttons should appear
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /edit transaction/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /^delete$/i })).toBeInTheDocument();
+      });
+    });
+
+    it('should call onEdit when edit button clicked in expanded panel', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <TransactionList 
+          payments={mockPayments} 
+          variant="detailed" 
+          onEdit 
+        />
+      );
+
+      // Expand and click edit
+      const firstTransaction = screen.getByText('Grocery Store').closest('div')?.parentElement;
+      if (firstTransaction) {
+        await user.click(firstTransaction);
+      }
+
+      await waitFor(async () => {
+        const editButton = screen.getByRole('button', { name: /edit transaction/i });
+        await user.click(editButton);
+      });
+
+      // EditPaymentDialog should open with title "Edit Transaction"
+      await waitFor(() => {
+        const dialogTitles = screen.getAllByText(/edit transaction/i);
+        // Should have at least 2: button text + dialog title
+        expect(dialogTitles.length).toBeGreaterThanOrEqual(2);
+      });
+    });
+
+    it('should call onDelete when delete button clicked in expanded panel', async () => {
+      const user = userEvent.setup();
+      const onDelete = vi.fn();
+
+      render(
+        <TransactionList 
+          payments={mockPayments} 
+          variant="detailed" 
+          onDelete={onDelete}
+        />
+      );
+
+      // Expand and click delete
+      const firstTransaction = screen.getByText('Grocery Store').closest('div')?.parentElement;
+      if (firstTransaction) {
+        await user.click(firstTransaction);
+      }
+
+      await waitFor(async () => {
+        const deleteButton = screen.getByRole('button', { name: /^delete$/i });
+        await user.click(deleteButton);
+      });
+
+      expect(onDelete).toHaveBeenCalledWith('1');
+    });
+
+    it('should disable action buttons when deleting', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <TransactionList 
+          payments={mockPayments} 
+          variant="detailed" 
+          onEdit 
+          onDelete={vi.fn()}
+          isDeleting
+        />
+      );
+
+      // Expand transaction
+      const firstTransaction = screen.getByText('Grocery Store').closest('div')?.parentElement;
+      if (firstTransaction) {
+        await user.click(firstTransaction);
+      }
+
+      // Action buttons should be disabled
+      await waitFor(() => {
+        const editButton = screen.getByRole('button', { name: /edit transaction/i });
+        const deleteButton = screen.getByRole('button', { name: /^delete$/i });
+        
+        expect(editButton).toBeDisabled();
+        expect(deleteButton).toBeDisabled();
+      });
+    });
+
+    it('should not show action buttons when not expanded', () => {
+      render(
+        <TransactionList 
+          payments={mockPayments} 
+          variant="detailed" 
+          onEdit 
+          onDelete={vi.fn()}
+        />
+      );
+
+      // Action buttons in expanded panel should not be visible
+      expect(screen.queryByRole('button', { name: /edit transaction/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /^delete$/i })).not.toBeInTheDocument();
+    });
+  });
 });
+

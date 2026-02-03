@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, within, fireEvent } from '@/test/utils';
 import userEvent from '@testing-library/user-event';
 import { AddPaymentDialog } from './AddPaymentDialog';
@@ -14,6 +14,10 @@ describe('AddPaymentDialog', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('should render the dialog trigger button', () => {
@@ -595,6 +599,11 @@ describe('AddPaymentDialog', () => {
     });
 
     it('should preserve selected date when using "Add & Add Another"', async () => {
+      // Mock system time to ensure deterministic test behavior
+      const mockDate = new Date('2026-01-15T12:00:00Z');
+      vi.useFakeTimers();
+      vi.setSystemTime(mockDate);
+
       const user = userEvent.setup();
       render(
         <AddPaymentDialog 
@@ -630,8 +639,7 @@ describe('AddPaymentDialog', () => {
       });
 
       // Note: Date picker interaction is complex in test environment due to Calendar component
-      // We'll verify the form submission preserves the initial date (Feb 1, 2026)
-      // The date picker shows the default date - search for button with date or any date text
+      // We'll verify the form submission preserves the mocked date (Jan 15, 2026)
       const dateElements = screen.queryAllByText(/2026/i);
       expect(dateElements.length).toBeGreaterThan(0); // Date should be visible somewhere in form
 
@@ -648,14 +656,14 @@ describe('AddPaymentDialog', () => {
         expect(mockOnSubmit).toHaveBeenCalledTimes(1);
       }, { timeout: 3000 });
 
-      // Verify the submitted data had the date field (current date: 2026-02-02)
+      // Verify the submitted data has the mocked date (2026-01-15)
       const submittedData = mockOnSubmit.mock.calls[0][0];
-      expect(submittedData.accountingDate).toMatch(/2026-02-0[12]/); // Accepts both 01 and 02
+      expect(submittedData.accountingDate).toBe('2026-01-15');
 
       // Dialog should still be open
       expect(screen.getByRole('dialog')).toBeInTheDocument();
 
-      // The date should be preserved (dateElements already verified above)
+      // The date should be preserved
       expect(dateElements.length).toBeGreaterThan(0);
     });
   });
