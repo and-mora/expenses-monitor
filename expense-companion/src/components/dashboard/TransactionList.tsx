@@ -16,7 +16,7 @@ import {
   FileText,
   MoreVertical
 } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -165,11 +165,10 @@ function TransactionItem({
   const swipeThreshold = 80; // Minimum distance to trigger action reveal
   const maxSwipeOffset = 140; // Maximum swipe distance
 
-  // Reset swipe offset when expanded state changes
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+  const handleToggleExpand = () => {
     setSwipeOffset(0);
-  }, [isExpanded]);
+    onToggleExpand?.();
+  };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!onEdit && !onDelete) return;
@@ -252,7 +251,7 @@ function TransactionItem({
         style={{
           transform: `translateX(-${swipeOffset}px)`,
         }}
-        onClick={canExpand && !isSwipeRevealed ? onToggleExpand : undefined}
+        onClick={canExpand && !isSwipeRevealed ? handleToggleExpand : undefined}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -298,9 +297,10 @@ function TransactionItem({
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-muted-foreground"
+              aria-label={isExpanded ? 'Collapse transaction' : 'Expand transaction'}
               onClick={(e) => {
                 e.stopPropagation();
-                onToggleExpand?.();
+                handleToggleExpand();
               }}
             >
               {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -344,6 +344,7 @@ function TransactionItem({
               variant="ghost"
               size="icon"
               className="h-8 w-8 md:hidden text-muted-foreground"
+              aria-label="More actions"
               onClick={(e) => {
                 e.stopPropagation();
                 if (isSwipeRevealed) {

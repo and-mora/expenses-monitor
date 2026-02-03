@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor } from '@/test/utils';
+import { render, screen, waitFor, within } from '@/test/utils';
 import userEvent from '@testing-library/user-event';
 import { TransactionList } from './TransactionList';
 import type { Payment } from '@/types/api';
@@ -469,6 +469,34 @@ describe('TransactionList', () => {
       // They have md:hidden class to show only on mobile
       const allButtons = screen.getAllByRole('button');
       expect(allButtons.length).toBeGreaterThan(0);
+    });
+
+    it('should reset swipe offset when card is expanded', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <TransactionList 
+          payments={mockPayments} 
+          variant="detailed" 
+          onEdit
+        />
+      );
+
+      const card = screen.getByText('Grocery Store').closest('.group');
+      expect(card).toBeInTheDocument();
+
+      const menuButton = within(card as HTMLElement).getByRole('button', { name: /more actions/i });
+      await user.click(menuButton);
+
+      expect(card).toHaveStyle({ transform: 'translateX(-140px)' });
+
+      const chevronButton = within(card as HTMLElement).getByRole('button', { name: /expand transaction/i });
+      await user.click(chevronButton);
+
+      await waitFor(() => {
+        const updatedCard = screen.getByText('Grocery Store').closest('.group');
+        expect(updatedCard).toHaveStyle({ transform: 'translateX(-0px)' });
+      });
     });
 
     it('should not show mobile menu when no actions available', () => {

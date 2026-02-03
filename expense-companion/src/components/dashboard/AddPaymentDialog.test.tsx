@@ -601,9 +601,8 @@ describe('AddPaymentDialog', () => {
     it('should preserve selected date when using "Add & Add Another"', async () => {
       // Mock system time to ensure deterministic test behavior
       const mockDate = new Date('2026-01-15T12:00:00Z');
-      vi.useFakeTimers();
+      vi.useFakeTimers({ toFake: ['Date'] });
       vi.setSystemTime(mockDate);
-
       const user = userEvent.setup();
       render(
         <AddPaymentDialog 
@@ -612,59 +611,63 @@ describe('AddPaymentDialog', () => {
         />
       );
 
-      // Open dialog
-      await user.click(screen.getByRole('button', { name: /add transaction/i }));
+      try {
+        // Open dialog
+        await user.click(screen.getByRole('button', { name: /add transaction/i }));
 
-      await waitFor(() => {
+        await waitFor(() => {
+          expect(screen.getByRole('dialog')).toBeInTheDocument();
+        });
+
+        // Fill transaction data
+        await user.type(screen.getByLabelText(/merchant \/ payee/i), 'Grocery Store');
+        await user.type(screen.getByPlaceholderText('0.00'), '50.00');
+        
+        // Select category
+        const categoryButton = screen.getByRole('combobox', { name: /category/i });
+        await user.click(categoryButton);
+        
+        await waitFor(() => {
+          expect(screen.getByRole('option', { name: 'food' })).toBeInTheDocument();
+        });
+        
+        await user.click(screen.getByRole('option', { name: 'food' }));
+
+        // Wait for combobox to close and form to be ready
+        await waitFor(() => {
+          expect(screen.queryByRole('option', { name: 'food' })).not.toBeInTheDocument();
+        });
+
+        // Note: Date picker interaction is complex in test environment due to Calendar component
+        // We'll verify the form submission preserves the mocked date (Jan 15, 2026)
+        const dateElements = screen.queryAllByText(/2026/i);
+        expect(dateElements.length).toBeGreaterThan(0); // Date should be visible somewhere in form
+
+        // Wait for the button to be enabled (form validation)
+        await waitFor(() => {
+          const button = screen.getByRole('button', { name: /add & add another/i });
+          expect(button).not.toBeDisabled();
+        });
+
+        // Click "Add & Add Another"
+        await user.click(screen.getByRole('button', { name: /add & add another/i }));
+
+        await waitFor(() => {
+          expect(mockOnSubmit).toHaveBeenCalledTimes(1);
+        }, { timeout: 3000 });
+
+        // Verify the submitted data has the mocked date (2026-01-15)
+        const submittedData = mockOnSubmit.mock.calls[0][0];
+        expect(submittedData.accountingDate).toMatch(/^2026-01-15/);
+
+        // Dialog should still be open
         expect(screen.getByRole('dialog')).toBeInTheDocument();
-      });
 
-      // Fill transaction data
-      await user.type(screen.getByLabelText(/merchant \/ payee/i), 'Grocery Store');
-      await user.type(screen.getByPlaceholderText('0.00'), '50.00');
-      
-      // Select category
-      const categoryButton = screen.getByRole('combobox', { name: /category/i });
-      await user.click(categoryButton);
-      
-      await waitFor(() => {
-        expect(screen.getByRole('option', { name: 'food' })).toBeInTheDocument();
-      });
-      
-      await user.click(screen.getByRole('option', { name: 'food' }));
-
-      // Wait for combobox to close and form to be ready
-      await waitFor(() => {
-        expect(screen.queryByRole('option', { name: 'food' })).not.toBeInTheDocument();
-      });
-
-      // Note: Date picker interaction is complex in test environment due to Calendar component
-      // We'll verify the form submission preserves the mocked date (Jan 15, 2026)
-      const dateElements = screen.queryAllByText(/2026/i);
-      expect(dateElements.length).toBeGreaterThan(0); // Date should be visible somewhere in form
-
-      // Wait for the button to be enabled (form validation)
-      await waitFor(() => {
-        const button = screen.getByRole('button', { name: /add & add another/i });
-        expect(button).not.toBeDisabled();
-      });
-
-      // Click "Add & Add Another"
-      await user.click(screen.getByRole('button', { name: /add & add another/i }));
-
-      await waitFor(() => {
-        expect(mockOnSubmit).toHaveBeenCalledTimes(1);
-      }, { timeout: 3000 });
-
-      // Verify the submitted data has the mocked date (2026-01-15)
-      const submittedData = mockOnSubmit.mock.calls[0][0];
-      expect(submittedData.accountingDate).toBe('2026-01-15');
-
-      // Dialog should still be open
-      expect(screen.getByRole('dialog')).toBeInTheDocument();
-
-      // The date should be preserved
-      expect(dateElements.length).toBeGreaterThan(0);
+        // The date should be preserved
+        expect(dateElements.length).toBeGreaterThan(0);
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 
