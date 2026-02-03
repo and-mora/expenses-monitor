@@ -21,8 +21,8 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
   if (!initialized) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="w-[400px]">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
             <CardTitle>Initializing...</CardTitle>
@@ -35,8 +35,8 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="w-[400px]">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle>Welcome to Expenses Monitor</CardTitle>
             <CardDescription>Please sign in to continue</CardDescription>

@@ -13,9 +13,10 @@ import {
   Calendar,
   ChevronDown,
   ChevronUp,
-  FileText
+  FileText,
+  MoreVertical
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -155,14 +156,105 @@ function TransactionItem({
   const isDetailed = variant === 'detailed';
   const canExpand = isDetailed && (hasDescription || hasTags || payment.id);
   
+  // Swipe gesture state
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const swipeThreshold = 80; // Minimum distance to trigger action reveal
+  const maxSwipeOffset = 140; // Maximum swipe distance
+
+  const handleToggleExpand = () => {
+    setSwipeOffset(0);
+    onToggleExpand?.();
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!onEdit && !onDelete) return;
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    setIsSwiping(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isSwiping || (!onEdit && !onDelete)) return;
+
+    const touchCurrentX = e.touches[0].clientX;
+    const touchCurrentY = e.touches[0].clientY;
+    const diffX = touchStartX.current - touchCurrentX;
+    const diffY = Math.abs(touchStartY.current - touchCurrentY);
+
+    // Only swipe horizontally if horizontal movement > vertical movement
+    if (Math.abs(diffX) > diffY) {
+      e.preventDefault(); // Prevent scroll when swiping
+      const newOffset = Math.max(0, Math.min(maxSwipeOffset, diffX));
+      setSwipeOffset(newOffset);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsSwiping(false);
+    // Snap to revealed or hidden state
+    if (swipeOffset > swipeThreshold / 2) {
+      setSwipeOffset(maxSwipeOffset);
+    } else {
+      setSwipeOffset(0);
+    }
+  };
+
+  const handleAction = (action: () => void) => {
+    action();
+    setSwipeOffset(0); // Reset swipe after action
+  };
+
+  const isSwipeRevealed = swipeOffset >= swipeThreshold;
+  
   return (
-    <div className="animate-slide-up" style={style}>
+    <div className="animate-slide-up relative overflow-hidden" style={style}>
+      {/* Swipe Action Buttons (hidden behind card, revealed on swipe) */}
+      {(onEdit || onDelete) && (
+        <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 pr-3">
+          {onEdit && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 text-primary hover:text-primary hover:bg-primary/10"
+              onClick={() => handleAction(() => onEdit(payment))}
+              disabled={isDeleting}
+            >
+              <Edit2 className="h-5 w-5" />
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={() => handleAction(() => onDelete(payment.id))}
+              disabled={isDeleting}
+            >
+              <Trash2 className="h-5 w-5" />
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Main Card Content */}
       <div 
+        ref={containerRef}
         className={cn(
-          "group flex items-center gap-4 p-3 rounded-lg transition-colors",
-          canExpand ? "cursor-pointer hover:bg-muted/70" : "hover:bg-muted/50"
+          "group flex items-center gap-4 p-3 rounded-lg transition-all bg-card",
+          canExpand && !isSwipeRevealed ? "cursor-pointer hover:bg-muted/70" : "hover:bg-muted/50",
+          isSwiping ? "transition-none" : "duration-200"
         )}
-        onClick={canExpand ? onToggleExpand : undefined}
+        style={{
+          transform: `translateX(-${swipeOffset}px)`,
+        }}
+        onClick={canExpand && !isSwipeRevealed ? handleToggleExpand : undefined}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         <div className={cn("p-2.5 rounded-xl", colorClass)}>
           <Icon className="h-4 w-4" />
@@ -205,20 +297,22 @@ function TransactionItem({
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-muted-foreground"
+              aria-label={isExpanded ? 'Collapse transaction' : 'Expand transaction'}
               onClick={(e) => {
                 e.stopPropagation();
-                onToggleExpand?.();
+                handleToggleExpand();
               }}
             >
               {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
           )}
           
+          {/* Desktop hover buttons - hidden on mobile */}
           {onEdit && (
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
+              className="h-8 w-8 hidden md:inline-flex opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
               onClick={(e) => {
                 e.stopPropagation();
                 onEdit(payment);
@@ -233,7 +327,7 @@ function TransactionItem({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+              className="h-8 w-8 hidden md:inline-flex opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete(payment.id);
@@ -241,6 +335,26 @@ function TransactionItem({
               disabled={isDeleting}
             >
               <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
+
+          {/* Mobile menu icon - visible only on mobile when actions available */}
+          {(onEdit || onDelete) && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 md:hidden text-muted-foreground"
+              aria-label="More actions"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isSwipeRevealed) {
+                  setSwipeOffset(0);
+                } else {
+                  setSwipeOffset(maxSwipeOffset);
+                }
+              }}
+            >
+              <MoreVertical className="h-4 w-4" />
             </Button>
           )}
         </div>
@@ -277,6 +391,42 @@ function TransactionItem({
                 <p className="font-mono text-[10px] break-all">{payment.id}</p>
               </div>
             </div>
+
+            {/* Action buttons in expanded panel - clear and prominent */}
+            {(onEdit || onDelete) && (
+              <div className="flex items-center gap-2 pt-2 border-t">
+                {onEdit && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 gap-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit(payment);
+                    }}
+                    disabled={isDeleting}
+                  >
+                    <Edit2 className="h-4 w-4" />
+                    Edit Transaction
+                  </Button>
+                )}
+                {onDelete && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(payment.id);
+                    }}
+                    disabled={isDeleting}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

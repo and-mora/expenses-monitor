@@ -2,7 +2,7 @@
   "name": "Expenses Monitor",
   "short_name": "ExpensesMon",
   "description": "Monitor and track your expenses efficiently",
-  "start_url": "/",
+  "start_url": "/?v=2",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4F46E5",
