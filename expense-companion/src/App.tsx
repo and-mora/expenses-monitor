@@ -8,6 +8,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
+import PaymentDetail from "./pages/PaymentDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -34,6 +35,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/transactions" element={<Transactions />} />
+              <Route path="/transactions/:id" element={<PaymentDetail />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

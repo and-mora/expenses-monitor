@@ -10,17 +10,15 @@ import {
   Trash2,
   Edit2,
   Wallet,
-  Calendar,
   ChevronDown,
   ChevronUp,
   FileText,
-  MoreVertical
 } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { formatCurrency, formatRelativeDate, formatDate, capitalize } from '@/lib/formatters';
+import { formatCurrency, formatDate, capitalize } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { PaymentTags } from './PaymentTags';
 import { EditPaymentDialog } from './EditPaymentDialog';
@@ -162,8 +160,8 @@ function TransactionItem({
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
-  const swipeThreshold = 80; // Minimum distance to trigger action reveal
-  const maxSwipeOffset = 140; // Maximum swipe distance
+  const swipeThreshold = 100; // Minimum distance to trigger action reveal
+  const maxSwipeOffset = 192; // Maximum swipe distance
 
   const handleToggleExpand = () => {
     setSwipeOffset(0);
@@ -212,81 +210,78 @@ function TransactionItem({
   
   return (
     <div className="animate-slide-up relative overflow-hidden" style={style}>
-      {/* Swipe Action Buttons (hidden behind card, revealed on swipe) */}
-      {(onEdit || onDelete) && (
-        <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 pr-3">
-          {onEdit && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-10 w-10 text-primary hover:text-primary hover:bg-primary/10"
-              onClick={() => handleAction(() => onEdit(payment))}
-              disabled={isDeleting}
-            >
-              <Edit2 className="h-5 w-5" />
-            </Button>
-          )}
-          {onDelete && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-10 w-10 text-destructive hover:text-destructive hover:bg-destructive/10"
-              onClick={() => handleAction(() => onDelete(payment.id))}
-              disabled={isDeleting}
-            >
-              <Trash2 className="h-5 w-5" />
-            </Button>
-          )}
-        </div>
-      )}
-
-      {/* Main Card Content */}
-      <div 
-        ref={containerRef}
-        className={cn(
-          "group flex items-center gap-4 p-3 rounded-lg transition-all bg-card",
-          canExpand && !isSwipeRevealed ? "cursor-pointer hover:bg-muted/70" : "hover:bg-muted/50",
-          isSwiping ? "transition-none" : "duration-200"
+      <div className="relative">
+        {/* Swipe Action Buttons (hidden behind card, revealed on swipe) */}
+        {(onEdit || onDelete) && (
+          <div className="absolute right-0 top-0 bottom-0 w-[192px] flex items-center justify-center gap-3 bg-muted/40">
+            {onEdit && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-11 w-11 rounded-full bg-primary/15 text-primary hover:text-primary hover:bg-primary/25"
+                onClick={() => handleAction(() => onEdit(payment))}
+                disabled={isDeleting}
+              >
+                <Edit2 className="h-5 w-5" />
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-11 w-11 rounded-full bg-destructive/15 text-destructive hover:text-destructive hover:bg-destructive/25"
+                onClick={() => handleAction(() => onDelete(payment.id))}
+                disabled={isDeleting}
+              >
+                <Trash2 className="h-5 w-5" />
+              </Button>
+            )}
+          </div>
         )}
-        style={{
-          transform: `translateX(-${swipeOffset}px)`,
-        }}
-        onClick={canExpand && !isSwipeRevealed ? handleToggleExpand : undefined}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
+
+        {/* Main Card Content */}
+        <div 
+          ref={containerRef}
+          className={cn(
+            "group relative z-10 flex items-center gap-4 rounded-lg bg-card p-3",
+            canExpand && !isSwipeRevealed ? "cursor-pointer hover:bg-muted/70" : "hover:bg-muted/50",
+            isSwiping ? "transition-none" : "duration-200"
+          )}
+          style={{
+            transform: `translateX(-${swipeOffset}px)`,
+            transition: isSwiping ? 'none' : 'transform 200ms ease-out',
+            willChange: 'transform',
+          }}
+          onClick={() => {
+            if (isSwipeRevealed) {
+              setSwipeOffset(0);
+              return;
+            }
+            if (canExpand) {
+              handleToggleExpand();
+            }
+          }}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
         <div className={cn("p-2.5 rounded-xl", colorClass)}>
           <Icon className="h-4 w-4" />
         </div>
         
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="font-medium truncate">{payment.merchantName}</p>
-            {hasTags && !isExpanded && (
-              <PaymentTags tags={payment.tags!} maxVisible={3} />
-            )}
-          </div>
-          <p className="text-sm text-muted-foreground truncate">
-            {capitalize(payment.category)} • {formatRelativeDate(payment.accountingDate)}
+          <p className="font-medium truncate">{payment.merchantName}</p>
+          <p className="text-sm text-muted-foreground truncate md:hidden">
+            {formatDate(payment.accountingDate)}
           </p>
-          {isDetailed && (
-            <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-              <span className="flex items-center gap-1">
-                <Wallet className="h-3 w-3" />
-                {payment.wallet}
-              </span>
-              <span className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                {formatDate(payment.accountingDate, 'yyyy-MM-dd')}
-              </span>
-            </div>
-          )}
+          <p className="text-sm text-muted-foreground truncate hidden md:block">
+            {capitalize(payment.category)} • {formatDate(payment.accountingDate)}
+          </p>
         </div>
         
-        <div className="text-right flex items-center gap-1">
+        <div className="text-right flex items-center gap-1 shrink-0 ml-auto">
           <span className={cn(
-            "font-semibold font-mono tabular-nums",
+            "font-semibold font-mono tabular-nums whitespace-nowrap min-w-[90px]",
             isIncome ? "text-income" : "text-expense"
           )}>
             {formatCurrency(payment.amountInCents, 'EUR', true)}
@@ -338,25 +333,7 @@ function TransactionItem({
             </Button>
           )}
 
-          {/* Mobile menu icon - visible only on mobile when actions available */}
-          {(onEdit || onDelete) && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 md:hidden text-muted-foreground"
-              aria-label="More actions"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (isSwipeRevealed) {
-                  setSwipeOffset(0);
-                } else {
-                  setSwipeOffset(maxSwipeOffset);
-                }
-              }}
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          )}
+        </div>
         </div>
       </div>
 
@@ -364,6 +341,14 @@ function TransactionItem({
       {isExpanded && isDetailed && (
         <div className="px-3 pb-3 pt-0 space-y-3 animate-slide-down">
           <div className="ml-14 mr-3 pt-3 space-y-2 border-t">
+            <div className="flex items-start gap-2">
+              <Wallet className="h-4 w-4 text-muted-foreground mt-0.5" />
+              <div className="flex-1">
+                <p className="text-xs font-medium text-muted-foreground mb-0.5">Wallet</p>
+                <p className="text-sm">{payment.wallet}</p>
+              </div>
+            </div>
+
             {hasDescription && (
               <div className="flex items-start gap-2">
                 <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
@@ -392,41 +377,6 @@ function TransactionItem({
               </div>
             </div>
 
-            {/* Action buttons in expanded panel - clear and prominent */}
-            {(onEdit || onDelete) && (
-              <div className="flex items-center gap-2 pt-2 border-t">
-                {onEdit && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 gap-2"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEdit(payment);
-                    }}
-                    disabled={isDeleting}
-                  >
-                    <Edit2 className="h-4 w-4" />
-                    Edit Transaction
-                  </Button>
-                )}
-                {onDelete && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete(payment.id);
-                    }}
-                    disabled={isDeleting}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Delete
-                  </Button>
-                )}
-              </div>
-            )}
           </div>
         </div>
       )}

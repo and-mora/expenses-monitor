@@ -93,13 +93,18 @@ describe('TransactionList', () => {
     expect(screen.getByText('+€3,500.00')).toBeInTheDocument();
   });
 
-  it('should display category and relative date for each transaction', () => {
+  it('should display category and extended date for each transaction', () => {
     render(<TransactionList payments={mockPayments} />);
 
     // Check for categories (case insensitive due to capitalize function)
     expect(screen.getByText(/food/i)).toBeInTheDocument();
     expect(screen.getByText(/income/i)).toBeInTheDocument();
     expect(screen.getByText(/transport/i)).toBeInTheDocument();
+
+    // Check for extended date format
+    expect(screen.getAllByText(/Jan 30, 2026/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Jan 28, 2026/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Jan 29, 2026/).length).toBeGreaterThan(0);
   });
 
   it('should call onDelete when delete button is clicked', async () => {
@@ -279,28 +284,30 @@ describe('TransactionList', () => {
   });
 
   describe('Detailed variant with expandable cards', () => {
-    it('should show wallet and precise date in detailed variant', () => {
+    it('should show extended date in main row and wallet in expanded section', async () => {
+      const user = userEvent.setup();
+
       render(<TransactionList payments={mockPayments} variant="detailed" />);
 
-      // Should show wallet names (all 3 payments have "Main Account")
-      const walletElements = screen.getAllByText('Main Account');
-      expect(walletElements).toHaveLength(3);
-      
-      // Should show precise dates (YYYY-MM-DD format)
-      expect(screen.getByText('2026-01-30')).toBeInTheDocument();
-      expect(screen.getByText('2026-01-28')).toBeInTheDocument();
-      expect(screen.getByText('2026-01-29')).toBeInTheDocument();
+      // Extended date format in main row (MMM d, yyyy)
+      expect(screen.getAllByText(/Jan 30, 2026/).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Jan 28, 2026/).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Jan 29, 2026/).length).toBeGreaterThan(0);
+
+      // Expand first transaction to see wallet
+      const firstTransaction = screen.getByText('Grocery Store').closest('div')?.parentElement;
+      await user.click(firstTransaction!);
+
+      await waitFor(() => {
+        expect(screen.getByText('Wallet')).toBeInTheDocument();
+        expect(screen.getByText('Main Account')).toBeInTheDocument();
+      });
     });
 
-    it('should not show wallet and precise date in compact variant', () => {
+    it('should not show wallet label in compact variant', () => {
       render(<TransactionList payments={mockPayments} variant="compact" />);
 
-      // Wallet name should not be visible (it's in the data but not displayed)
-      const walletElements = screen.queryAllByText('Main Account');
-      expect(walletElements).toHaveLength(0);
-      
-      // Precise dates should not be visible
-      expect(screen.queryByText('2026-01-30')).not.toBeInTheDocument();
+      expect(screen.queryByText('Wallet')).not.toBeInTheDocument();
     });
 
     it('should expand card when clicked in detailed variant', async () => {
@@ -455,23 +462,7 @@ describe('TransactionList', () => {
       expect(onEdit).not.toHaveBeenCalled();
     });
 
-    it('should show mobile menu icon when actions available', () => {
-      render(
-        <TransactionList 
-          payments={mockPayments} 
-          variant="detailed" 
-          onEdit 
-          onDelete={vi.fn()}
-        />
-      );
-
-      // Mobile menu icons (MoreVertical) should be in the document
-      // They have md:hidden class to show only on mobile
-      const allButtons = screen.getAllByRole('button');
-      expect(allButtons.length).toBeGreaterThan(0);
-    });
-
-    it('should reset swipe offset when card is expanded', async () => {
+    it('should keep swipe offset reset when card is expanded', async () => {
       const user = userEvent.setup();
 
       render(
@@ -485,12 +476,8 @@ describe('TransactionList', () => {
       const card = screen.getByText('Grocery Store').closest('.group');
       expect(card).toBeInTheDocument();
 
-      const menuButton = within(card as HTMLElement).getByRole('button', { name: /more actions/i });
-      await user.click(menuButton);
-
-      expect(card).toHaveStyle({ transform: 'translateX(-140px)' });
-
-      const chevronButton = within(card as HTMLElement).getByRole('button', { name: /expand transaction/i });
+      const cardElement = card as HTMLElement;
+      const chevronButton = within(cardElement).getByRole('button', { name: /expand transaction/i });
       await user.click(chevronButton);
 
       await waitFor(() => {
@@ -514,17 +501,15 @@ describe('TransactionList', () => {
   });
 
   describe('Expanded panel action buttons', () => {
-    it('should show edit and delete buttons in expanded panel', async () => {
+    it('should not render edit/delete buttons inside expanded panel', async () => {
       const user = userEvent.setup();
-      const onEdit = vi.fn();
-      const onDelete = vi.fn();
 
       render(
         <TransactionList 
           payments={mockPayments} 
           variant="detailed" 
           onEdit 
-          onDelete={onDelete}
+          onDelete={vi.fn()}
         />
       );
 
@@ -534,111 +519,10 @@ describe('TransactionList', () => {
         await user.click(firstTransaction);
       }
 
-      // Action buttons should appear
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /edit transaction/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /^delete$/i })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /edit transaction/i })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /^delete$/i })).not.toBeInTheDocument();
       });
-    });
-
-    it('should call onEdit when edit button clicked in expanded panel', async () => {
-      const user = userEvent.setup();
-
-      render(
-        <TransactionList 
-          payments={mockPayments} 
-          variant="detailed" 
-          onEdit 
-        />
-      );
-
-      // Expand and click edit
-      const firstTransaction = screen.getByText('Grocery Store').closest('div')?.parentElement;
-      if (firstTransaction) {
-        await user.click(firstTransaction);
-      }
-
-      await waitFor(async () => {
-        const editButton = screen.getByRole('button', { name: /edit transaction/i });
-        await user.click(editButton);
-      });
-
-      // EditPaymentDialog should open with title "Edit Transaction"
-      await waitFor(() => {
-        const dialogTitles = screen.getAllByText(/edit transaction/i);
-        // Should have at least 2: button text + dialog title
-        expect(dialogTitles.length).toBeGreaterThanOrEqual(2);
-      });
-    });
-
-    it('should call onDelete when delete button clicked in expanded panel', async () => {
-      const user = userEvent.setup();
-      const onDelete = vi.fn();
-
-      render(
-        <TransactionList 
-          payments={mockPayments} 
-          variant="detailed" 
-          onDelete={onDelete}
-        />
-      );
-
-      // Expand and click delete
-      const firstTransaction = screen.getByText('Grocery Store').closest('div')?.parentElement;
-      if (firstTransaction) {
-        await user.click(firstTransaction);
-      }
-
-      await waitFor(async () => {
-        const deleteButton = screen.getByRole('button', { name: /^delete$/i });
-        await user.click(deleteButton);
-      });
-
-      expect(onDelete).toHaveBeenCalledWith('1');
-    });
-
-    it('should disable action buttons when deleting', async () => {
-      const user = userEvent.setup();
-
-      render(
-        <TransactionList 
-          payments={mockPayments} 
-          variant="detailed" 
-          onEdit 
-          onDelete={vi.fn()}
-          isDeleting
-        />
-      );
-
-      // Expand transaction
-      const firstTransaction = screen.getByText('Grocery Store').closest('div')?.parentElement;
-      if (firstTransaction) {
-        await user.click(firstTransaction);
-      }
-
-      // Action buttons should be disabled
-      await waitFor(() => {
-        const editButton = screen.getByRole('button', { name: /edit transaction/i });
-        const deleteButton = screen.getByRole('button', { name: /^delete$/i });
-        
-        expect(editButton).toBeDisabled();
-        expect(deleteButton).toBeDisabled();
-      });
-    });
-
-    it('should not show action buttons when not expanded', () => {
-      render(
-        <TransactionList 
-          payments={mockPayments} 
-          variant="detailed" 
-          onEdit 
-          onDelete={vi.fn()}
-        />
-      );
-
-      // Action buttons in expanded panel should not be visible
-      expect(screen.queryByRole('button', { name: /edit transaction/i })).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: /^delete$/i })).not.toBeInTheDocument();
     });
   });
 });
