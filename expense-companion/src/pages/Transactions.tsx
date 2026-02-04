@@ -1,8 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/Header';
 import { TransactionList } from '@/components/dashboard/TransactionList';
+import { TransactionTimeline } from '@/components/dashboard/TransactionTimeline';
 import { AddPaymentDialog } from '@/components/dashboard/AddPaymentDialog';
+import { EditPaymentDialog } from '@/components/dashboard/EditPaymentDialog';
 import { 
   usePayments, 
   useWallets, 
@@ -37,9 +39,12 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { Badge } from '@/components/ui/badge';
-import { Search, X, Filter, Plus } from 'lucide-react';
+import { CalendarDays, List, Search, X, Filter, Plus } from 'lucide-react';
+import type { Payment } from '@/types/api';
 
 const PAGE_SIZE = 50;
+const LAYOUT_STORAGE_KEY = 'transactions-layout';
+type TransactionsLayout = 'list' | 'timeline';
 
 const Transactions = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -49,6 +54,17 @@ const Transactions = () => {
   const [dateTo, setDateTo] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(0);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [layout, setLayout] = useState<TransactionsLayout>(() => {
+    if (typeof window === 'undefined') return 'list';
+    const stored = window.localStorage.getItem(LAYOUT_STORAGE_KEY) as TransactionsLayout | null;
+    return stored === 'list' || stored === 'timeline' ? stored : 'list';
+  });
+  const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(LAYOUT_STORAGE_KEY, layout);
+  }, [layout]);
 
   // Build filters object for API
   const filters = useMemo(() => {
@@ -148,18 +164,68 @@ const Transactions = () => {
               View and manage all your transactions
             </p>
           </div>
-          {!walletsLoading && wallets.length > 0 && (
-            <AddPaymentDialog 
-              wallets={wallets} 
-              onSubmit={handleCreatePayment}
-              isLoading={createPayment.isPending}
-            />
-          )}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center rounded-full border bg-card p-1">
+              <Button
+                variant={layout === 'list' ? 'default' : 'ghost'}
+                size="sm"
+                className="h-8 rounded-full px-3"
+                onClick={() => setLayout('list')}
+                aria-pressed={layout === 'list'}
+                aria-label="List layout"
+              >
+                <List className="h-4 w-4 mr-2" />
+                List
+              </Button>
+              <Button
+                variant={layout === 'timeline' ? 'default' : 'ghost'}
+                size="sm"
+                className="h-8 rounded-full px-3"
+                onClick={() => setLayout('timeline')}
+                aria-pressed={layout === 'timeline'}
+                aria-label="Timeline layout"
+              >
+                <CalendarDays className="h-4 w-4 mr-2" />
+                Timeline
+              </Button>
+            </div>
+            {!walletsLoading && wallets.length > 0 && (
+              <AddPaymentDialog 
+                wallets={wallets} 
+                onSubmit={handleCreatePayment}
+                isLoading={createPayment.isPending}
+              />
+            )}
+          </div>
         </div>
 
         {/* Mobile Header - Compact */}
-        <div className="md:hidden mb-4">
+        <div className="md:hidden mb-4 space-y-3">
           <h1 className="text-xl font-bold tracking-tight">Transactions</h1>
+          <div className="flex items-center rounded-full border bg-card p-1 w-fit">
+            <Button
+              variant={layout === 'list' ? 'default' : 'ghost'}
+              size="sm"
+              className="h-8 rounded-full px-3"
+              onClick={() => setLayout('list')}
+              aria-pressed={layout === 'list'}
+              aria-label="List layout"
+            >
+              <List className="h-4 w-4 mr-2" />
+              List
+            </Button>
+            <Button
+              variant={layout === 'timeline' ? 'default' : 'ghost'}
+              size="sm"
+              className="h-8 rounded-full px-3"
+              onClick={() => setLayout('timeline')}
+              aria-pressed={layout === 'timeline'}
+              aria-label="Timeline layout"
+            >
+              <CalendarDays className="h-4 w-4 mr-2" />
+              Timeline
+            </Button>
+          </div>
         </div>
 
         {/* Filters Section */}
@@ -444,11 +510,11 @@ const Transactions = () => {
               isLoading={createPayment.isPending}
               trigger={
                 <Button 
-                  size="lg" 
-                  className="h-14 w-14 rounded-full shadow-lg"
+                  size="icon" 
+                  className="h-14 w-14 rounded-full shadow-lg [&_svg]:size-6"
                   aria-label="Add transaction"
                 >
-                  <Plus className="h-6 w-6" />
+                  <Plus />
                 </Button>
               }
             />
@@ -458,6 +524,13 @@ const Transactions = () => {
         {/* Transactions List */}
         {isLoading ? (
           <Skeleton className="h-[600px] rounded-xl" />
+        ) : layout === 'timeline' ? (
+          <TransactionTimeline
+            payments={payments}
+            onDelete={handleDeletePayment}
+            onEdit={setEditingPayment}
+            isDeleting={deletePayment.isPending}
+          />
         ) : (
           <TransactionList
             payments={payments}
@@ -471,7 +544,7 @@ const Transactions = () => {
         )}
 
         {/* Pagination Controls */}
-        {!isLoading && payments.length > 0 && (
+        {!isLoading && layout === 'list' && payments.length > 0 && (
           <div className="mt-6 flex justify-center">
             <Pagination>
               <PaginationContent>
@@ -528,6 +601,14 @@ const Transactions = () => {
             </Pagination>
           </div>
         )}
+
+        <EditPaymentDialog
+          key={editingPayment?.id}
+          payment={editingPayment}
+          open={!!editingPayment}
+          onOpenChange={(open) => !open && setEditingPayment(null)}
+          onSave={() => setEditingPayment(null)}
+        />
 
         {/* Empty State */}
         {!isLoading && payments.length === 0 && hasActiveFilters && (

@@ -96,6 +96,7 @@ const createWrapper = () => {
 describe('Transactions Page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.localStorage.clear();
     
     // Default mock implementations - simulate server-side filtering
     vi.mocked(useApiHooks.usePayments).mockImplementation((page, size, filters) => {
@@ -189,6 +190,17 @@ describe('Transactions Page', () => {
         // Mobile version shows compact text without "Showing" and "on page X"
         expect(screen.getByText(/3 transactions/i)).toBeInTheDocument();
       });
+    });
+
+    it('should switch to timeline layout and persist the setting', async () => {
+      const user = userEvent.setup();
+      render(<Transactions />, { wrapper: createWrapper() });
+
+      const timelineToggle = screen.getAllByRole('button', { name: /timeline layout/i })[0];
+      await user.click(timelineToggle);
+
+      expect(screen.getByText('Supermarket')).toBeInTheDocument();
+      expect(window.localStorage.getItem('transactions-layout')).toBe('timeline');
     });
   });
 
