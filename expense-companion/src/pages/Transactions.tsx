@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/Header';
 import { TransactionList } from '@/components/dashboard/TransactionList';
@@ -6,7 +6,8 @@ import { TransactionTimeline } from '@/components/dashboard/TransactionTimeline'
 import { AddPaymentDialog } from '@/components/dashboard/AddPaymentDialog';
 import { EditPaymentDialog } from '@/components/dashboard/EditPaymentDialog';
 import { 
-  usePayments, 
+  usePayments,
+  useInfinitePayments,
   useWallets, 
   useCreatePayment, 
   useDeletePayment,
@@ -39,7 +40,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays, List, Search, X, Filter, Plus } from 'lucide-react';
+import { Search, X, Filter, Plus, Loader2 } from 'lucide-react';
 import type { Payment } from '@/types/api';
 
 const PAGE_SIZE = 50;
@@ -54,17 +55,15 @@ const Transactions = () => {
   const [dateTo, setDateTo] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(0);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
-  const [layout, setLayout] = useState<TransactionsLayout>(() => {
-    if (typeof window === 'undefined') return 'list';
+  const [layout] = useState<TransactionsLayout>(() => {
+    if (typeof window === 'undefined') return 'timeline';
     const stored = window.localStorage.getItem(LAYOUT_STORAGE_KEY) as TransactionsLayout | null;
-    return stored === 'list' || stored === 'timeline' ? stored : 'list';
+    return stored === 'list' || stored === 'timeline' ? stored : 'timeline';
   });
   const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    window.localStorage.setItem(LAYOUT_STORAGE_KEY, layout);
-  }, [layout]);
+  // Ref for infinite scroll sentinel
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // Build filters object for API
   const filters = useMemo(() => {
@@ -95,15 +94,56 @@ const Transactions = () => {
     return Object.keys(apiFilters).length > 0 ? apiFilters : undefined;
   }, [searchQuery, selectedCategory, selectedWallet, dateFrom, dateTo]);
 
-  const { data: paymentsData, isLoading: paymentsLoading } = usePayments(currentPage, PAGE_SIZE, filters);
+  // Use different queries based on layout
+  const { data: paymentsData, isLoading: paymentsLoading } = usePayments(
+    currentPage, 
+    PAGE_SIZE, 
+    layout === 'list' ? filters : undefined
+  );
+  
+  const {
+    data: infiniteData,
+    isLoading: infiniteLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfinitePayments(PAGE_SIZE, layout === 'timeline' ? filters : undefined);
+  
   const { data: wallets = [], isLoading: walletsLoading } = useWallets();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
   
   const createPayment = useCreatePayment();
   const deletePayment = useDeletePayment();
 
-  const payments = paymentsData?.content || [];
+  // Flatten infinite query data for timeline
+  const timelinePayments = useMemo(() => {
+    if (!infiniteData?.pages) return [];
+    return infiniteData.pages.flatMap(page => page.content);
+  }, [infiniteData]);
+
+  const payments = layout === 'timeline' ? timelinePayments : (paymentsData?.content || []);
   const currentPageNumber = paymentsData?.page || 0;
+
+  // Infinite scroll observer
+  const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
+    const [target] = entries;
+    if (target.isIntersecting && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  useEffect(() => {
+    const element = loadMoreRef.current;
+    if (!element || layout !== 'timeline') return;
+
+    const observer = new IntersectionObserver(handleObserver, {
+      threshold: 0.1,
+      rootMargin: '100px',
+    });
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [handleObserver, layout]);
 
   const handleCreatePayment = async (data: Parameters<typeof createPayment.mutate>[0]) => {
     try {
@@ -149,7 +189,7 @@ const Transactions = () => {
   };
 
   const hasActiveFilters = searchQuery || selectedCategory !== 'all' || selectedWallet !== 'all' || dateFrom || dateTo;
-  const isLoading = paymentsLoading || walletsLoading || categoriesLoading;
+  const isLoading = (layout === 'timeline' ? infiniteLoading : paymentsLoading) || walletsLoading || categoriesLoading;
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
@@ -165,30 +205,6 @@ const Transactions = () => {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center rounded-full border bg-card p-1">
-              <Button
-                variant={layout === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                className="h-8 rounded-full px-3"
-                onClick={() => setLayout('list')}
-                aria-pressed={layout === 'list'}
-                aria-label="List layout"
-              >
-                <List className="h-4 w-4 mr-2" />
-                List
-              </Button>
-              <Button
-                variant={layout === 'timeline' ? 'default' : 'ghost'}
-                size="sm"
-                className="h-8 rounded-full px-3"
-                onClick={() => setLayout('timeline')}
-                aria-pressed={layout === 'timeline'}
-                aria-label="Timeline layout"
-              >
-                <CalendarDays className="h-4 w-4 mr-2" />
-                Timeline
-              </Button>
-            </div>
             {!walletsLoading && wallets.length > 0 && (
               <AddPaymentDialog 
                 wallets={wallets} 
@@ -200,32 +216,8 @@ const Transactions = () => {
         </div>
 
         {/* Mobile Header - Compact */}
-        <div className="md:hidden mb-4 space-y-3">
+        <div className="md:hidden mb-4">
           <h1 className="text-xl font-bold tracking-tight">Transactions</h1>
-          <div className="flex items-center rounded-full border bg-card p-1 w-fit">
-            <Button
-              variant={layout === 'list' ? 'default' : 'ghost'}
-              size="sm"
-              className="h-8 rounded-full px-3"
-              onClick={() => setLayout('list')}
-              aria-pressed={layout === 'list'}
-              aria-label="List layout"
-            >
-              <List className="h-4 w-4 mr-2" />
-              List
-            </Button>
-            <Button
-              variant={layout === 'timeline' ? 'default' : 'ghost'}
-              size="sm"
-              className="h-8 rounded-full px-3"
-              onClick={() => setLayout('timeline')}
-              aria-pressed={layout === 'timeline'}
-              aria-label="Timeline layout"
-            >
-              <CalendarDays className="h-4 w-4 mr-2" />
-              Timeline
-            </Button>
-          </div>
         </div>
 
         {/* Filters Section */}
@@ -491,6 +483,10 @@ const Transactions = () => {
           <div className="text-xs md:text-sm text-muted-foreground">
             {isLoading ? (
               <Skeleton className="h-4 w-32" />
+            ) : layout === 'timeline' ? (
+              <>
+                {payments.length} transaction{payments.length !== 1 ? 's' : ''}
+              </>
             ) : (
               <>
                 <span className="hidden sm:inline">Showing </span>
@@ -525,12 +521,26 @@ const Transactions = () => {
         {isLoading ? (
           <Skeleton className="h-[600px] rounded-xl" />
         ) : layout === 'timeline' ? (
-          <TransactionTimeline
-            payments={payments}
-            onDelete={handleDeletePayment}
-            onEdit={setEditingPayment}
-            isDeleting={deletePayment.isPending}
-          />
+          <>
+            <TransactionTimeline
+              payments={payments}
+              onDelete={handleDeletePayment}
+              onEdit={setEditingPayment}
+              isDeleting={deletePayment.isPending}
+            />
+            {/* Infinite scroll sentinel and loader */}
+            <div ref={loadMoreRef} className="py-4 flex justify-center">
+              {isFetchingNextPage && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm">Loading more...</span>
+                </div>
+              )}
+              {!hasNextPage && payments.length > 0 && (
+                <p className="text-sm text-muted-foreground">No more transactions</p>
+              )}
+            </div>
+          </>
         ) : (
           <TransactionList
             payments={payments}
