@@ -239,8 +239,8 @@ function TimelineItem({
 
         {/* Transaction info */}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-foreground">{payment.merchantName}</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="truncate font-medium text-foreground">{payment.merchantName}</p>
+          <p className="text-sm text-muted-foreground">
             {capitalize(payment.category)}
           </p>
         </div>
@@ -249,7 +249,7 @@ function TimelineItem({
         <div className="flex items-center gap-2 shrink-0">
           <p
             className={cn(
-              'text-sm font-semibold font-mono tabular-nums',
+              'font-semibold font-mono tabular-nums',
               payment.amountInCents > 0 ? 'text-income' : 'text-expense'
             )}
           >
