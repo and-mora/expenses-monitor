@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
 import type { PaymentCreate, WalletCreate } from '@/types/api';
 
@@ -51,6 +51,32 @@ export function usePayments(
   return useQuery({
     queryKey: [...queryKeys.payments, 'paged', page, size, filters],
     queryFn: () => apiClient.getPayments(page, size, filters),
+    staleTime: 10000, // 10 seconds
+  });
+}
+
+export function useInfinitePayments(
+  size = 50,
+  filters?: {
+    dateFrom?: string;
+    dateTo?: string;
+    category?: string;
+    wallet?: string;
+    search?: string;
+  }
+) {
+  return useInfiniteQuery({
+    queryKey: [...queryKeys.payments, 'infinite', size, filters],
+    queryFn: ({ pageParam = 0 }) => apiClient.getPayments(pageParam, size, filters),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      // If we got fewer items than requested, there are no more pages
+      if (lastPage.content.length < size) {
+        return undefined;
+      }
+      // Next page number
+      return allPages.length;
+    },
     staleTime: 10000, // 10 seconds
   });
 }

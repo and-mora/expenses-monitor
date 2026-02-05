@@ -48,5 +48,21 @@ global.ResizeObserver = class ResizeObserver {
   disconnect() {}
 };
 
+// Mock IntersectionObserver for infinite scroll components
+global.IntersectionObserver = class IntersectionObserver {
+  readonly root: Element | null = null;
+  readonly rootMargin: string = '';
+  readonly thresholds: ReadonlyArray<number> = [];
+  
+  constructor(private callback: IntersectionObserverCallback) {}
+  
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
+  }
+};
+
 // Mock scrollIntoView for components that use it (like cmdk)
 Element.prototype.scrollIntoView = vi.fn();
