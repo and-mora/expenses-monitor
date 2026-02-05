@@ -5,6 +5,8 @@ import { TransactionList } from '@/components/dashboard/TransactionList';
 import { TransactionTimeline } from '@/components/dashboard/TransactionTimeline';
 import { AddPaymentDialog } from '@/components/dashboard/AddPaymentDialog';
 import { EditPaymentDialog } from '@/components/dashboard/EditPaymentDialog';
+import { TransactionFilters, TransactionPagination } from '@/components/transactions';
+import { useTransactionFilters } from '@/hooks/useTransactionFilters';
 import { 
   usePayments,
   useInfinitePayments,
@@ -14,33 +16,8 @@ import {
   useCategories
 } from '@/hooks/use-api';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
-import { Badge } from '@/components/ui/badge';
-import { Search, X, Filter, Plus, Loader2 } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
 import type { Payment } from '@/types/api';
 
 const PAGE_SIZE = 50;
@@ -48,13 +25,6 @@ const LAYOUT_STORAGE_KEY = 'transactions-layout';
 type TransactionsLayout = 'list' | 'timeline';
 
 const Transactions = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedWallet, setSelectedWallet] = useState<string>('all');
-  const [dateFrom, setDateFrom] = useState<string>('');
-  const [dateTo, setDateTo] = useState<string>('');
-  const [currentPage, setCurrentPage] = useState(0);
-  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [layout] = useState<TransactionsLayout>(() => {
     if (typeof window === 'undefined') return 'timeline';
     const stored = window.localStorage.getItem(LAYOUT_STORAGE_KEY) as TransactionsLayout | null;
@@ -62,37 +32,28 @@ const Transactions = () => {
   });
   const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
 
+  // Use extracted filters hook
+  const {
+    searchQuery,
+    selectedCategory,
+    selectedWallet,
+    dateFrom,
+    dateTo,
+    currentPage,
+    setSearchQuery,
+    setSelectedCategory,
+    setSelectedWallet,
+    setDateFrom,
+    setDateTo,
+    clearFilters,
+    handlePageChange,
+    filters,
+    activeFiltersCount,
+    hasActiveFilters,
+  } = useTransactionFilters();
+
   // Ref for infinite scroll sentinel
   const loadMoreRef = useRef<HTMLDivElement>(null);
-
-  // Build filters object for API
-  const filters = useMemo(() => {
-    const apiFilters: {
-      category?: string;
-      wallet?: string;
-      search?: string;
-      dateFrom?: string;
-      dateTo?: string;
-    } = {};
-    
-    if (selectedCategory !== 'all') {
-      apiFilters.category = selectedCategory;
-    }
-    if (selectedWallet !== 'all') {
-      apiFilters.wallet = selectedWallet;
-    }
-    if (searchQuery) {
-      apiFilters.search = searchQuery;
-    }
-    if (dateFrom) {
-      apiFilters.dateFrom = dateFrom;
-    }
-    if (dateTo) {
-      apiFilters.dateTo = dateTo;
-    }
-    
-    return Object.keys(apiFilters).length > 0 ? apiFilters : undefined;
-  }, [searchQuery, selectedCategory, selectedWallet, dateFrom, dateTo]);
 
   // Use different queries based on layout
   const { data: paymentsData, isLoading: paymentsLoading } = usePayments(
@@ -163,32 +124,6 @@ const Transactions = () => {
     }
   };
 
-  const clearFilters = () => {
-    setSearchQuery('');
-    setSelectedCategory('all');
-    setSelectedWallet('all');
-    setDateFrom('');
-    setDateTo('');
-    setCurrentPage(0);
-    setFilterSheetOpen(false);
-  };
-
-  // Count active filters (excluding search)
-  const activeFiltersCount = useMemo(() => {
-    let count = 0;
-    if (selectedCategory !== 'all') count++;
-    if (selectedWallet !== 'all') count++;
-    if (dateFrom) count++;
-    if (dateTo) count++;
-    return count;
-  }, [selectedCategory, selectedWallet, dateFrom, dateTo]);
-
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const hasActiveFilters = searchQuery || selectedCategory !== 'all' || selectedWallet !== 'all' || dateFrom || dateTo;
   const isLoading = (layout === 'timeline' ? infiniteLoading : paymentsLoading) || walletsLoading || categoriesLoading;
 
   return (
@@ -221,266 +156,27 @@ const Transactions = () => {
         </div>
 
         {/* Filters Section */}
-        <div className="mb-4 md:mb-6 space-y-3 md:space-y-4">
-          {/* Mobile: Search Bar + Filter Button */}
-          <div className="flex gap-2 md:hidden">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setCurrentPage(0);
-                }}
-                className="pl-9 pr-9"
-              />
-              {searchQuery && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-                  onClick={() => {
-                    setSearchQuery('');
-                    setCurrentPage(0);
-                  }}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-            
-            {/* Filter Sheet Trigger */}
-            <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="default" className="relative" aria-label="Filter transactions">
-                  <Filter className="h-4 w-4" />
-                  {activeFiltersCount > 0 && (
-                    <Badge 
-                      variant="destructive" 
-                      className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                    >
-                      {activeFiltersCount}
-                    </Badge>
-                  )}
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
-                <SheetHeader>
-                  <SheetTitle>Filter Transactions</SheetTitle>
-                  <SheetDescription>
-                    Apply filters to refine your transaction list
-                  </SheetDescription>
-                </SheetHeader>
-                
-                <div className="mt-6 space-y-4">
-                  {/* Category Filter */}
-                  <div className="space-y-2">
-                    <label htmlFor="category-filter" className="text-sm font-medium">Category</label>
-                    <Select
-                      value={selectedCategory}
-                      onValueChange={(value) => {
-                        setSelectedCategory(value);
-                        setCurrentPage(0);
-                      }}
-                    >
-                      <SelectTrigger id="category-filter" aria-label="Category filter">
-                        <SelectValue placeholder="All Categories" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Categories</SelectItem>
-                        {categories.map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category.charAt(0).toUpperCase() + category.slice(1)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Wallet Filter */}
-                  <div className="space-y-2">
-                    <label htmlFor="wallet-filter" className="text-sm font-medium">Wallet</label>
-                    <Select
-                      value={selectedWallet}
-                      onValueChange={(value) => {
-                        setSelectedWallet(value);
-                        setCurrentPage(0);
-                      }}
-                    >
-                      <SelectTrigger id="wallet-filter" aria-label="Wallet filter">
-                        <SelectValue placeholder="All Wallets" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Wallets</SelectItem>
-                        {wallets.map((wallet) => (
-                          <SelectItem key={wallet.id} value={wallet.name}>
-                            {wallet.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Date From Filter */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">From Date</label>
-                    <Input
-                      type="date"
-                      value={dateFrom}
-                      onChange={(e) => {
-                        setDateFrom(e.target.value);
-                        setCurrentPage(0);
-                      }}
-                    />
-                  </div>
-
-                  {/* Date To Filter */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">To Date</label>
-                    <Input
-                      type="date"
-                      value={dateTo}
-                      onChange={(e) => {
-                        setDateTo(e.target.value);
-                        setCurrentPage(0);
-                      }}
-                    />
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-3 pt-4">
-                    <Button
-                      variant="outline"
-                      onClick={clearFilters}
-                      className="flex-1"
-                      disabled={!hasActiveFilters}
-                    >
-                      <X className="h-4 w-4 mr-2" />
-                      Clear
-                    </Button>
-                    <Button
-                      onClick={() => setFilterSheetOpen(false)}
-                      className="flex-1"
-                    >
-                      Apply Filters
-                    </Button>
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-
-          {/* Desktop: Full Search Bar */}
-          <div className="relative hidden md:block">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by merchant or description..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(0);
-              }}
-              className="pl-9 pr-9"
-            />
-            {searchQuery && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-                onClick={() => {
-                  setSearchQuery('');
-                  setCurrentPage(0);
-                }}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-
-          {/* Desktop: Filter Controls */}
-          <div className="hidden md:flex flex-col sm:flex-row gap-3">
-            {/* Category Filter */}
-            <Select
-              value={selectedCategory}
-              onValueChange={(value) => {
-                setSelectedCategory(value);
-                setCurrentPage(0);
-              }}
-            >
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="All Categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Wallet Filter */}
-            <Select
-              value={selectedWallet}
-              onValueChange={(value) => {
-                setSelectedWallet(value);
-                setCurrentPage(0);
-              }}
-            >
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="All Wallets" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Wallets</SelectItem>
-                {wallets.map((wallet) => (
-                  <SelectItem key={wallet.id} value={wallet.name}>
-                    {wallet.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Date From Filter */}
-            <Input
-              type="date"
-              placeholder="From date"
-              value={dateFrom}
-              onChange={(e) => {
-                setDateFrom(e.target.value);
-                setCurrentPage(0);
-              }}
-              className="w-full sm:w-[180px]"
-            />
-
-            {/* Date To Filter */}
-            <Input
-              type="date"
-              placeholder="To date"
-              value={dateTo}
-              onChange={(e) => {
-                setDateTo(e.target.value);
-                setCurrentPage(0);
-              }}
-              className="w-full sm:w-[180px]"
-            />
-
-            {/* Clear Filters Button */}
-            {hasActiveFilters && (
-              <Button
-                variant="outline"
-                onClick={clearFilters}
-                className="sm:ml-auto"
-              >
-                <X className="h-4 w-4 mr-2" />
-                Clear Filters
-              </Button>
-            )}
-          </div>
+        <div className="mb-4 md:mb-6">
+          <TransactionFilters
+            searchQuery={searchQuery}
+            selectedCategory={selectedCategory}
+            selectedWallet={selectedWallet}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onSearchChange={setSearchQuery}
+            onCategoryChange={setSelectedCategory}
+            onWalletChange={setSelectedWallet}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
+            onClearFilters={clearFilters}
+            categories={categories}
+            wallets={wallets}
+            activeFiltersCount={activeFiltersCount}
+            hasActiveFilters={hasActiveFilters}
+          />
 
           {/* Results Count */}
-          <div className="text-xs md:text-sm text-muted-foreground">
+          <div className="text-xs md:text-sm text-muted-foreground mt-3 md:mt-4">
             {isLoading ? (
               <Skeleton className="h-4 w-32" />
             ) : layout === 'timeline' ? (
@@ -555,61 +251,12 @@ const Transactions = () => {
 
         {/* Pagination Controls */}
         {!isLoading && layout === 'list' && payments.length > 0 && (
-          <div className="mt-6 flex justify-center">
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious 
-                    onClick={() => currentPage > 0 && handlePageChange(currentPage - 1)}
-                    className={currentPage === 0 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                  />
-                </PaginationItem>
-                
-                {/* Show page numbers */}
-                {(() => {
-                  // Calculate total possible pages based on current page and data
-                  // We know there's at least currentPage + 1 pages, and potentially more if we have PAGE_SIZE items
-                  const knownPages = currentPage + 1 + (payments.length === PAGE_SIZE ? 1 : 0);
-                  
-                  // Show up to 5 page numbers centered around current page
-                  const maxPagesToShow = 5;
-                  const totalPages = Math.max(knownPages, currentPage + 1);
-                  const pagesToShow = Math.min(maxPagesToShow, totalPages);
-                  
-                  // Center the current page in the visible range
-                  let startPage = Math.max(0, currentPage - Math.floor(pagesToShow / 2));
-                  // Adjust if we're at the end
-                  startPage = Math.min(startPage, Math.max(0, totalPages - pagesToShow));
-                  
-                  return [...Array(pagesToShow)].map((_, i) => {
-                    const pageNum = startPage + i;
-                    // Include currentPage in key to avoid collisions during page transitions
-                    return (
-                      <PaginationItem key={`pagination-current${currentPage}-page${pageNum}`}>
-                        <PaginationLink
-                          onClick={() => handlePageChange(pageNum)}
-                          isActive={pageNum === currentPage}
-                          className="cursor-pointer"
-                          aria-label={`Go to page ${pageNum + 1}`}
-                          aria-current={pageNum === currentPage ? 'page' : undefined}
-                          role="button"
-                        >
-                          {pageNum + 1}
-                        </PaginationLink>
-                      </PaginationItem>
-                    );
-                  });
-                })()}
-
-                <PaginationItem>
-                  <PaginationNext 
-                    onClick={() => payments.length === PAGE_SIZE && handlePageChange(currentPage + 1)}
-                    className={payments.length < PAGE_SIZE ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </div>
+          <TransactionPagination
+            currentPage={currentPage}
+            pageSize={PAGE_SIZE}
+            itemsCount={payments.length}
+            onPageChange={handlePageChange}
+          />
         )}
 
         <EditPaymentDialog
