@@ -1,4 +1,13 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
+
+// URL parameter keys
+const PARAM_SEARCH = 'search';
+const PARAM_CATEGORY = 'category';
+const PARAM_WALLET = 'wallet';
+const PARAM_DATE_FROM = 'dateFrom';
+const PARAM_DATE_TO = 'dateTo';
+const PARAM_PAGE = 'page';
 
 export interface TransactionFiltersState {
   searchQuery: string;
@@ -37,12 +46,31 @@ export type UseTransactionFiltersReturn = TransactionFiltersState &
   TransactionFiltersComputed;
 
 export function useTransactionFilters(): UseTransactionFiltersReturn {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedWallet, setSelectedWallet] = useState<string>('all');
-  const [dateFrom, setDateFrom] = useState<string>('');
-  const [dateTo, setDateTo] = useState<string>('');
-  const [currentPage, setCurrentPage] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Read state from URL parameters
+  const searchQuery = searchParams.get(PARAM_SEARCH) || '';
+  const selectedCategory = searchParams.get(PARAM_CATEGORY) || 'all';
+  const selectedWallet = searchParams.get(PARAM_WALLET) || 'all';
+  const dateFrom = searchParams.get(PARAM_DATE_FROM) || '';
+  const dateTo = searchParams.get(PARAM_DATE_TO) || '';
+  const currentPage = parseInt(searchParams.get(PARAM_PAGE) || '0', 10);
+
+  // Helper to update a single parameter (keeps other params)
+  const updateParam = useCallback((key: string, value: string, resetPage = true) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (value && value !== 'all' && value !== '0') {
+        next.set(key, value);
+      } else {
+        next.delete(key);
+      }
+      if (resetPage && key !== PARAM_PAGE) {
+        next.delete(PARAM_PAGE);
+      }
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
 
   // Build filters object for API
   const filters = useMemo(() => {
@@ -86,44 +114,38 @@ export function useTransactionFilters(): UseTransactionFiltersReturn {
   const hasActiveFilters = !!(searchQuery || selectedCategory !== 'all' || selectedWallet !== 'all' || dateFrom || dateTo);
 
   const clearFilters = useCallback(() => {
-    setSearchQuery('');
-    setSelectedCategory('all');
-    setSelectedWallet('all');
-    setDateFrom('');
-    setDateTo('');
-    setCurrentPage(0);
-  }, []);
+    setSearchParams({}, { replace: true });
+  }, [setSearchParams]);
 
   const handlePageChange = useCallback((newPage: number) => {
-    setCurrentPage(newPage);
+    updateParam(PARAM_PAGE, String(newPage), false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  }, [updateParam]);
 
   // Wrapped setters that reset page
   const setSearchQueryWithReset = useCallback((query: string) => {
-    setSearchQuery(query);
-    setCurrentPage(0);
-  }, []);
+    updateParam(PARAM_SEARCH, query);
+  }, [updateParam]);
 
   const setCategoryWithReset = useCallback((category: string) => {
-    setSelectedCategory(category);
-    setCurrentPage(0);
-  }, []);
+    updateParam(PARAM_CATEGORY, category);
+  }, [updateParam]);
 
   const setWalletWithReset = useCallback((wallet: string) => {
-    setSelectedWallet(wallet);
-    setCurrentPage(0);
-  }, []);
+    updateParam(PARAM_WALLET, wallet);
+  }, [updateParam]);
 
   const setDateFromWithReset = useCallback((date: string) => {
-    setDateFrom(date);
-    setCurrentPage(0);
-  }, []);
+    updateParam(PARAM_DATE_FROM, date);
+  }, [updateParam]);
 
   const setDateToWithReset = useCallback((date: string) => {
-    setDateTo(date);
-    setCurrentPage(0);
-  }, []);
+    updateParam(PARAM_DATE_TO, date);
+  }, [updateParam]);
+
+  const setCurrentPage = useCallback((page: number) => {
+    updateParam(PARAM_PAGE, String(page), false);
+  }, [updateParam]);
 
   return {
     // State

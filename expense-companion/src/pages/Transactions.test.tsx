@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import Transactions from './Transactions';
 import * as useApiHooks from '@/hooks/use-api';
 import type { Payment, Wallet, CategoryItem } from '@/types/api';
@@ -24,17 +24,6 @@ vi.mock('@/contexts/AuthContext', () => ({
     initialized: true,
   }),
 }));
-
-// Mock react-router-dom useLocation
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
-  return {
-    ...actual,
-    useLocation: () => ({
-      pathname: '/transactions',
-    }),
-  };
-});
 
 const mockPayments: Payment[] = [
   {
@@ -86,9 +75,9 @@ const createWrapper = () => {
 
   return ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <MemoryRouter initialEntries={['/transactions']}>
         {children}
-      </BrowserRouter>
+      </MemoryRouter>
     </QueryClientProvider>
   );
 };
