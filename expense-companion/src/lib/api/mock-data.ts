@@ -1,0 +1,116 @@
+import type { Payment, CategoryItem } from '@/types/api';
+
+// Mock data for development/demo
+export const mockCategories: CategoryItem[] = [
+  'food',
+  'transport',
+  'shopping',
+  'entertainment',
+  'utilities',
+  'health',
+  'income',
+  'other',
+];
+
+export const mockPayments: Payment[] = [
+  {
+    id: '1',
+    merchantName: 'Salary - Company Inc',
+    amountInCents: 350000,
+    category: 'income',
+    accountingDate: '2025-01-15',
+    description: 'Monthly salary',
+    wallet: 'Main Account',
+    tags: [
+      { key: 'recurring', value: 'monthly' },
+      { key: 'source', value: 'employer' },
+    ],
+  },
+  {
+    id: '2',
+    merchantName: 'Supermarket',
+    amountInCents: -8450,
+    category: 'food',
+    accountingDate: '2025-01-20',
+    description: 'Weekly groceries',
+    wallet: 'Main Account',
+    tags: [
+      { key: 'type', value: 'groceries' },
+      { key: 'store', value: 'Carrefour' },
+      { key: 'priority', value: 'essential' },
+      { key: 'payment', value: 'card' },
+    ],
+  },
+  {
+    id: '3',
+    merchantName: 'Netflix',
+    amountInCents: -1299,
+    category: 'entertainment',
+    accountingDate: '2025-01-18',
+    description: 'Monthly subscription',
+    wallet: 'Main Account',
+    tags: [
+      { key: 'recurring', value: 'monthly' },
+      { key: 'service', value: 'streaming' },
+    ],
+  },
+  {
+    id: '4',
+    merchantName: 'Gas Station',
+    amountInCents: -5500,
+    category: 'transport',
+    accountingDate: '2025-01-19',
+    description: 'Fuel',
+    wallet: 'Main Account',
+    tags: [{ key: 'vehicle', value: 'car' }],
+  },
+  {
+    id: '5',
+    merchantName: 'Electric Company',
+    amountInCents: -12000,
+    category: 'utilities',
+    accountingDate: '2025-01-10',
+    description: 'January electricity bill',
+    wallet: 'Main Account',
+    tags: [
+      { key: 'recurring', value: 'monthly' },
+      { key: 'type', value: 'electricity' },
+    ],
+  },
+  {
+    id: '6',
+    merchantName: 'Freelance Project',
+    amountInCents: 75000,
+    category: 'income',
+    accountingDate: '2025-01-08',
+    description: 'Web development project',
+    wallet: 'Main Account',
+    tags: [
+      { key: 'client', value: 'Acme Corp' },
+      { key: 'project', value: 'website-redesign' },
+      { key: 'invoiced', value: 'yes' },
+    ],
+  },
+  {
+    id: '7',
+    merchantName: 'Pharmacy',
+    amountInCents: -2350,
+    category: 'health',
+    accountingDate: '2025-01-17',
+    description: 'Vitamins and medicine',
+    wallet: 'Cash',
+  },
+  {
+    id: '8',
+    merchantName: 'Electronics Store',
+    amountInCents: -29999,
+    category: 'shopping',
+    accountingDate: '2025-01-12',
+    description: 'New headphones',
+    wallet: 'Main Account',
+    tags: [
+      { key: 'type', value: 'electronics' },
+      { key: 'brand', value: 'Sony' },
+    ],
+  },
+];

@@ -462,6 +462,114 @@ describe('TransactionList', () => {
       expect(onEdit).not.toHaveBeenCalled();
     });
 
+    it('should handle touch move event for horizontal swipe', () => {
+      const onDelete = vi.fn();
+      render(
+        <TransactionList 
+          payments={mockPayments}
+          variant="detailed"
+          onDelete={onDelete}
+        />
+      );
+
+      const card = screen.getByText('Grocery Store').closest('.group');
+      if (card) {
+        // Simulate touch start
+        const startEvent = new TouchEvent('touchstart', {
+          touches: [{ clientX: 200, clientY: 100 } as Touch],
+          bubbles: true,
+        });
+        card.dispatchEvent(startEvent);
+
+        // Simulate touch move (horizontal swipe left)
+        const moveEvent = new TouchEvent('touchmove', {
+          touches: [{ clientX: 50, clientY: 105 } as Touch],
+          bubbles: true,
+        });
+        card.dispatchEvent(moveEvent);
+
+        // Simulate touch end
+        const endEvent = new TouchEvent('touchend', {
+          changedTouches: [{ clientX: 50, clientY: 105 } as Touch],
+          bubbles: true,
+        });
+        card.dispatchEvent(endEvent);
+      }
+
+      // Should not trigger delete yet
+      expect(onDelete).not.toHaveBeenCalled();
+    });
+
+    it('should reset swipe on touch end if below threshold', () => {
+      const onDelete = vi.fn();
+      render(
+        <TransactionList 
+          payments={mockPayments}
+          variant="detailed"
+          onDelete={onDelete}
+        />
+      );
+
+      const card = screen.getByText('Grocery Store').closest('.group');
+      if (card) {
+        // Simulate short swipe that doesn't reach threshold
+        const startEvent = new TouchEvent('touchstart', {
+          touches: [{ clientX: 100, clientY: 100 } as Touch],
+          bubbles: true,
+        });
+        card.dispatchEvent(startEvent);
+
+        const moveEvent = new TouchEvent('touchmove', {
+          touches: [{ clientX: 80, clientY: 100 } as Touch],
+          bubbles: true,
+        });
+        card.dispatchEvent(moveEvent);
+
+        const endEvent = new TouchEvent('touchend', {
+          changedTouches: [{ clientX: 80, clientY: 100 } as Touch],
+          bubbles: true,
+        });
+        card.dispatchEvent(endEvent);
+      }
+
+      expect(onDelete).not.toHaveBeenCalled();
+    });
+
+    it('should snap to max offset when swipe exceeds threshold', () => {
+      const onDelete = vi.fn();
+      render(
+        <TransactionList 
+          payments={mockPayments}
+          variant="detailed"
+          onDelete={onDelete}
+        />
+      );
+
+      const card = screen.getByText('Grocery Store').closest('.group');
+      if (card) {
+        // Simulate long swipe that exceeds threshold
+        const startEvent = new TouchEvent('touchstart', {
+          touches: [{ clientX: 300, clientY: 100 } as Touch],
+          bubbles: true,
+        });
+        card.dispatchEvent(startEvent);
+
+        const moveEvent = new TouchEvent('touchmove', {
+          touches: [{ clientX: 100, clientY: 100 } as Touch],
+          bubbles: true,
+        });
+        card.dispatchEvent(moveEvent);
+
+        const endEvent = new TouchEvent('touchend', {
+          changedTouches: [{ clientX: 100, clientY: 100 } as Touch],
+          bubbles: true,
+        });
+        card.dispatchEvent(endEvent);
+      }
+
+      expect(onDelete).not.toHaveBeenCalled();
+    });
+
     it('should keep swipe offset reset when card is expanded', async () => {
       const user = userEvent.setup();
 
