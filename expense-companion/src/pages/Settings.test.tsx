@@ -5,6 +5,18 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import Settings from './Settings';
 
+// Mock next-themes
+const mockSetTheme = vi.fn();
+let mockResolvedTheme = 'light';
+
+vi.mock('next-themes', () => ({
+  useTheme: () => ({
+    theme: mockResolvedTheme,
+    setTheme: mockSetTheme,
+    resolvedTheme: mockResolvedTheme,
+  }),
+}));
+
 // Mock the AuthContext
 vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => ({
@@ -52,6 +64,7 @@ describe('Settings Page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     window.localStorage.clear();
+    mockResolvedTheme = 'light';
   });
 
   it('renders settings page with title', () => {
@@ -128,5 +141,67 @@ describe('Settings Page', () => {
 
     expect(timelineRadio).toBeChecked();
     expect(listRadio).not.toBeChecked();
+  });
+
+  describe('Dark Mode', () => {
+    it('renders appearance settings card with dark mode toggle', () => {
+      render(<Settings />, { wrapper: createWrapper() });
+
+      expect(screen.getByText('Appearance')).toBeInTheDocument();
+      expect(screen.getByText(/customize the look and feel/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/dark mode/i)).toBeInTheDocument();
+    });
+
+    it('shows current light theme status', () => {
+      mockResolvedTheme = 'light';
+      render(<Settings />, { wrapper: createWrapper() });
+
+      expect(screen.getByText(/currently using light theme/i)).toBeInTheDocument();
+    });
+
+    it('shows current dark theme status when dark mode is active', () => {
+      mockResolvedTheme = 'dark';
+      render(<Settings />, { wrapper: createWrapper() });
+
+      expect(screen.getByText(/currently using dark theme/i)).toBeInTheDocument();
+    });
+
+    it('toggle switch is unchecked when in light mode', () => {
+      mockResolvedTheme = 'light';
+      render(<Settings />, { wrapper: createWrapper() });
+
+      const toggle = screen.getByRole('switch', { name: /toggle dark mode/i });
+      expect(toggle).not.toBeChecked();
+    });
+
+    it('toggle switch is checked when in dark mode', () => {
+      mockResolvedTheme = 'dark';
+      render(<Settings />, { wrapper: createWrapper() });
+
+      const toggle = screen.getByRole('switch', { name: /toggle dark mode/i });
+      expect(toggle).toBeChecked();
+    });
+
+    it('calls setTheme with dark when toggling on', async () => {
+      const user = userEvent.setup();
+      mockResolvedTheme = 'light';
+      render(<Settings />, { wrapper: createWrapper() });
+
+      const toggle = screen.getByRole('switch', { name: /toggle dark mode/i });
+      await user.click(toggle);
+
+      expect(mockSetTheme).toHaveBeenCalledWith('dark');
+    });
+
+    it('calls setTheme with light when toggling off', async () => {
+      const user = userEvent.setup();
+      mockResolvedTheme = 'dark';
+      render(<Settings />, { wrapper: createWrapper() });
+
+      const toggle = screen.getByRole('switch', { name: /toggle dark mode/i });
+      await user.click(toggle);
+
+      expect(mockSetTheme).toHaveBeenCalledWith('light');
+    });
   });
 });
