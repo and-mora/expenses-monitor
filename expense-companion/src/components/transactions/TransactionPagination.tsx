@@ -8,10 +8,10 @@ import {
 } from '@/components/ui/pagination';
 
 export interface TransactionPaginationProps {
-  currentPage: number;
-  pageSize: number;
-  itemsCount: number;
-  onPageChange: (page: number) => void;
+  readonly currentPage: number;
+  readonly pageSize: number;
+  readonly itemsCount: number;
+  readonly onPageChange: (page: number) => void;
 }
 
 export function TransactionPagination({
@@ -37,7 +37,7 @@ export function TransactionPagination({
   // Adjust if we're at the end
   startPage = Math.min(startPage, Math.max(0, totalPages - pagesToShow));
   
-  const pageNumbers = [...Array(pagesToShow)].map((_, i) => startPage + i);
+  const pageNumbers = [...new Array(pagesToShow)].map((_, i) => startPage + i);
 
   return (
     <div className="mt-6 flex justify-center">
@@ -46,7 +46,7 @@ export function TransactionPagination({
           <PaginationItem>
             <PaginationPrevious 
               onClick={() => hasPreviousPage && onPageChange(currentPage - 1)}
-              className={!hasPreviousPage ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+              className={hasPreviousPage ? 'cursor-pointer' : 'pointer-events-none opacity-50'}
             />
           </PaginationItem>
           
@@ -68,7 +68,7 @@ export function TransactionPagination({
           <PaginationItem>
             <PaginationNext 
               onClick={() => hasMorePages && onPageChange(currentPage + 1)}
-              className={!hasMorePages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+              className={hasMorePages ? 'cursor-pointer' : 'pointer-events-none opacity-50'}
             />
           </PaginationItem>
         </PaginationContent>

@@ -5,9 +5,9 @@ import { WalletsApi } from './wallets';
 
 // Combined API client class - uses composition for modularity
 class ApiClient {
-  private paymentsApi: PaymentsApi;
-  private walletsApi: WalletsApi;
-  private baseClient: BaseApiClient;
+  private readonly paymentsApi: PaymentsApi;
+  private readonly walletsApi: WalletsApi;
+  private readonly baseClient: BaseApiClient;
 
   constructor(baseUrl: string) {
     this.baseClient = new BaseApiClient(baseUrl);

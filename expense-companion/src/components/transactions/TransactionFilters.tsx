@@ -22,24 +22,24 @@ import type { Wallet } from '@/types/api';
 
 export interface TransactionFiltersProps {
   // Filter state
-  searchQuery: string;
-  selectedCategory: string;
-  selectedWallet: string;
-  dateFrom: string;
-  dateTo: string;
+  readonly searchQuery: string;
+  readonly selectedCategory: string;
+  readonly selectedWallet: string;
+  readonly dateFrom: string;
+  readonly dateTo: string;
   // Actions
-  onSearchChange: (query: string) => void;
-  onCategoryChange: (category: string) => void;
-  onWalletChange: (wallet: string) => void;
-  onDateFromChange: (date: string) => void;
-  onDateToChange: (date: string) => void;
-  onClearFilters: () => void;
+  readonly onSearchChange: (query: string) => void;
+  readonly onCategoryChange: (category: string) => void;
+  readonly onWalletChange: (wallet: string) => void;
+  readonly onDateFromChange: (date: string) => void;
+  readonly onDateToChange: (date: string) => void;
+  readonly onClearFilters: () => void;
   // Data
-  categories: string[];
-  wallets: Wallet[];
+  readonly categories: string[];
+  readonly wallets: Wallet[];
   // Computed
-  activeFiltersCount: number;
-  hasActiveFilters: boolean;
+  readonly activeFiltersCount: number;
+  readonly hasActiveFilters: boolean;
 }
 
 export function TransactionFilters({
@@ -152,8 +152,9 @@ export function TransactionFilters({
 
               {/* Date From Filter */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">From Date</label>
+                <label htmlFor="date-from-filter" className="text-sm font-medium">From Date</label>
                 <Input
+                  id="date-from-filter"
                   type="date"
                   value={dateFrom}
                   onChange={(e) => onDateFromChange(e.target.value)}
@@ -162,8 +163,9 @@ export function TransactionFilters({
 
               {/* Date To Filter */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">To Date</label>
+                <label htmlFor="date-to-filter" className="text-sm font-medium">To Date</label>
                 <Input
+                  id="date-to-filter"
                   type="date"
                   value={dateTo}
                   onChange={(e) => onDateToChange(e.target.value)}

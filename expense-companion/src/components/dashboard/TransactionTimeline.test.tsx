@@ -183,8 +183,8 @@ describe('TransactionTimeline', () => {
     it('should navigate to payment detail when clicking a transaction', () => {
       renderWithRouter(<TransactionTimeline payments={mockPayments} />);
 
-      const supermarketItem = screen.getByText('Supermarket').closest('div[class*="cursor-pointer"]');
-      fireEvent.click(supermarketItem!);
+      const supermarketItem = screen.getByText('Supermarket').closest('div[class*="cursor-pointer"]')!;
+      fireEvent.click(supermarketItem);
 
       expect(mockNavigate).toHaveBeenCalledWith('/transactions/1', { 
         state: { payment: mockPayments[0] } 
@@ -215,7 +215,7 @@ describe('TransactionTimeline', () => {
       const editButtonsExist = Array.from(allSvgs).some(svg => {
         const parent = svg.closest('button');
         // Check if it's inside the action buttons area (not the chevron icons)
-        return parent && parent.classList.contains('rounded-full');
+        return parent?.classList.contains('rounded-full');
       });
       expect(editButtonsExist).toBe(true);
     });
@@ -266,8 +266,8 @@ describe('TransactionTimeline', () => {
         />
       );
 
-      const item = screen.getByText('Supermarket').closest('div[class*="cursor-pointer"]');
-      fireEvent.touchStart(item!, getTouchEvent(100, 50));
+      const item = screen.getByText('Supermarket').closest('div[class*="cursor-pointer"]')!;
+      fireEvent.touchStart(item, getTouchEvent(100, 50));
       // No error should occur
     });
 
@@ -280,11 +280,11 @@ describe('TransactionTimeline', () => {
         />
       );
 
-      const item = screen.getByText('Supermarket').closest('div[class*="cursor-pointer"]');
+      const item = screen.getByText('Supermarket').closest('div[class*="cursor-pointer"]')!;
       
-      fireEvent.touchStart(item!, getTouchEvent(200, 50));
-      fireEvent.touchMove(item!, getTouchEvent(100, 50)); // Swipe left 100px
-      fireEvent.touchEnd(item!);
+      fireEvent.touchStart(item, getTouchEvent(200, 50));
+      fireEvent.touchMove(item, getTouchEvent(100, 50)); // Swipe left 100px
+      fireEvent.touchEnd(item);
     });
 
     it('should ignore vertical swipes', () => {
@@ -296,11 +296,11 @@ describe('TransactionTimeline', () => {
         />
       );
 
-      const item = screen.getByText('Supermarket').closest('div[class*="cursor-pointer"]');
+      const item = screen.getByText('Supermarket').closest('div[class*="cursor-pointer"]')!;
       
-      fireEvent.touchStart(item!, getTouchEvent(100, 50));
-      fireEvent.touchMove(item!, getTouchEvent(100, 150)); // Vertical scroll
-      fireEvent.touchEnd(item!);
+      fireEvent.touchStart(item, getTouchEvent(100, 50));
+      fireEvent.touchMove(item, getTouchEvent(100, 150)); // Vertical scroll
+      fireEvent.touchEnd(item);
       
       // Should not trigger swipe
     });
@@ -314,24 +314,24 @@ describe('TransactionTimeline', () => {
         />
       );
 
-      const item = screen.getByText('Supermarket').closest('div[class*="cursor-pointer"]');
+      const item = screen.getByText('Supermarket').closest('div[class*="cursor-pointer"]')!;
       
-      fireEvent.touchStart(item!, getTouchEvent(100, 50));
-      fireEvent.touchMove(item!, getTouchEvent(70, 50)); // Small swipe
-      fireEvent.touchEnd(item!);
+      fireEvent.touchStart(item, getTouchEvent(100, 50));
+      fireEvent.touchMove(item, getTouchEvent(70, 50)); // Small swipe
+      fireEvent.touchEnd(item);
     });
 
     it('should not initiate swipe when no handlers provided', () => {
       renderWithRouter(<TransactionTimeline payments={mockPayments} />);
 
-      const item = screen.getByText('Supermarket').closest('div[class*="cursor-pointer"]');
+      const item = screen.getByText('Supermarket').closest('div[class*="cursor-pointer"]')!;
       
-      fireEvent.touchStart(item!, getTouchEvent(100, 50));
-      fireEvent.touchMove(item!, getTouchEvent(0, 50));
-      fireEvent.touchEnd(item!);
+      fireEvent.touchStart(item, getTouchEvent(100, 50));
+      fireEvent.touchMove(item, getTouchEvent(0, 50));
+      fireEvent.touchEnd(item);
       
       // Click should still navigate
-      fireEvent.click(item!);
+      fireEvent.click(item);
       expect(mockNavigate).toHaveBeenCalled();
     });
   });

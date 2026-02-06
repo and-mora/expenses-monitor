@@ -2,6 +2,31 @@ import type { Payment, PaymentCreate, PaymentUpdate, Balance, CategoryItem } fro
 import { BaseApiClient, USE_MOCK_DATA } from './client';
 import { mockPayments, mockCategories } from './mock-data';
 
+interface PaymentFilters {
+  dateFrom?: string;
+  dateTo?: string;
+  category?: string;
+  wallet?: string;
+  search?: string;
+}
+
+// Helper function to apply filters to mock payments (reduces cognitive complexity)
+function applyMockFilters(payments: Payment[], filters?: PaymentFilters): Payment[] {
+  if (!filters) return payments;
+  
+  return payments
+    .filter(p => !filters.category || p.category === filters.category)
+    .filter(p => !filters.wallet || p.wallet === filters.wallet)
+    .filter(p => {
+      if (!filters.search) return true;
+      const searchLower = filters.search.toLowerCase();
+      return p.merchantName.toLowerCase().includes(searchLower) ||
+        p.description?.toLowerCase().includes(searchLower);
+    })
+    .filter(p => !filters.dateFrom || p.accountingDate >= filters.dateFrom)
+    .filter(p => !filters.dateTo || p.accountingDate <= filters.dateTo);
+}
+
 export class PaymentsApi extends BaseApiClient {
   // Balance
   async getBalance(startDate?: string, endDate?: string): Promise<Balance> {
@@ -54,39 +79,12 @@ export class PaymentsApi extends BaseApiClient {
   async getPayments(
     page = 0, 
     size = 50, 
-    filters?: {
-      dateFrom?: string;
-      dateTo?: string;
-      category?: string;
-      wallet?: string;
-      search?: string;
-    }
+    filters?: PaymentFilters
   ): Promise<{ content: Payment[], page: number, size: number }> {
     if (USE_MOCK_DATA) {
-      let filtered = [...mockPayments];
+      const filtered = applyMockFilters([...mockPayments], filters);
       
-      // Apply filters to mock data
-      if (filters?.category) {
-        filtered = filtered.filter(p => p.category === filters.category);
-      }
-      if (filters?.wallet) {
-        filtered = filtered.filter(p => p.wallet === filters.wallet);
-      }
-      if (filters?.search) {
-        const searchLower = filters.search.toLowerCase();
-        filtered = filtered.filter(p => 
-          p.merchantName.toLowerCase().includes(searchLower) ||
-          p.description?.toLowerCase().includes(searchLower)
-        );
-      }
-      if (filters?.dateFrom) {
-        filtered = filtered.filter(p => p.accountingDate >= filters.dateFrom!);
-      }
-      if (filters?.dateTo) {
-        filtered = filtered.filter(p => p.accountingDate <= filters.dateTo!);
-      }
-      
-      const sorted = filtered.sort((a, b) => 
+      const sorted = filtered.toSorted((a, b) => 
         new Date(b.accountingDate).getTime() - new Date(a.accountingDate).getTime()
       );
       const start = page * size;

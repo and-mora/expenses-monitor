@@ -18,13 +18,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 export interface CategoryComboboxProps {
-  value: string;
-  onChange: (value: string) => void;
-  categories: string[];
-  isLoading?: boolean;
-  disabled?: boolean;
-  placeholder?: string;
-  'aria-label'?: string;
+  readonly value: string;
+  readonly onChange: (value: string) => void;
+  readonly categories: string[];
+  readonly isLoading?: boolean;
+  readonly disabled?: boolean;
+  readonly placeholder?: string;
+  readonly 'aria-label'?: string;
 }
 
 export function CategoryCombobox({

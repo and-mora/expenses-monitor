@@ -4,7 +4,7 @@ import { useTransactionFilters } from './useTransactionFilters';
 
 // Mock window.scrollTo
 const mockScrollTo = vi.fn();
-Object.defineProperty(window, 'scrollTo', { value: mockScrollTo, writable: true });
+Object.defineProperty(globalThis, 'scrollTo', { value: mockScrollTo, writable: true });
 
 describe('useTransactionFilters', () => {
   beforeEach(() => {
