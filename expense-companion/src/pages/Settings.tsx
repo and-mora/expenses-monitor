@@ -11,18 +11,12 @@ const LAYOUT_STORAGE_KEY = 'transactions-layout';
 type TransactionsLayout = 'list' | 'timeline';
 
 const Settings = () => {
-  const { theme, setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const { setTheme, resolvedTheme } = useTheme();
   const [layout, setLayout] = useState<TransactionsLayout>(() => {
     if (typeof window === 'undefined') return 'timeline';
     const stored = window.localStorage.getItem(LAYOUT_STORAGE_KEY) as TransactionsLayout | null;
     return stored === 'list' || stored === 'timeline' ? stored : 'timeline';
   });
-
-  // Avoid hydration mismatch by only rendering theme UI after mount
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -54,7 +48,7 @@ const Settings = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                    {mounted && resolvedTheme === 'dark' ? (
+                    {resolvedTheme === 'dark' ? (
                       <Moon className="h-5 w-5 text-muted-foreground" />
                     ) : (
                       <Sun className="h-5 w-5 text-muted-foreground" />
@@ -63,13 +57,13 @@ const Settings = () => {
                   <div>
                     <Label htmlFor="dark-mode" className="text-base font-medium">Dark Mode</Label>
                     <p className="text-sm text-muted-foreground">
-                      {mounted && resolvedTheme === 'dark' ? 'Currently using dark theme' : 'Currently using light theme'}
+                      {resolvedTheme === 'dark' ? 'Currently using dark theme' : 'Currently using light theme'}
                     </p>
                   </div>
                 </div>
                 <Switch
                   id="dark-mode"
-                  checked={mounted && resolvedTheme === 'dark'}
+                  checked={resolvedTheme === 'dark'}
                   onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
                   aria-label="Toggle dark mode"
                 />
