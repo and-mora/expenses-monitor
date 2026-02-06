@@ -37,7 +37,7 @@ export function TransactionPagination({
   // Adjust if we're at the end
   startPage = Math.min(startPage, Math.max(0, totalPages - pagesToShow));
   
-  const pageNumbers = [...new Array(pagesToShow)].map((_, i) => startPage + i);
+  const pageNumbers = Array.from({ length: pagesToShow }, (_, i) => startPage + i);
 
   return (
     <div className="mt-6 flex justify-center">
