@@ -70,7 +70,7 @@ describe('TransactionFilters', () => {
       render(<TransactionFilters {...defaultProps} searchQuery="test" />);
       
       // Find and click the first clear button (in search input)
-      const clearButton = document.querySelector('button svg.lucide-x')?.closest('button')!;
+      const clearButton = document.querySelector('button svg.lucide-x')!.closest('button')!;
       fireEvent.click(clearButton);
       
       expect(defaultProps.onSearchChange).toHaveBeenCalledWith('');
