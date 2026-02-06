@@ -1,10 +1,18 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
+import { createElement, type ReactNode } from 'react';
 import { useTransactionFilters } from './useTransactionFilters';
 
 // Mock window.scrollTo
 const mockScrollTo = vi.fn();
 Object.defineProperty(globalThis, 'scrollTo', { value: mockScrollTo, writable: true });
+
+// Wrapper with MemoryRouter for hooks that use useSearchParams
+const createWrapper = (initialEntries: string[] = ['/']) => {
+  return ({ children }: { children: ReactNode }) => 
+    createElement(MemoryRouter, { initialEntries }, children);
+};
 
 describe('useTransactionFilters', () => {
   beforeEach(() => {
@@ -13,7 +21,9 @@ describe('useTransactionFilters', () => {
 
   describe('Initial State', () => {
     it('should initialize with default values', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       expect(result.current.searchQuery).toBe('');
       expect(result.current.selectedCategory).toBe('all');
@@ -24,17 +34,32 @@ describe('useTransactionFilters', () => {
     });
 
     it('should have no active filters initially', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       expect(result.current.hasActiveFilters).toBe(false);
       expect(result.current.activeFiltersCount).toBe(0);
       expect(result.current.filters).toBeUndefined();
     });
+
+    it('should initialize from URL parameters', () => {
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(['/transactions?search=coffee&category=food&wallet=Savings&page=2']),
+      });
+
+      expect(result.current.searchQuery).toBe('coffee');
+      expect(result.current.selectedCategory).toBe('food');
+      expect(result.current.selectedWallet).toBe('Savings');
+      expect(result.current.currentPage).toBe(2);
+    });
   });
 
   describe('Search Query', () => {
     it('should update search query', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.setSearchQuery('test search');
@@ -44,10 +69,8 @@ describe('useTransactionFilters', () => {
     });
 
     it('should reset page when search query changes', () => {
-      const { result } = renderHook(() => useTransactionFilters());
-
-      act(() => {
-        result.current.setCurrentPage(5);
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(['/transactions?page=5']),
       });
       expect(result.current.currentPage).toBe(5);
 
@@ -58,7 +81,9 @@ describe('useTransactionFilters', () => {
     });
 
     it('should include search in filters when set', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.setSearchQuery('coffee');
@@ -71,7 +96,9 @@ describe('useTransactionFilters', () => {
 
   describe('Category Filter', () => {
     it('should update selected category', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.setSelectedCategory('food');
@@ -81,10 +108,11 @@ describe('useTransactionFilters', () => {
     });
 
     it('should reset page when category changes', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(['/transactions?page=3']),
+      });
 
       act(() => {
-        result.current.setCurrentPage(3);
         result.current.setSelectedCategory('transport');
       });
 
@@ -92,7 +120,9 @@ describe('useTransactionFilters', () => {
     });
 
     it('should include category in filters when not "all"', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.setSelectedCategory('shopping');
@@ -103,7 +133,9 @@ describe('useTransactionFilters', () => {
     });
 
     it('should not include category in filters when "all"', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.setSelectedCategory('all');
@@ -115,7 +147,9 @@ describe('useTransactionFilters', () => {
 
   describe('Wallet Filter', () => {
     it('should update selected wallet', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.setSelectedWallet('Savings');
@@ -125,10 +159,11 @@ describe('useTransactionFilters', () => {
     });
 
     it('should reset page when wallet changes', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(['/transactions?page=2']),
+      });
 
       act(() => {
-        result.current.setCurrentPage(2);
         result.current.setSelectedWallet('Cash');
       });
 
@@ -136,7 +171,9 @@ describe('useTransactionFilters', () => {
     });
 
     it('should include wallet in filters when not "all"', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.setSelectedWallet('Main Account');
@@ -149,7 +186,9 @@ describe('useTransactionFilters', () => {
 
   describe('Date Filters', () => {
     it('should update dateFrom', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.setDateFrom('2026-01-01');
@@ -159,7 +198,9 @@ describe('useTransactionFilters', () => {
     });
 
     it('should update dateTo', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.setDateTo('2026-01-31');
@@ -169,10 +210,11 @@ describe('useTransactionFilters', () => {
     });
 
     it('should reset page when dateFrom changes', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(['/transactions?page=4']),
+      });
 
       act(() => {
-        result.current.setCurrentPage(4);
         result.current.setDateFrom('2026-02-01');
       });
 
@@ -180,10 +222,11 @@ describe('useTransactionFilters', () => {
     });
 
     it('should reset page when dateTo changes', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(['/transactions?page=4']),
+      });
 
       act(() => {
-        result.current.setCurrentPage(4);
         result.current.setDateTo('2026-02-28');
       });
 
@@ -191,10 +234,14 @@ describe('useTransactionFilters', () => {
     });
 
     it('should include dates in filters when set', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.setDateFrom('2026-01-01');
+      });
+      act(() => {
         result.current.setDateTo('2026-01-31');
       });
 
@@ -206,16 +253,9 @@ describe('useTransactionFilters', () => {
 
   describe('Clear Filters', () => {
     it('should clear all filters', () => {
-      const { result } = renderHook(() => useTransactionFilters());
-
-      // Set all filters
-      act(() => {
-        result.current.setSearchQuery('test');
-        result.current.setSelectedCategory('food');
-        result.current.setSelectedWallet('Cash');
-        result.current.setDateFrom('2026-01-01');
-        result.current.setDateTo('2026-01-31');
-        result.current.setCurrentPage(5);
+      // Initialize with filters already set in URL
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(['/transactions?search=test&category=food&wallet=Cash&dateFrom=2026-01-01&dateTo=2026-01-31&page=5']),
       });
 
       // Verify filters are set
@@ -238,7 +278,9 @@ describe('useTransactionFilters', () => {
 
   describe('Page Change', () => {
     it('should update current page', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.setCurrentPage(3);
@@ -248,7 +290,9 @@ describe('useTransactionFilters', () => {
     });
 
     it('should scroll to top when page changes via handlePageChange', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.handlePageChange(2);
@@ -261,21 +305,18 @@ describe('useTransactionFilters', () => {
 
   describe('Active Filters Count', () => {
     it('should count only non-search filters', () => {
-      const { result } = renderHook(() => useTransactionFilters());
-
-      act(() => {
-        result.current.setSearchQuery('test'); // Not counted
-        result.current.setSelectedCategory('food'); // +1
-        result.current.setSelectedWallet('Cash'); // +1
-        result.current.setDateFrom('2026-01-01'); // +1
-        result.current.setDateTo('2026-01-31'); // +1
+      // Initialize with filters in URL - search is not counted
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(['/transactions?search=test&category=food&wallet=Cash&dateFrom=2026-01-01&dateTo=2026-01-31']),
       });
 
       expect(result.current.activeFiltersCount).toBe(4);
     });
 
     it('should not count "all" category', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.setSelectedCategory('all');
@@ -287,20 +328,17 @@ describe('useTransactionFilters', () => {
 
   describe('Filters Object', () => {
     it('should return undefined when no filters set', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       expect(result.current.filters).toBeUndefined();
     });
 
     it('should build correct filters object with all filters', () => {
-      const { result } = renderHook(() => useTransactionFilters());
-
-      act(() => {
-        result.current.setSearchQuery('coffee');
-        result.current.setSelectedCategory('food');
-        result.current.setSelectedWallet('Main Account');
-        result.current.setDateFrom('2026-01-01');
-        result.current.setDateTo('2026-12-31');
+      // Initialize with all filters in URL
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(['/transactions?search=coffee&category=food&wallet=Main%20Account&dateFrom=2026-01-01&dateTo=2026-12-31']),
       });
 
       expect(result.current.filters).toEqual({
@@ -313,7 +351,9 @@ describe('useTransactionFilters', () => {
     });
 
     it('should only include set filters in object', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.setSelectedCategory('transport');
@@ -329,7 +369,9 @@ describe('useTransactionFilters', () => {
 
   describe('Has Active Filters', () => {
     it('should be true when search is set', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.setSearchQuery('test');
@@ -339,7 +381,9 @@ describe('useTransactionFilters', () => {
     });
 
     it('should be true when category is not all', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.setSelectedCategory('food');
@@ -349,7 +393,9 @@ describe('useTransactionFilters', () => {
     });
 
     it('should be true when wallet is not all', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.setSelectedWallet('Savings');
@@ -359,7 +405,9 @@ describe('useTransactionFilters', () => {
     });
 
     it('should be true when dateFrom is set', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.setDateFrom('2026-01-01');
@@ -369,7 +417,9 @@ describe('useTransactionFilters', () => {
     });
 
     it('should be true when dateTo is set', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.setDateTo('2026-12-31');
@@ -379,7 +429,9 @@ describe('useTransactionFilters', () => {
     });
 
     it('should be false when all filters at default', () => {
-      const { result } = renderHook(() => useTransactionFilters());
+      const { result } = renderHook(() => useTransactionFilters(), {
+        wrapper: createWrapper(),
+      });
 
       expect(result.current.hasActiveFilters).toBe(false);
     });
