@@ -167,9 +167,18 @@ pub async fn configure_database(config: &DatabaseSettings) -> PgPool {
         .await
         .expect("failed to connect db.");
 
-    // create the brand-new database
+    // Validate database name to prevent SQL injection
+    let db_name = &config.database_name;
+    if !db_name
+        .chars()
+        .all(|c| c.is_alphanumeric() || c == '_' || c == '-')
+    {
+        panic!("Invalid database name: only alphanumeric, underscore, and hyphen allowed");
+    }
+
+    // create the brand-new database (safe: validated above)
     connection
-        .execute(format!(r#"CREATE DATABASE "{}";"#, config.database_name).as_str())
+        .execute(format!(r#"CREATE DATABASE "{}";"#, db_name).as_str())
         .await
         .expect("failed to create db");
 

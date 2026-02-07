@@ -19,11 +19,19 @@ RUN apt-get update && \
     libssl3 && \
     rm -rf /var/lib/apt/lists/*
 
+# Create non-root user for running migrations
+RUN groupadd -r sqlx --gid=1000 && \
+    useradd -r -g sqlx --uid=1000 --home-dir=/app --shell=/sbin/nologin sqlx && \
+    chown -R sqlx:sqlx /app
+
 # Copy sqlx binary from builder
 COPY --from=builder /usr/local/cargo/bin/sqlx /usr/local/bin/sqlx
 
 # Copy migration files
-COPY migrations ./migrations
+COPY --chown=sqlx:sqlx migrations ./migrations
+
+# Switch to non-root user
+USER sqlx
 
 # Set entrypoint to sqlx
 ENTRYPOINT ["sqlx"]

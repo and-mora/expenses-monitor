@@ -1,0 +1,210 @@
+---
+# NetworkPolicy for backend-rust
+# Restricts network traffic to only necessary connections
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-rust-netpol
+  namespace: expenses-monitor
+  annotations:
+    # Apply NetworkPolicies AFTER deployments are ready
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  podSelector:
+    matchLabels:
+      app: backend-rust
+  policyTypes:
+    - Ingress
+    - Egress
+  
+  ingress:
+    # Allow traffic from frontend-companion
+    - from:
+      - podSelector:
+          matchLabels:
+            app: expense-companion
+      ports:
+        - protocol: TCP
+          port: 8080
+    
+    # Allow traffic from monitoring/Prometheus
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8080  # /metrics endpoint
+  
+  egress:
+    # Allow DNS queries
+    - to:
+      - namespaceSelector: {}
+        podSelector:
+          matchLabels:
+            k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+    
+    # Allow connection to PostgreSQL
+    - to:
+      - podSelector:
+          matchLabels:
+            app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+    
+    # Allow connection to OTEL collector
+    - to:
+      - podSelector:
+          matchLabels:
+            app: opentelemetry-collector
+      ports:
+        - protocol: TCP
+          port: 4317  # OTLP gRPC
+    
+    # Allow HTTPS egress for Keycloak token validation
+    - to:
+      - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 8080  # Keycloak in same namespace
+
+---
+# NetworkPolicy for frontend-companion
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend-companion-netpol
+  namespace: expenses-monitor
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  podSelector:
+    matchLabels:
+      app: expense-companion
+  policyTypes:
+    - Ingress
+    - Egress
+  
+  ingress:
+    # Allow traffic from ingress controller
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 80
+  
+  egress:
+    # Allow DNS
+    - to:
+      - namespaceSelector: {}
+        podSelector:
+          matchLabels:
+            k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+    
+    # No other egress needed (static frontend served by nginx)
+
+---
+# NetworkPolicy for PostgreSQL
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgresql-netpol
+  namespace: expenses-monitor
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  podSelector:
+    matchLabels:
+      app: postgresql
+  policyTypes:
+    - Ingress
+  
+  ingress:
+    # Allow only from backend-rust and migration job
+    - from:
+      - podSelector:
+          matchLabels:
+            app: backend-rust
+      - podSelector:
+          matchLabels:
+            job-name: backend-rust-db-migration
+      ports:
+        - protocol: TCP
+          port: 5432
+
+---
+# NetworkPolicy for Keycloak
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: keycloak-netpol
+  namespace: expenses-monitor
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  podSelector:
+    matchLabels:
+      app: keycloak
+  policyTypes:
+    - Ingress
+    - Egress
+  
+  ingress:
+    # Allow from ingress controller (user logins)
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+    
+    # Allow from backend-rust (token validation)
+    - from:
+      - podSelector:
+          matchLabels:
+            app: backend-rust
+      ports:
+        - protocol: TCP
+          port: 8080
+  
+  egress:
+    # Allow DNS
+    - to:
+      - namespaceSelector: {}
+        podSelector:
+          matchLabels:
+            k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+    
+    # Allow connection to PostgreSQL (Keycloak DB)
+    - to:
+      - podSelector:
+          matchLabels:
+            app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+---
+# NOTE: To apply these policies:
+# kubectl apply -f manifest/backend-rust/network-policies.yaml
+#
+# To test connectivity after applying:
+# kubectl exec -it <backend-rust-pod> -- curl http://postgresql:5432
+#
+# To debug NetworkPolicy issues:
+# kubectl describe networkpolicy backend-rust-netpol -n expenses-monitor

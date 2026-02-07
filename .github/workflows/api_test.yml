@@ -31,4 +31,11 @@ jobs:
         run: npm install -g newman
 
       - name: Run postman collection
-        run: newman run postman/expenses-monitor_api_test.postman_collection.json -e postman/expenses-monitor.postman_environment.json --env-var "CLIENT_ID=${{ secrets.API_TEST_CLIENT_ID }}" --env-var "CLIENT_SECRET=${{ secrets.API_TEST_CLIENT_SECRET }}"
+        env:
+          CLIENT_ID: ${{ secrets.API_TEST_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.API_TEST_CLIENT_SECRET }}
+        run: |
+          newman run postman/expenses-monitor_api_test.postman_collection.json \
+            -e postman/expenses-monitor.postman_environment.json \
+            --env-var "CLIENT_ID=${CLIENT_ID}" \
+            --env-var "CLIENT_SECRET=${CLIENT_SECRET}"
