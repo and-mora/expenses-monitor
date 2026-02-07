@@ -27,8 +27,9 @@ RUN groupadd -r sqlx --gid=1000 && \
 # Copy sqlx binary from builder
 COPY --from=builder /usr/local/cargo/bin/sqlx /usr/local/bin/sqlx
 
-# Copy migration files
+# Copy migration files and set read-only permissions
 COPY --chown=sqlx:sqlx migrations ./migrations
+RUN chmod -R a-w /app/migrations
 
 # Switch to non-root user
 USER sqlx
