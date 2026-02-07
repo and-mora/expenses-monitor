@@ -178,7 +178,12 @@ npm run lint                  # ESLint check
 8. **Run linter**: Execute `npm run lint` and fix all errors
 9. **Run FULL frontend suite**: Execute `npm test` and verify all pass
 
-**Database migration**: Run [scripts/init_db.sh](backend-rust/scripts/init_db.sh) to apply migrations. CI uses `cargo sqlx prepare` to cache query metadata.
+**Database migrations**: 
+- **Local development**: Run [scripts/init_db.sh](backend-rust/scripts/init_db.sh) to start PostgreSQL and apply migrations, or use `cargo sqlx migrate run` if DB is already running
+- **Production (Kubernetes)**: Migrations run **automatically before deployment** via Kubernetes Job with ArgoCD PreSync hook ([manifest/backend-rust/db-migration-job.yaml](manifest/backend-rust/db-migration-job.yaml))
+- **Creating new migrations**: `cd backend-rust && cargo sqlx migrate add <description>` creates timestamped SQL file in [migrations/](backend-rust/migrations/)
+- **CI**: Uses `cargo sqlx prepare` to cache query metadata for offline compilation
+- **Deployment behavior**: If migrations fail, deployment is rolled back automatically (zero risk)
 
 **CORS issues**: Add origins in [startup.rs](backend-rust/src/startup.rs#L62-L75) allowed_origin() calls. Localhost ports for dev, production domains for prod.
 

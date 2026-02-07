@@ -66,6 +66,19 @@ jobs:
           
           echo "Updated $MANIFEST_PATH to image: $IMAGE_NAME"
           cat $MANIFEST_PATH | grep "image:"
+          
+          # Update migration job image for backend-rust
+          if [ "${{ inputs.component }}" == "backend-rust" ]; then
+            MIGRATION_JOB_PATH="manifest/${{ inputs.component }}/db-migration-job.yaml"
+            MIGRATION_IMAGE_NAME="ghcr.io/and-mora/expenses-monitor:${{ inputs.version }}-migrate"
+            
+            sed -i.bak "s|image: ['\"]\?ghcr.io/and-mora/expenses-monitor:[^'\" ]*-migrate['\"]\?|image: ${MIGRATION_IMAGE_NAME}|g" $MIGRATION_JOB_PATH
+            
+            rm -f $MIGRATION_JOB_PATH.bak
+            
+            echo "Updated $MIGRATION_JOB_PATH to image: $MIGRATION_IMAGE_NAME"
+            cat $MIGRATION_JOB_PATH | grep "image:"
+          fi
       
       - name: Create Pull Request
         id: create-pr

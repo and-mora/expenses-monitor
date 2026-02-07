@@ -1,0 +1,57 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: backend-rust-db-migration
+  namespace: expenses-monitor
+  annotations:
+    # ArgoCD PreSync hook ensures migrations run BEFORE the application deployment
+    argocd.argoproj.io/hook: PreSync
+    # Delete previous job before creating a new one
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    # Fail the sync if migration fails (rollback deployment)
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  # Clean up completed jobs after 1 hour
+  ttlSecondsAfterFinished: 3600
+  backoffLimit: 2
+  template:
+    metadata:
+      name: backend-rust-db-migration
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          # This image is built from backend-rust/Dockerfile.migrate
+          # Update this version tag to match the application version
+          image: ghcr.io/and-mora/expenses-monitor:v0.11.1-backend-rust-migrate
+          imagePullPolicy: Always
+          env:
+            # Construct DATABASE_URL from secrets
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: db-connection-string
+                  key: host
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: backend-db-credentials
+                  key: postgres-username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backend-db-credentials
+                  key: postgres-password
+            - name: DB_NAME
+              value: "expenses-monitor"
+            - name: DATABASE_URL
+              value: "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):5432/$(DB_NAME)"
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+      automountServiceAccountToken: false
