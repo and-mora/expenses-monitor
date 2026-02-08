@@ -1,6 +1,7 @@
 namespace: expenses-monitor
 resources:
   - manifest.yaml
+  - httproute.yaml
 configMapGenerator:
   - name: frontend-nginx-config
     files:
