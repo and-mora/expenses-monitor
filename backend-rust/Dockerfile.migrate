@@ -1,7 +1,7 @@
 # Dockerfile for database migrations
 # This image is used by the Kubernetes Job to run sqlx migrations before deployment
 
-FROM rust:1.75-bookworm AS builder
+FROM rust:1.93-bookworm AS builder
 
 WORKDIR /app
 
