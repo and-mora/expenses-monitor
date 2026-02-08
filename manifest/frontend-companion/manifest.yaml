@@ -24,12 +24,20 @@ spec:
         - configMap:
             name: frontend-companion-nginx-config
           name: nginx-config
+        - name: nginx-cache
+          emptyDir: { }
+        - name: nginx-run
+          emptyDir: { }
       containers:
         - image: ghcr.io/and-mora/expenses-monitor:v0.16.0-expense-companion
           name: frontend-companion
           volumeMounts:
             - mountPath: "/etc/nginx/conf.d"
               name: nginx-config
+            - mountPath: /var/cache/nginx
+              name: nginx-cache
+            - mountPath: /var/run
+              name: nginx-run
           resources:
             requests:
               memory: "128Mi"
@@ -40,7 +48,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 80
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 30
             timeoutSeconds: 3
@@ -48,7 +56,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /health
-              port: 80
+              port: 8080
             initialDelaySeconds: 5
             periodSeconds: 10
             timeoutSeconds: 3
@@ -79,7 +87,7 @@ spec:
   ports:
     - port: 80
       protocol: TCP
-      targetPort: 80
+      targetPort: 8080
   selector:
     app: frontend-companion
   sessionAffinity: None
