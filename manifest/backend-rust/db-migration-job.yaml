@@ -24,7 +24,7 @@ spec:
         - name: migrate
           # This image is built from backend-rust/Dockerfile.migrate
           # Update this version tag to match the application version
-          image: ghcr.io/and-mora/expenses-monitor:v0.11.1-backend-rust-migrate
+          image: ghcr.io/and-mora/expenses-monitor:v0.12.3-backend-rust-migrate
           imagePullPolicy: Always
           env:
             # Construct DATABASE_URL from secrets
