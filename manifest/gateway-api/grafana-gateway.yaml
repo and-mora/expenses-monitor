@@ -12,7 +12,7 @@ spec:
   listeners:
     - name: https
       hostname: grafana.expmonitor.freeddns.org
-      port: 443
+      port: 8443
       protocol: HTTPS
       tls:
         mode: Terminate
@@ -22,7 +22,7 @@ spec:
         namespaces:
           from: Same
     - name: http
-      port: 80
+      port: 8080
       protocol: HTTP
       allowedRoutes:
         namespaces:

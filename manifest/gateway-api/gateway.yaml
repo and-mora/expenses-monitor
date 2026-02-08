@@ -15,7 +15,7 @@ spec:
     # --- HTTPS listeners (TLS termination) ---
     - name: api-rust-https
       hostname: api-rust.expmonitor.freeddns.org
-      port: 443
+      port: 8443
       protocol: HTTPS
       tls:
         mode: Terminate
@@ -27,7 +27,7 @@ spec:
 
     - name: companion-https
       hostname: expenses.expmonitor.freeddns.org
-      port: 443
+      port: 8443
       protocol: HTTPS
       tls:
         mode: Terminate
@@ -39,7 +39,7 @@ spec:
 
     - name: frontend-https
       hostname: expmonitor.freeddns.org
-      port: 443
+      port: 8443
       protocol: HTTPS
       tls:
         mode: Terminate
@@ -51,7 +51,7 @@ spec:
 
     # --- HTTP listener (for redirect to HTTPS) ---
     - name: http
-      port: 80
+      port: 8080
       protocol: HTTP
       allowedRoutes:
         namespaces:
