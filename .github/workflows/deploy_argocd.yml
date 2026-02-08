@@ -39,10 +39,9 @@ jobs:
           port: ${{ secrets.VM_PORT }}
           fingerprint: ${{ secrets.HOST_FINGERPRINT }}
           script: |
-            mkdir -p expenses-monitor/argocd && cd expenses-monitor/argocd
+            mkdir -p expenses-monitor/argocd/templates && cd expenses-monitor/argocd
             wget -O values.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/manifest/argocd/helm/values.yaml
             wget -O Chart.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/manifest/argocd/helm/Chart.yaml
-            mkdir templates
             wget -O templates/secrets.yaml https://raw.githubusercontent.com/and-mora/expenses-monitor/master/manifest/argocd/helm/templates/secrets.yaml
-            helm dependency build
+            helm dependency update
             helm upgrade --install argocd . -f values.yaml --wait --timeout 300s -n argocd
