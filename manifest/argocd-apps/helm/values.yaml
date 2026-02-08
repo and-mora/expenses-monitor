@@ -1,5 +1,17 @@
 argocd-apps:
   applications:
+    gateway-api:
+      project: default
+      source:
+        repoURL: https://github.com/and-mora/expenses-monitor.git
+        path: manifest/gateway-api
+        targetRevision: HEAD
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: expenses-monitor
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=false
     backend:
       project: default
       source:
