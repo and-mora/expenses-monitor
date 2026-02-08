@@ -118,6 +118,15 @@ jobs:
           major_pattern: "breaking"
           minor_pattern: "feat"
 
+      - name: Gateway API Version
+        id: gateway-api-versioning
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
+        with:
+          change_path: "manifest/gateway-api"
+          namespace: gateway-api
+          major_pattern: "breaking"
+          minor_pattern: "feat"
+
   BackendRelease:
     needs: SemanticVersioning
     uses: ./.github/workflows/release.yml
@@ -277,3 +286,12 @@ jobs:
     with:
       enabled: ${{needs.SemanticVersioning.outputs.argocd_apps_changed}}
     secrets: inherit
+
+  GatewayApiDeploy:
+    needs: SemanticVersioning
+    uses: ./.github/workflows/deploy_gateway_api.yml
+    with:
+      enabled: ${{needs.SemanticVersioning.outputs.gateway-api_changed}}
+    secrets:
+      ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+      ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}

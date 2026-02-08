@@ -29,6 +29,11 @@ argo-cd:
         cert-manager.io/cluster-issuer: letsencrypt
       hostname: argocd.expmonitor.freeddns.org
       tls: true
+    httproute:
+      enabled: true
+      parentRefs:
+        - name: argocd
+          sectionName: https
     metrics:
       enabled: true
       serviceMonitor:

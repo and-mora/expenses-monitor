@@ -1,0 +1,17 @@
+---
+# HTTPRoute for legacy Java backend
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: backend
+  namespace: expenses-monitor
+spec:
+  parentRefs:
+    - name: expenses-monitor
+      sectionName: api-legacy-https
+  hostnames:
+    - api.expmonitor.freeddns.org
+  rules:
+    - backendRefs:
+        - name: backend
+          port: 8080
