@@ -77,7 +77,8 @@ COPY --from=builder-amd64 /app/target/release/expenses-monitor-be expenses-monit
 
 FROM runtime-${TARGETARCH}
 WORKDIR /app
-COPY configuration.yaml configuration.yaml
+# Copy example config as default (production values come from env vars)
+COPY --chmod=444 configuration.yaml.example configuration.yaml
 ENV APP_ENVIRONMENT=production
 EXPOSE 8080
 ENTRYPOINT ["./expenses-monitor-be"]
