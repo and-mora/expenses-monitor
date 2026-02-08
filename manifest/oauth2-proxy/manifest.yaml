@@ -24,11 +24,11 @@ spec:
           image: quay.io/oauth2-proxy/oauth2-proxy:v7.7.1
           args:
             - --provider=keycloak-oidc
-            - --oidc-issuer-url=http://keycloak.default.svc.cluster.local:8080/realms/expenses-monitor
+            - --oidc-issuer-url=https://auth.expmonitor.freeddns.org/realms/expenses-monitor=frontend
             # Accept JWT Bearer tokens inline (no redirect to login page)
             - --skip-jwt-bearer-tokens=true
             # Accept tokens from the "frontend" public client (SPA)
-            - --extra-jwt-issuers=http://keycloak.default.svc.cluster.local:8080/realms/expenses-monitor=frontend
+            - --extra-jwt-issuers=https://auth.expmonitor.freeddns.org/realms/expenses-monitor=frontend
             # Forward user identity as headers to backend
             - --set-xauthrequest=true
             # Don't proxy traffic, only validate tokens (return 200/401)
