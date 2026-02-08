@@ -290,6 +290,4 @@ jobs:
   GatewayApiDeploy:
     needs: SemanticVersioning
     uses: ./.github/workflows/deploy_gateway_api.yml
-    with:
-      enabled: ${{needs.SemanticVersioning.outputs.gateway-api_changed}}
     secrets: inherit
