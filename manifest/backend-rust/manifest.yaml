@@ -44,23 +44,8 @@ spec:
                 configMapKeyRef:
                   name: backend-config
                   key: OTEL_EXPORTER_OTLP_ENDPOINT
-#            - name: BASIC_AUTH_PASSWORD
-#              valueFrom:
-#                secretKeyRef:
-#                  name: backend-user-credentials
-#                  key: user-password
-#            - name: BASIC_AUTH_USERNAME
-#              valueFrom:
-#                secretKeyRef:
-#                  name: backend-user-credentials
-#                  key: user-username
 #            - name: FRONTEND_ORIGIN_URL
 #              value: "https://expmonitor.freeddns.org"
-#            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-#              valueFrom:
-#                configMapKeyRef:
-#                  name: backend-config
-#                  key: OTEL_EXPORTER_OTLP_ENDPOINT
 #            - name: OTEL_SERVICE_NAME
 #              valueFrom:
 #                configMapKeyRef:
@@ -121,68 +106,3 @@ spec:
     app: backend-rust
   sessionAffinity: None
   type: ClusterIP
-
----
-# Ingress for public endpoints (no authentication required)
-# /health  - Kubernetes probes & monitoring
-# /metrics - Prometheus scraping
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt
-  name: backend-rust
-  namespace: expenses-monitor
-spec:
-  ingressClassName: public
-  rules:
-    - host: api-rust.expmonitor.freeddns.org
-      http:
-        paths:
-          - backend:
-              service:
-                name: backend-rust
-                port:
-                  number: 8080
-            path: /health
-            pathType: Exact
-          - backend:
-              service:
-                name: backend-rust
-                port:
-                  number: 8080
-            path: /metrics
-            pathType: Exact
-  tls:
-    - hosts:
-        - api-rust.expmonitor.freeddns.org
-      secretName: backend-rust-tls
-
----
-# Ingress for protected API endpoints (JWT authentication via oauth2-proxy)
-# All /api/* routes require a valid Keycloak Bearer token
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt
-    traefik.ingress.kubernetes.io/router.middlewares: expenses-monitor-jwt-auth@kubernetescrd
-  name: backend-rust-api
-  namespace: expenses-monitor
-spec:
-  ingressClassName: public
-  rules:
-    - host: api-rust.expmonitor.freeddns.org
-      http:
-        paths:
-          - backend:
-              service:
-                name: backend-rust
-                port:
-                  number: 8080
-            path: /api
-            pathType: Prefix
-  tls:
-    - hosts:
-        - api-rust.expmonitor.freeddns.org
-      secretName: backend-rust-tls
