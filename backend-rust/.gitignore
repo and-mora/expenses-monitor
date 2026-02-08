@@ -1,2 +1,8 @@
 target/
 .idea
+
+# Configuration files with secrets
+configuration.yaml
+.env
+.env.local
+*.local

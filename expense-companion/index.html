@@ -3,6 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" 
+          content="default-src 'self'; 
+                   script-src 'self' 'unsafe-inline'; 
+                   style-src 'self' 'unsafe-inline'; 
+                   connect-src 'self' https://auth.expmonitor.freeddns.org https://api-rust.expmonitor.freeddns.org http://localhost:8080; 
+                   img-src 'self' data:; 
+                   font-src 'self' data:; 
+                   object-src 'none'; 
+                   base-uri 'self'; 
+                   form-action 'self'; 
+                   frame-ancestors 'none';">
+    
     <title>Expenses Monitor</title>
     <meta name="description" content="Monitor and track your expenses efficiently" />
     <meta name="author" content="Expenses Monitor" />

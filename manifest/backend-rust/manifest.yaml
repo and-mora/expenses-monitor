@@ -5,6 +5,9 @@ metadata:
     app: backend-rust
   name: backend-rust
   namespace: expenses-monitor
+  annotations:
+    # Deploy after migrations complete (migration job is PreSync)
+    argocd.argoproj.io/sync-wave: "5"
 spec:
   replicas: 1
   selector:
@@ -85,6 +88,14 @@ spec:
             initialDelaySeconds: 2
             failureThreshold: 15
             periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
       automountServiceAccountToken: false
 
 ---

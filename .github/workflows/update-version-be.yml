@@ -24,14 +24,17 @@ jobs:
           token: ${{ secrets.PAT_PUSH_MAIN }}
 
       - name: "Update of gradle.properties with the new version"
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
-          sed -i -e "s/version=.*/version=${{ inputs.version }}/g" backend/gradle.properties
+          sed -i -e "s/version=.*/version=${VERSION}/g" backend/gradle.properties
 
       - name: "Push of gradle.properties with the new version"
-
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
           git config user.name "GitHub Workflow"
           git config user.email "<>"
           git add backend/gradle.properties
-          git commit -m "[skip ci] Updated with new version ${{ inputs.version }}"
+          git commit -m "[skip ci] Updated with new version ${VERSION}"
           git push origin master

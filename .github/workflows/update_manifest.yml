@@ -33,10 +33,13 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
       
       - name: Update Image Tag in Manifest
+        env:
+          COMPONENT: ${{ inputs.component }}
+          VERSION: ${{ inputs.version }}
         run: |
-          MANIFEST_PATH="manifest/${{ inputs.component }}/manifest.yaml"
+          MANIFEST_PATH="manifest/${COMPONENT}/manifest.yaml"
           
-          case "${{ inputs.component }}" in
+          case "${COMPONENT}" in
             "backend")
               IMAGE_SUFFIX="backend"
               ;;
@@ -50,14 +53,14 @@ jobs:
               IMAGE_SUFFIX="expense-companion"
               ;;
             *)
-              echo "Unknown component: ${{ inputs.component }}"
+              echo "Unknown component: ${COMPONENT}"
               exit 1
               ;;
           esac
           
           # La version include già il suffisso (es. v0.7.2-backend-rust)
           # Quindi usiamo direttamente la version senza aggiungere il suffisso
-          IMAGE_NAME="ghcr.io/and-mora/expenses-monitor:${{ inputs.version }}"
+          IMAGE_NAME="ghcr.io/and-mora/expenses-monitor:${VERSION}"
           
           # Update image tag - pattern cerca il suffisso specifico per evitare match errati
           sed -i.bak "s|image: ['\"]\?ghcr.io/and-mora/expenses-monitor:[^'\" ]*-${IMAGE_SUFFIX}['\"]\?|image: ${IMAGE_NAME}|g" $MANIFEST_PATH
@@ -66,6 +69,19 @@ jobs:
           
           echo "Updated $MANIFEST_PATH to image: $IMAGE_NAME"
           cat $MANIFEST_PATH | grep "image:"
+          
+          # Update migration job image for backend-rust
+          if [ "${COMPONENT}" == "backend-rust" ]; then
+            MIGRATION_JOB_PATH="manifest/${COMPONENT}/db-migration-job.yaml"
+            MIGRATION_IMAGE_NAME="ghcr.io/and-mora/expenses-monitor:${VERSION}-migrate"
+            
+            sed -i.bak "s|image: ['\"]\?ghcr.io/and-mora/expenses-monitor:[^'\" ]*-migrate['\"]\?|image: ${MIGRATION_IMAGE_NAME}|g" $MIGRATION_JOB_PATH
+            
+            rm -f $MIGRATION_JOB_PATH.bak
+            
+            echo "Updated $MIGRATION_JOB_PATH to image: $MIGRATION_IMAGE_NAME"
+            cat $MIGRATION_JOB_PATH | grep "image:"
+          fi
       
       - name: Create Pull Request
         id: create-pr

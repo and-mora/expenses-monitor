@@ -176,7 +176,7 @@ jobs:
     with:
       version: ${{needs.SemanticVersioning.outputs.backend_rust_version_tag}}
       component: backend-rust
-      auto_merge: false  # true per deploy automatico, false per review manuale
+      auto_merge: true  # true per deploy automatico, false per review manuale
     secrets: inherit
 
   # Deploy jobs ora triggerati da merge PR manifest
@@ -247,7 +247,7 @@ jobs:
     with:
       version: ${{needs.SemanticVersioning.outputs.frontend_companion_version_tag}}
       component: frontend-companion
-      auto_merge: false  # true per deploy automatico, false per review manuale
+      auto_merge: true  # true per deploy automatico, false per review manuale
     secrets: inherit
 
   MonitoringRelease:

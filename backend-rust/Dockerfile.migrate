@@ -1,0 +1,36 @@
+# Dockerfile for database migrations
+# This image is used by the Kubernetes Job to run sqlx migrations before deployment
+
+FROM rust:1.75-bookworm AS builder
+
+WORKDIR /app
+
+# Install sqlx-cli (only postgres feature to reduce size)
+RUN cargo install sqlx-cli --no-default-features --features rustls,postgres --version ~0.8
+
+FROM debian:bookworm-slim
+
+WORKDIR /app
+
+# Install runtime dependencies & # Create non-root user for running migrations
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    libssl3 && \
+    rm -rf /var/lib/apt/lists/* && \
+ groupadd -r sqlx --gid=1000 && \
+    useradd -r -g sqlx --uid=1000 --home-dir=/app --shell=/sbin/nologin sqlx && \
+    chown -R sqlx:sqlx /app
+
+# Copy sqlx binary from builder
+COPY --from=builder /usr/local/cargo/bin/sqlx /usr/local/bin/sqlx
+
+# Copy migration files with read-only permissions (555 = r-xr-xr-x)
+COPY --chown=sqlx:sqlx --chmod=555 migrations ./migrations
+
+# Switch to non-root user
+USER sqlx
+
+# Set entrypoint to sqlx
+ENTRYPOINT ["sqlx"]
+CMD ["migrate", "run"]

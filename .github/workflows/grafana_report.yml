@@ -19,10 +19,14 @@ jobs:
         run: echo REPORT_FILENAME="report-$(date +%Y-%m-%d).pdf" >> $GITHUB_OUTPUT
 
       - name: Download the report
+        env:
+          GF_URL: ${{ secrets.GF_URL }}
+          GF_TOKEN: ${{ secrets.GF_SA_REPORT_TOKEN }}
+          REPORT_FILE: ${{ steps.filename.outputs.REPORT_FILENAME }}
         run: |
-          curl --location 'https://${{ secrets.GF_URL }}/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=d0a30598-95a5-4098-89cc-435d965df315&from=now-1M%2FM&to=now-1M%2FM&layout=grid' \
-            --header "Authorization: Bearer ${{ secrets.GF_SA_REPORT_TOKEN }}" \
-            --output ${{ steps.filename.outputs.REPORT_FILENAME }}
+          curl --location "https://${GF_URL}/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=d0a30598-95a5-4098-89cc-435d965df315&from=now-1M%2FM&to=now-1M%2FM&layout=grid" \
+            --header "Authorization: Bearer ${GF_TOKEN}" \
+            --output "${REPORT_FILE}"
       - name: Send emails
         uses: dawidd6/action-send-mail@2cea9617b09d79a095af21254fbcb7ae95903dde #v3.2.1
         with:

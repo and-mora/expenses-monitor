@@ -25,6 +25,81 @@ Implement feature → Write tests → Run tests → Verify passing → Commit
 
 If tests fail, fix the implementation or tests before proceeding.
 
+## 🔒 MANDATORY SECURITY POLICY
+
+**CRITICAL**: Security is a top priority and must be considered in every code change, especially in CI/CD workflows and user input handling. This is non-negotiable.
+
+### GitHub Actions Security
+
+**NEVER interpolate user-controlled inputs directly in `run:` blocks**. This causes script injection vulnerabilities.
+
+❌ **VULNERABLE** (Script Injection):
+```yaml
+- name: Deploy
+  run: |
+    echo "Deploying ${{ inputs.version }}"
+    if [ "${{ inputs.component }}" == "backend" ]; then
+      # Attacker could inject: component="backend; rm -rf /"
+```
+
+✅ **SAFE** (Environment Variables):
+```yaml
+- name: Deploy
+  env:
+    VERSION: ${{ inputs.version }}
+    COMPONENT: ${{ inputs.component }}
+  run: |
+    echo "Deploying ${VERSION}"
+    if [ "${COMPONENT}" == "backend" ]; then
+      # Inputs are treated as literal strings, not executed
+```
+
+**Safe contexts** (no injection risk):
+- `if:` conditions
+- `with:` parameters in actions
+- `uses:` directives
+- Action inputs (`commit-message:`, `title:`, `body:`)
+
+**Vulnerable contexts** (require env vars):
+- `run:` bash/shell scripts
+- SSH scripts (`appleboy/ssh-action`)
+- Any direct command execution
+
+### Application Security
+
+1. **Input Validation**: Always validate and sanitize user inputs in backend routes before processing
+2. **SQL Injection**: Use `sqlx::query!` macro (compile-time checked) or parameterized queries - NEVER string concatenation
+3. **Authentication**: Every protected endpoint must validate JWT token from Keycloak
+4. **CORS**: Only whitelist known origins in [startup.rs](backend-rust/src/startup.rs) - never use `*`
+5. **Secrets Management**: 
+   - Never commit secrets (`.env.local`, API keys, passwords)
+   - Use Kubernetes secrets for production
+   - Use `configuration.yaml` (gitignored) for local dev
+6. **Dependencies**: 
+   - Run `cargo audit` (Rust) and `npm audit` (frontend) regularly
+   - Keep dependencies up-to-date
+   - Review Dependabot/Trivy security alerts
+
+### Deployment Security
+
+- **Container Images**: All images scanned with Trivy in CI
+- **Database Migrations**: Reviewed for backward compatibility and data safety
+- **Rollback Plan**: Every deployment must be reversible via ArgoCD
+- **Least Privilege**: Pods run with `automountServiceAccountToken: false` unless explicitly needed
+
+### Security Checklist
+
+Before merging any PR:
+- [ ] No direct input interpolation in workflow `run:` blocks
+- [ ] All user inputs validated on backend
+- [ ] No SQL string concatenation (use `sqlx::query!`)
+- [ ] No secrets in code or config files
+- [ ] CORS origins explicitly whitelisted
+- [ ] Dependencies have no known vulnerabilities
+- [ ] Trivy scan passes on Docker images
+
+**Security issues are deployment blockers** - fix immediately before proceeding.
+
 ## Architecture
 
 ### Service Boundaries
@@ -89,6 +164,7 @@ npm run lint                  # ESLint check
 - **Semantic versioning**: Each module (backend, backend-rust, frontend, expense-companion) has independent version tags with suffixes
 - **Deployment**: ArgoCD syncs from [manifest/](manifest/) on master push. See [.github/workflows/cd-pipeline.yml](.github/workflows/cd-pipeline.yml#L13-L32) for change detection logic
 - **Security**: Trivy scans run on all Docker images
+- **Workflow Security**: Always use environment variables in `run:` blocks instead of direct input interpolation to prevent script injection vulnerabilities
 
 ## Project Conventions
 
@@ -178,7 +254,12 @@ npm run lint                  # ESLint check
 8. **Run linter**: Execute `npm run lint` and fix all errors
 9. **Run FULL frontend suite**: Execute `npm test` and verify all pass
 
-**Database migration**: Run [scripts/init_db.sh](backend-rust/scripts/init_db.sh) to apply migrations. CI uses `cargo sqlx prepare` to cache query metadata.
+**Database migrations**: 
+- **Local development**: Run [scripts/init_db.sh](backend-rust/scripts/init_db.sh) to start PostgreSQL and apply migrations, or use `cargo sqlx migrate run` if DB is already running
+- **Production (Kubernetes)**: Migrations run **automatically before deployment** via Kubernetes Job with ArgoCD PreSync hook ([manifest/backend-rust/db-migration-job.yaml](manifest/backend-rust/db-migration-job.yaml))
+- **Creating new migrations**: `cd backend-rust && cargo sqlx migrate add <description>` creates timestamped SQL file in [migrations/](backend-rust/migrations/)
+- **CI**: Uses `cargo sqlx prepare` to cache query metadata for offline compilation
+- **Deployment behavior**: If migrations fail, deployment is rolled back automatically (zero risk)
 
 **CORS issues**: Add origins in [startup.rs](backend-rust/src/startup.rs#L62-L75) allowed_origin() calls. Localhost ports for dev, production domains for prod.
 
@@ -234,4 +315,5 @@ Not currently implemented (future consideration)
 ⚠️ **Sqlx requires DATABASE_URL** - Set for local dev or use `sqlx prepare` offline mode  
 ⚠️ **Tests are MANDATORY** - No code changes without tests. Run FULL test suite (no filters) to ensure non-regression  
 ⚠️ **Linting is MANDATORY** - Frontend changes require `npm run lint` with zero errors before commit  
-⚠️ **OpenAPI must be updated** - Any REST API change requires updating [docs/openapi.yaml](docs/openapi.yaml)
+⚠️ **OpenAPI must be updated** - Any REST API change requires updating [docs/openapi.yaml](docs/openapi.yaml)  
+⚠️ **GitHub Actions Security** - NEVER interpolate inputs directly in `run:` blocks, always use environment variables to prevent script injection

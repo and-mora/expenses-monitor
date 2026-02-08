@@ -1,0 +1,26 @@
+# Example configuration file for expenses-monitor backend
+# Copy this file to configuration.yaml and fill in your secrets
+# NOTE: configuration.yaml is gitignored - never commit secrets!
+
+application:
+  port: 8080
+  name: expenses-monitor-be
+  log:
+    level: info  # Options: trace, debug, info, warn, error
+
+database:
+  host: "localhost"
+  port: 5432
+  username: "postgres"
+  password: "postgres"  # Default for local dev/CI. Use APP_DATABASE__PASSWORD env var in production
+  database_name: expenses-monitor
+
+otlp:
+  service_name: backend-rust  # Ensure this matches your container name
+  grpc_endpoint: "http://localhost:4317"  # OpenTelemetry collector endpoint
+
+# Production: Use environment variables instead
+# Example:
+#   export APP_DATABASE__HOST=prod-db-host
+#   export APP_DATABASE__PASSWORD=secure-password
+#   export APP_OTLP__GRPC_ENDPOINT=http://otel-collector:4317
