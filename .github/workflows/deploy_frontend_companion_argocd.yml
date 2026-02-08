@@ -47,6 +47,8 @@ jobs:
           echo "✅ Application frontend-companion is Synced and Healthy"
       
       - name: Verify Deployment
+        env:
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
         run: |
           echo "Frontend Companion deployed successfully via ArgoCD"
-          echo "Check status: https://${{ secrets.ARGOCD_SERVER }}/applications/frontend-companion"
+          echo "Check status: https://$ARGOCD_SERVER/applications/frontend-companion"
