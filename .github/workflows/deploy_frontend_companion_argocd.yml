@@ -17,14 +17,14 @@ jobs:
           argocd version --client
       
       - name: Sync Application
+        env:
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
         run: |
-          SERVER="${{ secrets.ARGOCD_SERVER }}"
-          TOKEN="${{ secrets.ARGOCD_AUTH_TOKEN }}"
-          
           # Sync the application
           argocd app sync frontend-companion \
-            --server $SERVER \
-            --auth-token $TOKEN \
+            --server $ARGOCD_SERVER \
+            --auth-token $ARGOCD_AUTH_TOKEN \
             --insecure \
             --grpc-web
           
@@ -32,14 +32,13 @@ jobs:
       
       - name: Wait for Sync Completion
         timeout-minutes: 5
-        run: |
-          SERVER="${{ secrets.ARGOCD_SERVER }}"
-          TOKEN="${{ secrets.ARGOCD_AUTH_TOKEN }}"
-          
-          # Wait for the application to be Synced and Healthy
+        env:
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
+        run: |# Wait for the application to be Synced and Healthy
           argocd app wait frontend-companion \
-            --server $SERVER \
-            --auth-token $TOKEN \
+            --server $ARGOCD_SERVER \
+            --auth-token $ARGOCD_AUTH_TOKEN \
             --insecure \
             --health \
             --timeout 300 \
