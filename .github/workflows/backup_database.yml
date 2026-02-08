@@ -20,24 +20,35 @@ jobs:
 
       - name: 'Run backup command'
         uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 #v1.0.3
+        env:
+          BACKUP_PASSWORD: ${{ secrets.DB_BACKUP_PASSWORD }}
+          BACKUP_FILENAME: ${{ steps.gen_filename.outputs.backup_filename }}
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.VM_PRIVATE_KEY }}
           port: ${{ secrets.VM_PORT }}
           fingerprint: ${{ secrets.HOST_FINGERPRINT }}
+          envs: BACKUP_PASSWORD,BACKUP_FILENAME
           script: |
             mkdir -p expenses-monitor/db_backup
             cd ~/expenses-monitor/db_backup
-            kubectl exec -it postgresql-0 -- bash -c "PGPASSWORD='$(kubectl get secret postgresql -o jsonpath='{.data.postgres-password}' | base64 --decode)' pg_dumpall -c -U postgres" |  gzip | openssl enc -aes-256-cbc -pbkdf2 -k ${{ secrets.DB_BACKUP_PASSWORD }} -out ${{ steps.gen_filename.outputs.backup_filename }}
+            kubectl exec -it postgresql-0 -- bash -c "PGPASSWORD='$(kubectl get secret postgresql -o jsonpath='{.data.postgres-password}' | base64 --decode)' pg_dumpall -c -U postgres" |  gzip | openssl enc -aes-256-cbc -pbkdf2 -k "${BACKUP_PASSWORD}" -out "${BACKUP_FILENAME}"
 
       - name: 'Download backup file via SSH'
+        env:
+          KNOWN_HOSTS: ${{ secrets.KNOWN_HOSTS }}
+          VM_PRIVATE_KEY: ${{ secrets.VM_PRIVATE_KEY }}
+          VM_PORT: ${{ secrets.VM_PORT }}
+          VM_USERNAME: ${{ secrets.VM_USERNAME }}
+          VM_HOST: ${{ secrets.VM_HOST }}
+          BACKUP_FILENAME: ${{ steps.gen_filename.outputs.backup_filename }}
         run: |
           mkdir -p ~/.ssh/
-          echo "${{ secrets.KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          printf '%s\n' "${KNOWN_HOSTS}" > ~/.ssh/known_hosts
           eval `ssh-agent -t 2m`
-          echo "${{ secrets.VM_PRIVATE_KEY }}" | ssh-add -
-          scp -P ${{ secrets.VM_PORT }} ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }}:~/expenses-monitor/db_backup/${{ steps.gen_filename.outputs.backup_filename }} ./
+          printf '%s' "${VM_PRIVATE_KEY}" | ssh-add -
+          scp -P "${VM_PORT}" "${VM_USERNAME}@${VM_HOST}:~/expenses-monitor/db_backup/${BACKUP_FILENAME}" ./
           eval `ssh-agent -k`
 
       - name: 'Upload to gdrive'

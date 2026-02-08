@@ -18,7 +18,16 @@ spec:
     - Egress
   
   ingress:
-    # Allow traffic from frontend-companion
+    # Allow traffic from ingress controller (Traefik)
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: ingress
+      ports:
+        - protocol: TCP
+          port: 8080
+    
+    # Allow traffic from frontend-companion (in-cluster direct calls)
     - from:
       - podSelector:
           matchLabels:
@@ -64,15 +73,53 @@ spec:
       ports:
         - protocol: TCP
           port: 4317  # OTLP gRPC
+
+---
+# NetworkPolicy for oauth2-proxy
+# Allows Traefik → oauth2-proxy (ForwardAuth) and oauth2-proxy → Keycloak (JWKS)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: oauth2-proxy-netpol
+  namespace: expenses-monitor
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  podSelector:
+    matchLabels:
+      app: oauth2-proxy
+  policyTypes:
+    - Ingress
+    - Egress
+  
+  ingress:
+    # Allow ForwardAuth requests from Traefik ingress controller
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: ingress
+      ports:
+        - protocol: TCP
+          port: 4180
+  
+  egress:
+    # Allow DNS queries
+    - to:
+      - namespaceSelector: {}
+        podSelector:
+          matchLabels:
+            k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
     
-    # Allow HTTPS egress for Keycloak token validation
+    # Allow HTTPS to Keycloak (JWKS endpoint, OIDC discovery)
+    # Keycloak is in the 'default' namespace, accessible via HTTPS on the public URL
     - to:
       - namespaceSelector: {}
       ports:
         - protocol: TCP
           port: 443
-        - protocol: TCP
-          port: 8080  # Keycloak in same namespace
 
 ---
 # NetworkPolicy for frontend-companion
@@ -92,11 +139,11 @@ spec:
     - Egress
   
   ingress:
-    # Allow traffic from ingress controller
+    # Allow traffic from ingress controller (Traefik)
     - from:
       - namespaceSelector:
           matchLabels:
-            name: ingress-nginx
+            name: ingress
       ports:
         - protocol: TCP
           port: 80
@@ -161,20 +208,20 @@ spec:
     - Egress
   
   ingress:
-    # Allow from ingress controller (user logins)
+    # Allow from ingress controller (Traefik - user logins)
     - from:
       - namespaceSelector:
           matchLabels:
-            name: ingress-nginx
+            name: ingress
       ports:
         - protocol: TCP
           port: 8080
     
-    # Allow from backend-rust (token validation)
+    # Allow from oauth2-proxy (JWKS/token validation)
     - from:
       - podSelector:
           matchLabels:
-            app: backend-rust
+            app: oauth2-proxy
       ports:
         - protocol: TCP
           port: 8080
@@ -198,13 +245,3 @@ spec:
       ports:
         - protocol: TCP
           port: 5432
-
----
-# NOTE: To apply these policies:
-# kubectl apply -f manifest/backend-rust/network-policies.yaml
-#
-# To test connectivity after applying:
-# kubectl exec -it <backend-rust-pod> -- curl http://postgresql:5432
-#
-# To debug NetworkPolicy issues:
-# kubectl describe networkpolicy backend-rust-netpol -n expenses-monitor

@@ -103,3 +103,15 @@ argocd-apps:
       destination:
         server: https://kubernetes.default.svc
         namespace: default
+    oauth2-proxy:
+      project: default
+      source:
+        repoURL: https://github.com/and-mora/expenses-monitor.git
+        path: manifest/oauth2-proxy
+        targetRevision: HEAD
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: expenses-monitor
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=false
