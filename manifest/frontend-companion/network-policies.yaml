@@ -1,0 +1,41 @@
+---
+# NetworkPolicy for frontend-companion
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend-companion-netpol
+  namespace: expenses-monitor
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  podSelector:
+    matchLabels:
+      app: expense-companion
+  policyTypes:
+    - Ingress
+    - Egress
+  
+  ingress:
+    # Allow traffic from ingress controller (Traefik)
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: ingress
+      ports:
+        - protocol: TCP
+          port: 80
+  
+  egress:
+    # Allow DNS
+    - to:
+      - namespaceSelector: {}
+        podSelector:
+          matchLabels:
+            k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+    
+    # No other egress needed (static frontend served by nginx)
+
+---

@@ -1,0 +1,55 @@
+---
+# NetworkPolicy for Keycloak
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: keycloak-netpol
+  namespace: expenses-monitor
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  podSelector:
+    matchLabels:
+      app: keycloak
+  policyTypes:
+    - Ingress
+    - Egress
+  
+  ingress:
+    # Allow from ingress controller (Traefik - user logins)
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: ingress
+      ports:
+        - protocol: TCP
+          port: 8080
+    
+    # Allow from oauth2-proxy (JWKS/token validation)
+    - from:
+      - podSelector:
+          matchLabels:
+            app: oauth2-proxy
+      ports:
+        - protocol: TCP
+          port: 8080
+  
+  egress:
+    # Allow DNS
+    - to:
+      - namespaceSelector: {}
+        podSelector:
+          matchLabels:
+            k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+    
+    # Allow connection to PostgreSQL (Keycloak DB)
+    - to:
+      - podSelector:
+          matchLabels:
+            app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
