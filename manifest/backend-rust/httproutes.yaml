@@ -18,10 +18,6 @@ spec:
         - path:
             type: Exact
             value: /health
-      backendRefs:
-        - name: backend-rust
-          port: 8080
-    - matches:
         - path:
             type: Exact
             value: /metrics
