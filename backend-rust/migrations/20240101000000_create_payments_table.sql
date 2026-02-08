@@ -1,5 +1,5 @@
 -- Add migration script here
-CREATE SCHEMA expenses;
+CREATE SCHEMA IF NOT EXISTS expenses;
 
 CREATE TABLE expenses.payments (
 	id uuid DEFAULT gen_random_uuid(),
