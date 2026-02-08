@@ -65,11 +65,16 @@ impl DatabaseSettings {
 }
 
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
+    // Use configuration.yaml if it exists (local dev with secrets),
+    // otherwise fallback to configuration.yaml.example (CI/test environments)
+    let config_file = if std::path::Path::new("configuration.yaml").exists() {
+        "configuration.yaml"
+    } else {
+        "configuration.yaml.example"
+    };
+
     let settings = config::Config::builder()
-        .add_source(config::File::new(
-            "configuration.yaml",
-            config::FileFormat::Yaml,
-        ))
+        .add_source(config::File::new(config_file, config::FileFormat::Yaml))
         .add_source(
             config::Environment::with_prefix("APP")
                 .prefix_separator("_")
