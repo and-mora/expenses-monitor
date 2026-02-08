@@ -120,6 +120,14 @@ spec:
       ports:
         - protocol: TCP
           port: 443
+    # Allow HTTP to Keycloak service inside the cluster (internal OIDC discovery)
+    - to:
+      - podSelector:
+          matchLabels:
+            app: keycloak
+      ports:
+        - protocol: TCP
+          port: 8080
 
 ---
 # NetworkPolicy for frontend-companion
