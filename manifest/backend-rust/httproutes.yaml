@@ -49,6 +49,15 @@ spec:
         - path:
             type: PathPrefix
             value: /api
+          method: OPTIONS
+      backendRefs:
+        - name: backend-rust
+          port: 8080
+
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api
       filters:
         - type: ExtensionRef
           extensionRef:
