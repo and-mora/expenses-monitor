@@ -1,0 +1,25 @@
+---
+# Traefik ForwardAuth Middleware
+# Routes /api/* requests through oauth2-proxy for JWT validation
+# before forwarding to backend-rust.
+#
+# How it works:
+# 1. Traefik receives request for /api/*
+# 2. Traefik sends sub-request to oauth2-proxy /oauth2/auth
+# 3. oauth2-proxy validates Bearer JWT against Keycloak JWKS
+# 4. If valid: returns 200 + X-Auth-Request-User/Email headers
+# 5. Traefik forwards original request + auth headers to backend-rust
+# 6. If invalid: returns 401, Traefik returns 401 to client
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: jwt-auth
+  namespace: expenses-monitor
+spec:
+  forwardAuth:
+    address: http://oauth2-proxy.expenses-monitor.svc.cluster.local:4180/oauth2/auth
+    trustForwardHeader: true
+    authResponseHeaders:
+      - X-Auth-Request-User       # Keycloak subject (user ID)
+      - X-Auth-Request-Email      # User email
+      - X-Auth-Request-Groups     # Keycloak groups/roles
