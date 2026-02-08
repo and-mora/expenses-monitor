@@ -12,6 +12,7 @@ GRANT SELECT ON ALL TABLES IN SCHEMA expenses TO read_only;
 CREATE ROLE read_write;
 
 GRANT CONNECT ON DATABASE "expenses-monitor" TO read_write;
+GRANT CREATE ON DATABASE "expenses-monitor" TO read_write;
 GRANT USAGE, CREATE ON SCHEMA expenses TO read_write;
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA expenses TO read_write;
