@@ -1,29 +1,80 @@
 # Dockerfile for database migrations
 # This image is used by the Kubernetes Job to run sqlx migrations before deployment
+# Multi-platform build optimized for arm64 and amd64
 
-FROM rust:1.93-bookworm AS builder
+#------------------ Build arm64
+
+FROM --platform=$BUILDPLATFORM rust:1.93-bookworm AS builder-arm64
 
 WORKDIR /app
 
-# Install sqlx-cli (only postgres feature to reduce size)
+# Install dependencies for cross-compilation
+RUN dpkg --add-architecture arm64 \
+    && apt-get update \
+    && apt-get install -y \
+    g++-aarch64-linux-gnu \
+    libc6-dev-arm64-cross \
+    libssl-dev:arm64 \
+    pkg-config \
+    && rustup target add aarch64-unknown-linux-gnu \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install sqlx-cli for arm64 target (only postgres feature to reduce size)
+RUN CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc \
+    cargo install sqlx-cli --target=aarch64-unknown-linux-gnu --no-default-features --features rustls,postgres --version ~0.8
+
+#----------------- Build amd64
+
+FROM --platform=$BUILDPLATFORM rust:1.93-bookworm AS builder-amd64
+
+WORKDIR /app
+
+# Install sqlx-cli for amd64 target (only postgres feature to reduce size)
 RUN cargo install sqlx-cli --no-default-features --features rustls,postgres --version ~0.8
 
-FROM debian:bookworm-slim
+#------------------ Runtime arm64
+
+FROM --platform=linux/arm64 debian:bookworm-slim AS runtime-arm64
 
 WORKDIR /app
 
-# Install runtime dependencies & # Create non-root user for running migrations
+# Install runtime dependencies & create non-root user for running migrations
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ca-certificates \
     libssl3 && \
     rm -rf /var/lib/apt/lists/* && \
- groupadd -r sqlx --gid=1000 && \
+    groupadd -r sqlx --gid=1000 && \
     useradd -r -g sqlx --uid=1000 --home-dir=/app --shell=/sbin/nologin sqlx && \
     chown -R sqlx:sqlx /app
 
-# Copy sqlx binary from builder
-COPY --from=builder /usr/local/cargo/bin/sqlx /usr/local/bin/sqlx
+# Copy sqlx binary from arm64 builder
+COPY --from=builder-arm64 /usr/local/cargo/bin/sqlx /usr/local/bin/sqlx
+
+#------------------ Runtime amd64
+
+FROM --platform=linux/amd64 debian:bookworm-slim AS runtime-amd64
+
+WORKDIR /app
+
+# Install runtime dependencies & create non-root user for running migrations
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    libssl3 && \
+    rm -rf /var/lib/apt/lists/* && \
+    groupadd -r sqlx --gid=1000 && \
+    useradd -r -g sqlx --uid=1000 --home-dir=/app --shell=/sbin/nologin sqlx && \
+    chown -R sqlx:sqlx /app
+
+# Copy sqlx binary from amd64 builder
+COPY --from=builder-amd64 /usr/local/cargo/bin/sqlx /usr/local/bin/sqlx
+
+#---------- Final stage
+
+FROM runtime-${TARGETARCH}
+
+WORKDIR /app
 
 # Copy migration files with read-only permissions (555 = r-xr-xr-x)
 COPY --chown=sqlx:sqlx --chmod=555 migrations ./migrations
