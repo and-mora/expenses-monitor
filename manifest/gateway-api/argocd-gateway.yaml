@@ -13,7 +13,7 @@ spec:
   listeners:
     - name: https
       hostname: argocd.expmonitor.freeddns.org
-      port: 443
+      port: 8443
       protocol: HTTPS
       tls:
         mode: Terminate
@@ -24,7 +24,7 @@ spec:
           from: Same
 
     - name: http
-      port: 80
+      port: 8080
       protocol: HTTP
       allowedRoutes:
         namespaces:
