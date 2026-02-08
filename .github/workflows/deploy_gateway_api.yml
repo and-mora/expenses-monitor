@@ -41,6 +41,8 @@ jobs:
             --grpc-web
           echo "✅ Application gateway-api is Synced and Healthy"
       - name: Verify Deployment
+        env:
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
         run: |
           echo "Gateway API deployed successfully via ArgoCD"
-          echo "Check status: https://${{ secrets.ARGOCD_SERVER }}/applications/gateway-api"
+          echo "Check status: https://$ARGOCD_SERVER/applications/gateway-api"
