@@ -1,7 +1,7 @@
 -- Add migration script here
 CREATE SCHEMA IF NOT EXISTS expenses;
 
-CREATE TABLE expenses.payments (
+CREATE TABLE IF NOT EXISTS expenses.payments (
 	id uuid DEFAULT gen_random_uuid(),
 	accounting_date timestamp NULL,
 	merchant_name varchar NULL,

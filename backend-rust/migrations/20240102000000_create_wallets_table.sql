@@ -1,6 +1,6 @@
 -- Add migration script here
 -- Create wallets table
-CREATE TABLE expenses.wallets (
+CREATE TABLE IF NOT EXISTS expenses.wallets (
   id uuid DEFAULT gen_random_uuid(),
   name varchar NOT NULL,
   CONSTRAINT wallets_pk PRIMARY KEY (id),
