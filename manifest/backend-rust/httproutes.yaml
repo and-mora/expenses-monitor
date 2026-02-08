@@ -1,0 +1,60 @@
+---
+# HTTPRoute for public endpoints (no authentication required)
+# /health  - Kubernetes probes & monitoring
+# /metrics - Prometheus scraping
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: backend-rust-public
+  namespace: expenses-monitor
+spec:
+  parentRefs:
+    - name: expenses-monitor
+      sectionName: api-rust-https
+  hostnames:
+    - api-rust.expmonitor.freeddns.org
+  rules:
+    - matches:
+        - path:
+            type: Exact
+            value: /health
+      backendRefs:
+        - name: backend-rust
+          port: 8080
+    - matches:
+        - path:
+            type: Exact
+            value: /metrics
+      backendRefs:
+        - name: backend-rust
+          port: 8080
+
+---
+# HTTPRoute for protected API endpoints (JWT authentication via oauth2-proxy)
+# All /api/* routes require a valid Keycloak Bearer token
+# Uses existing Traefik Middleware CRD via ExtensionRef filter
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: backend-rust-api
+  namespace: expenses-monitor
+spec:
+  parentRefs:
+    - name: expenses-monitor
+      sectionName: api-rust-https
+  hostnames:
+    - api-rust.expmonitor.freeddns.org
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api
+      filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: jwt-auth
+      backendRefs:
+        - name: backend-rust
+          port: 8080
