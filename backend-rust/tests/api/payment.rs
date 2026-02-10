@@ -479,8 +479,8 @@ async fn create_payment_auto_creates_category() {
     .await
     .expect("Payment should exist");
 
-    assert!(payment_row.category_id.is_some());
-    assert_eq!(payment_row.category_id.unwrap(), created.id);
+    // `category_id` is non-nullable in the schema; compare directly
+    assert_eq!(payment_row.category_id, created.id);
 }
 #[tokio::test]
 async fn update_payment_returns_200() {
