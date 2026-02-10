@@ -1,15 +1,15 @@
 import type { Payment, CategoryItem } from '@/types/api';
 
 // Mock data for development/demo
-export const mockCategories: CategoryItem[] = [
-  'food',
-  'transport',
-  'shopping',
-  'entertainment',
-  'utilities',
-  'health',
-  'income',
-  'other',
+export const mockCategories = [
+  { id: 'food', name: 'food' },
+  { id: 'transport', name: 'transport' },
+  { id: 'shopping', name: 'shopping' },
+  { id: 'entertainment', name: 'entertainment' },
+  { id: 'utilities', name: 'utilities' },
+  { id: 'health', name: 'health' },
+  { id: 'income', name: 'income' },
+  { id: 'other', name: 'other' },
 ];
 
 export const mockPayments: Payment[] = [
@@ -17,6 +17,7 @@ export const mockPayments: Payment[] = [
     id: '1',
     merchantName: 'Salary - Company Inc',
     amountInCents: 350000,
+    categoryId: 'income',
     category: 'income',
     accountingDate: '2025-01-15',
     description: 'Monthly salary',
@@ -30,6 +31,7 @@ export const mockPayments: Payment[] = [
     id: '2',
     merchantName: 'Supermarket',
     amountInCents: -8450,
+    categoryId: 'food',
     category: 'food',
     accountingDate: '2025-01-20',
     description: 'Weekly groceries',
@@ -45,6 +47,7 @@ export const mockPayments: Payment[] = [
     id: '3',
     merchantName: 'Netflix',
     amountInCents: -1299,
+    categoryId: 'entertainment',
     category: 'entertainment',
     accountingDate: '2025-01-18',
     description: 'Monthly subscription',
@@ -58,6 +61,7 @@ export const mockPayments: Payment[] = [
     id: '4',
     merchantName: 'Gas Station',
     amountInCents: -5500,
+    categoryId: 'transport',
     category: 'transport',
     accountingDate: '2025-01-19',
     description: 'Fuel',
@@ -68,6 +72,7 @@ export const mockPayments: Payment[] = [
     id: '5',
     merchantName: 'Electric Company',
     amountInCents: -12000,
+    categoryId: 'utilities',
     category: 'utilities',
     accountingDate: '2025-01-10',
     description: 'January electricity bill',
@@ -81,6 +86,7 @@ export const mockPayments: Payment[] = [
     id: '6',
     merchantName: 'Freelance Project',
     amountInCents: 75000,
+    categoryId: 'income',
     category: 'income',
     accountingDate: '2025-01-08',
     description: 'Web development project',
@@ -95,6 +101,7 @@ export const mockPayments: Payment[] = [
     id: '7',
     merchantName: 'Pharmacy',
     amountInCents: -2350,
+    categoryId: 'health',
     category: 'health',
     accountingDate: '2025-01-17',
     description: 'Vitamins and medicine',
@@ -104,6 +111,7 @@ export const mockPayments: Payment[] = [
     id: '8',
     merchantName: 'Electronics Store',
     amountInCents: -29999,
+    categoryId: 'shopping',
     category: 'shopping',
     accountingDate: '2025-01-12',
     description: 'New headphones',

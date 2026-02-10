@@ -9,7 +9,9 @@ export interface Payment {
   id: string; // UUID
   merchantName: string;
   amountInCents: number; // Positive = income, Negative = expense
-  category: string;
+  categoryId: string;
+  category: string; // human-friendly name for display
+  categoryIcon?: string | null;
   accountingDate: string; // ISO date (YYYY-MM-DD)
   description?: string;
   wallet: string; // Wallet name (not ID!)
@@ -19,7 +21,7 @@ export interface Payment {
 export interface PaymentCreate {
   merchantName: string;
   amountInCents: number;
-  category: string;
+  categoryId: string;
   accountingDate: string;
   description?: string;
   wallet: string; // Wallet name (not ID!)
@@ -29,7 +31,7 @@ export interface PaymentCreate {
 export interface PaymentUpdate {
   merchantName: string;
   amountInCents: number;
-  category: string;
+  categoryId: string;
   accountingDate: string;
   description?: string;
   wallet: string; // Wallet name (not ID!)
@@ -58,7 +60,9 @@ export interface ApiError {
 
 // Category from API - simple string array
 // Category from API can be a simple string (legacy) or an object with optional icon
-export type CategoryItem = string | { name: string; icon?: string | null };
+export type CategoryItem =
+  | string
+  | { id: string; name: string; icon?: string | null };
 
 // Category type based on common expense categories
 export type Category = 
