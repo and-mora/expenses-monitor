@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Search, X, Filter } from 'lucide-react';
-import type { Wallet } from '@/types/api';
+import type { Wallet, CategoryItem } from '@/types/api';
 
 export interface TransactionFiltersProps {
   // Filter state
@@ -35,7 +35,7 @@ export interface TransactionFiltersProps {
   readonly onDateToChange: (date: string) => void;
   readonly onClearFilters: () => void;
   // Data
-  readonly categories: string[];
+  readonly categories: CategoryItem[];
   readonly wallets: Wallet[];
   // Computed
   readonly activeFiltersCount: number;
@@ -123,11 +123,16 @@ export function TransactionFilters({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
-                    {categories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category.charAt(0).toUpperCase() + category.slice(1)}
-                      </SelectItem>
-                    ))}
+                    {categories.map((category) => {
+                      const id = typeof category === 'string' ? category : category.id;
+                      const name = typeof category === 'string' ? category : category.name;
+                      const display = name ? (name.charAt(0).toUpperCase() + name.slice(1)) : id;
+                      return (
+                        <SelectItem key={id} value={id}>
+                          {display}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
@@ -225,11 +230,16 @@ export function TransactionFilters({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            {categories.map((category) => (
-              <SelectItem key={category} value={category}>
-                {category.charAt(0).toUpperCase() + category.slice(1)}
-              </SelectItem>
-            ))}
+            {categories.map((category) => {
+              const id = typeof category === 'string' ? category : category.id;
+              const name = typeof category === 'string' ? category : category.name;
+              const display = name ? (name.charAt(0).toUpperCase() + name.slice(1)) : id;
+              return (
+                <SelectItem key={id} value={id}>
+                  {display}
+                </SelectItem>
+              );
+            })}
           </SelectContent>
         </Select>
 

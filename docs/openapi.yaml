@@ -365,6 +365,11 @@ paths:
                 type: string
                 description: Comma-separated list of category names
                 example: Groceries,Transportation,Entertainment,Dining,Healthcare
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -517,6 +522,7 @@ components:
         - merchantName
         - amountInCents
         - category
+        - categoryId
         - accountingDate
         - wallet
       properties:
@@ -541,10 +547,21 @@ components:
           example: -5499
         category:
           type: string
-          description: Payment category
+          description: Canonical category name resolved from `categoryId`
           minLength: 1
           maxLength: 100
           example: Shopping
+        categoryId:
+          type: string
+          format: uuid
+          nullable: false
+          description: Canonical reference to category id (UUID). Clients MUST provide `categoryId` when creating/updating payments.
+          example: 550e8400-e29b-41d4-a716-446655440000
+        categoryIcon:
+          type: string
+          nullable: true
+          description: Optional icon identifier (frontend-only helper; server may ignore in favor of category record)
+          example: coffee
         accountingDate:
           type: string
           format: date-time
@@ -572,7 +589,7 @@ components:
       required:
         - merchantName
         - amountInCents
-        - category
+        - categoryId
         - accountingDate
         - wallet
       properties:
@@ -590,12 +607,17 @@ components:
             - Positive values represent income
             - Negative values represent expenses
           example: -5499
-        category:
+        categoryId:
           type: string
-          description: Payment category
-          minLength: 1
-          maxLength: 100
-          example: Shopping
+          format: uuid
+          nullable: false
+          description: Canonical category id (UUID). Clients MUST provide this field.
+          example: 550e8400-e29b-41d4-a716-446655440000
+        categoryIcon:
+          type: string
+          nullable: true
+          description: Optional icon identifier for compatibility. Server ignores this in favor of category record.
+          example: coffee
         accountingDate:
           type: string
           format: date-time
@@ -622,7 +644,7 @@ components:
       required:
         - merchantName
         - amountInCents
-        - category
+        - categoryId
         - accountingDate
         - wallet
       properties:
@@ -641,12 +663,17 @@ components:
             - Negative values represent expenses
             - Cannot be zero
           example: -5499
-        category:
+        categoryId:
           type: string
-          description: Payment category
-          minLength: 1
-          maxLength: 100
-          example: Shopping
+          format: uuid
+          nullable: false
+          description: Canonical category id (UUID). Clients MUST provide this field when updating a payment.
+          example: 550e8400-e29b-41d4-a716-446655440000
+        categoryIcon:
+          type: string
+          nullable: true
+          description: Optional icon identifier for compatibility. Server ignores this in favor of category record.
+          example: coffee
         accountingDate:
           type: string
           format: date-time
@@ -697,6 +724,21 @@ components:
           minLength: 1
           maxLength: 100
           example: PayPal
+
+    Category:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Category name
+          example: food
+        icon:
+          type: string
+          nullable: true
+          description: Optional icon identifier used by frontend
+          example: coffee
 
     Tag:
       type: object
@@ -795,6 +837,7 @@ components:
         merchantName: "Employer Corp"
         amountInCents: 250000
         category: "Salary"
+        categoryId: null
         accountingDate: "2026-01-15"
         description: "Monthly salary"
         wallet: "Bank Account"

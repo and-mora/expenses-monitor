@@ -40,16 +40,19 @@ export function EditPaymentDialog({
 }: EditPaymentDialogProps) {
   const queryClient = useQueryClient();
 
-  // Form state - initialize from payment prop
-  const [merchantName, setMerchantName] = useState(payment?.merchantName || '');
-  const [amountInCents, setAmountInCents] = useState(payment?.amountInCents || 0);
-  const [category, setCategory] = useState(payment?.category || '');
-  const [accountingDate, setAccountingDate] = useState(
+  // Form state - initialize from `payment` prop. The dialog is keyed by
+  // `payment?.id` so the component remounts when editing a different payment,
+  // allowing us to initialize state via initializers instead of calling
+  // setState synchronously inside an effect (avoids eslint rule).
+  const [merchantName, setMerchantName] = useState(() => payment?.merchantName || '');
+  const [amountInCents, setAmountInCents] = useState(() => payment?.amountInCents || 0);
+  const [category, setCategory] = useState(() => payment?.categoryId || '');
+  const [accountingDate, setAccountingDate] = useState(() =>
     payment?.accountingDate ? payment.accountingDate.split('T')[0] : ''
   );
-  const [description, setDescription] = useState(payment?.description || '');
-  const [wallet, setWallet] = useState(payment?.wallet || '');
-  const [tags, setTags] = useState<Tag[]>(payment?.tags || []);
+  const [description, setDescription] = useState(() => payment?.description || '');
+  const [wallet, setWallet] = useState(() => payment?.wallet || '');
+  const [tags, setTags] = useState<Tag[]>(() => payment?.tags || []);
 
   // Fetch categories and wallets
   const { data: categories = [] } = useQuery({
@@ -117,7 +120,7 @@ export function EditPaymentDialog({
     const paymentUpdate: PaymentUpdate = {
       merchantName: merchantName.trim(),
       amountInCents,
-      category,
+      categoryId: category,
       accountingDate: accountingDate + 'T00:00:00', // Backend expects NaiveDateTime
       description: description.trim() || undefined,
       wallet,
@@ -139,7 +142,10 @@ export function EditPaymentDialog({
   const displayAmount = (amountInCents / 100).toFixed(2);
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    // Key the sheet by payment id so the dialog remounts when a different
+    // payment is edited. This allows initializers above to pick up new values
+    // without setting state inside an effect.
+    <Sheet key={payment?.id ?? 'new'} open={open} onOpenChange={onOpenChange}>
       <SheetContent className="overflow-y-auto sm:max-w-[540px]">
         <SheetHeader>
           <SheetTitle>Edit Transaction</SheetTitle>
@@ -185,11 +191,19 @@ export function EditPaymentDialog({
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                  </SelectItem>
-                ))}
+                {categories.map((cat) => {
+                  const id = typeof cat === 'string' ? cat : cat.id;
+                  const label =
+                    typeof cat === 'string'
+                      ? cat.charAt(0).toUpperCase() + cat.slice(1)
+                      : cat.name;
+
+                  return (
+                    <SelectItem key={id} value={id}>
+                      {label}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>

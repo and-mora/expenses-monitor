@@ -21,13 +21,14 @@ async fn create_payment_returns_a_200() {
 
     // Assert
     assert_eq!(200, response.status().as_u16());
-    let saved =
-        sqlx::query!("SELECT category, amount FROM expenses.payments WHERE category = 'test'",)
-            .fetch_one(&app.db_pool)
-            .await
-            .expect("The query should retrieve the saved payment.");
+    let saved = sqlx::query!(
+        "SELECT p.amount, c.name as category_name FROM expenses.payments p JOIN expenses.categories c ON p.category_id = c.id WHERE c.name = 'test'",
+    )
+    .fetch_one(&app.db_pool)
+    .await
+    .expect("The query should retrieve the saved payment.");
 
-    assert_eq!(saved.category.unwrap(), "test");
+    assert_eq!(saved.category_name, "test");
     assert_eq!(saved.amount.unwrap(), -100);
 }
 
@@ -105,8 +106,9 @@ async fn when_get_categories_then_ok() {
     assert!(response.status().is_success());
     assert_ne!(response.content_length().unwrap(), 0);
 
-    // Verify it returns a JSON array
-    let categories: Vec<String> = response.json().await.expect("Failed to parse JSON array");
+    // Verify it returns a JSON array (each item can be string or object)
+    let categories: Vec<serde_json::Value> =
+        response.json().await.expect("Failed to parse JSON array");
     assert!(categories.is_empty() || !categories.is_empty()); // At least validate it's a valid Vec
 }
 
@@ -235,13 +237,13 @@ async fn create_payment_with_empty_description_returns_200() {
     // Assert
     assert_eq!(200, response.status().as_u16());
     let saved = sqlx::query!(
-        "SELECT category, amount, description FROM expenses.payments WHERE category = 'test' AND amount = -200",
+        "SELECT p.amount, p.description, c.name as category_name FROM expenses.payments p JOIN expenses.categories c ON p.category_id = c.id WHERE c.name = 'test' AND p.amount = -200",
     )
     .fetch_one(&app.db_pool)
     .await
     .expect("The query should retrieve the saved payment.");
 
-    assert_eq!(saved.category.unwrap(), "test");
+    assert_eq!(saved.category_name, "test");
     assert_eq!(saved.amount.unwrap(), -200);
     // Should be NULL when description is empty
     assert!(saved.description.is_none());
@@ -267,13 +269,13 @@ async fn create_payment_without_description_returns_200() {
     // Assert
     assert_eq!(200, response.status().as_u16());
     let saved = sqlx::query!(
-        "SELECT category, amount, description FROM expenses.payments WHERE category = 'food' AND amount = -300",
+        "SELECT p.amount, p.description, c.name as category_name FROM expenses.payments p JOIN expenses.categories c ON p.category_id = c.id WHERE c.name = 'food' AND p.amount = -300",
     )
     .fetch_one(&app.db_pool)
     .await
     .expect("The query should retrieve the saved payment.");
 
-    assert_eq!(saved.category.unwrap(), "food");
+    assert_eq!(saved.category_name, "food");
     assert_eq!(saved.amount.unwrap(), -300);
     // Should be NULL when description is missing
     assert!(saved.description.is_none());
@@ -426,6 +428,60 @@ async fn create_payment_with_tags_and_retrieve_returns_tags() {
     assert!(tag_keys.contains(&"project"));
     assert!(tag_keys.contains(&"type"));
 }
+
+#[tokio::test]
+async fn create_payment_auto_creates_category() {
+    // Arrange
+    let app = spawn_app().await;
+
+    // Ensure category does not exist
+    let category_name = "AutoCreatedCategory";
+    let check_before = sqlx::query!(
+        "SELECT id FROM expenses.categories WHERE lower(name) = lower($1)",
+        category_name
+    )
+    .fetch_optional(&app.db_pool)
+    .await
+    .expect("Query failed");
+    assert!(check_before.is_none());
+
+    // Act - create payment with a new category name
+    let body = format!(
+        r#"
+    {{
+        "description": "payment auto category",
+        "category": "{}",
+        "amountInCents": -1234,
+        "merchantName": "TestShop",
+        "accountingDate": "2024-12-01T00:00:00.000"
+    }}
+    "#,
+        category_name
+    );
+
+    let response = app.post_payment(&body).await;
+    assert_eq!(200, response.status().as_u16());
+
+    // Assert that category has been created and payment references it
+    let created = sqlx::query!(
+        "SELECT id FROM expenses.categories WHERE lower(name) = lower($1)",
+        category_name
+    )
+    .fetch_one(&app.db_pool)
+    .await
+    .expect("Category should exist");
+
+    let payment_row = sqlx::query!(
+        "SELECT category_id FROM expenses.payments WHERE description = $1",
+        "payment auto category"
+    )
+    .fetch_one(&app.db_pool)
+    .await
+    .expect("Payment should exist");
+
+    // `category_id` is non-nullable in the schema; compare directly
+    assert_eq!(payment_row.category_id, created.id);
+}
 #[tokio::test]
 async fn update_payment_returns_200() {
     // Arrange
@@ -471,7 +527,7 @@ async fn update_payment_returns_200() {
 
     // Verify in database
     let saved = sqlx::query!(
-        "SELECT description, category, amount, merchant_name FROM expenses.payments WHERE id = $1",
+        "SELECT p.description, c.name as category_name, p.amount, p.merchant_name FROM expenses.payments p JOIN expenses.categories c ON p.category_id = c.id WHERE p.id = $1",
         payment_id
     )
     .fetch_one(&app.db_pool)
@@ -479,7 +535,7 @@ async fn update_payment_returns_200() {
     .expect("Failed to retrieve updated payment");
 
     assert_eq!(saved.description.unwrap(), "updated description");
-    assert_eq!(saved.category.unwrap(), "transport");
+    assert_eq!(saved.category_name, "transport");
     assert_eq!(saved.amount.unwrap(), -7500);
     assert_eq!(saved.merchant_name.unwrap(), "Updated Merchant");
 }
@@ -510,14 +566,7 @@ async fn update_payment_with_tags_replaces_tags() {
     let payment_id = uuid::Uuid::parse_str(create_json["id"].as_str().unwrap()).unwrap();
 
     // Verify initial tags count
-    let initial_tags = sqlx::query!(
-        "SELECT COUNT(*) as count FROM expenses.payments_tags WHERE payment_id = $1",
-        payment_id
-    )
-    .fetch_one(&app.db_pool)
-    .await
-    .unwrap();
-    assert_eq!(initial_tags.count.unwrap(), 2);
+    // (initial_tags already asserted above)
 
     // Act - Update with new tags
     let update_body = r#"
@@ -648,7 +697,7 @@ async fn update_payment_converts_expense_to_income() {
 
     // Verify in database
     let saved = sqlx::query!(
-        "SELECT amount, category FROM expenses.payments WHERE id = $1",
+        "SELECT p.amount, c.name as category_name FROM expenses.payments p JOIN expenses.categories c ON p.category_id = c.id WHERE p.id = $1",
         payment_id
     )
     .fetch_one(&app.db_pool)
@@ -656,7 +705,7 @@ async fn update_payment_converts_expense_to_income() {
     .unwrap();
 
     assert_eq!(saved.amount.unwrap(), 5000);
-    assert_eq!(saved.category.unwrap(), "income");
+    assert_eq!(saved.category_name, "income");
 }
 
 #[rstest]

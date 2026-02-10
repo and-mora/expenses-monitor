@@ -9,7 +9,7 @@ async fn health_check_works() {
     // Act
     let response = client
         // Use the returned application address
-        .get(&format!("{}/health", &app.address))
+        .get(format!("{}/health", &app.address))
         .send()
         .await
         .expect("Failed to execute request.");
@@ -28,7 +28,7 @@ async fn metrics_are_exposed() {
     // Act
     let response = client
         // Use the returned application address
-        .get(&format!("{}/metrics", &app.address))
+        .get(format!("{}/metrics", &app.address))
         .send()
         .await
         .expect("Failed to execute request.");
@@ -46,7 +46,7 @@ async fn when_greet_then_ok() {
     // Act
     let response = client
         // Use the returned application address
-        .get(&format!("{}/greet", &app.address))
+        .get(format!("{}/greet", &app.address))
         .send()
         .await
         .expect("Failed to execute request.");
