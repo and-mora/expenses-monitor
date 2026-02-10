@@ -18,9 +18,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 export interface CategoryComboboxProps {
-  readonly value: string;
-  readonly onChange: (value: string) => void;
-  readonly categories: string[];
+  readonly value: string; // categoryId
+  readonly onChange: (value: string) => void; // returns categoryId
+  readonly categories: (string | { id: string; name: string; icon?: string | null })[];
   readonly isLoading?: boolean;
   readonly disabled?: boolean;
   readonly placeholder?: string;
@@ -87,7 +87,12 @@ export function CategoryCombobox({
                   variant="ghost"
                   size="sm"
                   className="w-full"
-                  onClick={handleCreateCategory}
+                  onClick={() => {
+                    // create returns a name; for mock we use name as id
+                    onChange(search.trim().toLowerCase());
+                    setOpen(false);
+                    setSearch('');
+                  }}
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   Crea "{search}"
@@ -95,25 +100,29 @@ export function CategoryCombobox({
               </div>
             </CommandEmpty>
             <CommandGroup>
-              {categories.map((category) => (
-                <CommandItem
-                  key={category}
-                  value={category}
-                  onSelect={(currentValue) => {
-                    onChange(currentValue);
-                    setOpen(false);
-                    setSearch('');
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === category ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {category}
-                </CommandItem>
-              ))}
+                {categories.map((category) => {
+                  const id = typeof category === 'string' ? category : category.id;
+                  const name = typeof category === 'string' ? category : category.name;
+                  return (
+                    <CommandItem
+                      key={id}
+                      value={id}
+                      onSelect={(currentValue) => {
+                        onChange(currentValue);
+                        setOpen(false);
+                        setSearch('');
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          value === id ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {name}
+                    </CommandItem>
+                  );
+                })}
             </CommandGroup>
           </CommandList>
         </Command>

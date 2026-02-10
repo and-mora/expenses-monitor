@@ -41,15 +41,24 @@ export function EditPaymentDialog({
   const queryClient = useQueryClient();
 
   // Form state - initialize from payment prop
-  const [merchantName, setMerchantName] = useState(payment?.merchantName || '');
-  const [amountInCents, setAmountInCents] = useState(payment?.amountInCents || 0);
-  const [category, setCategory] = useState(payment?.category || '');
-  const [accountingDate, setAccountingDate] = useState(
-    payment?.accountingDate ? payment.accountingDate.split('T')[0] : ''
-  );
-  const [description, setDescription] = useState(payment?.description || '');
-  const [wallet, setWallet] = useState(payment?.wallet || '');
-  const [tags, setTags] = useState<Tag[]>(payment?.tags || []);
+  // sync local state when `payment` prop changes
+  const [merchantName, setMerchantName] = useState('');
+  const [amountInCents, setAmountInCents] = useState(0);
+  const [category, setCategory] = useState('');
+  const [accountingDate, setAccountingDate] = useState('');
+  const [description, setDescription] = useState('');
+  const [wallet, setWallet] = useState('');
+  const [tags, setTags] = useState<Tag[]>([]);
+
+  useEffect(() => {
+    setMerchantName(payment?.merchantName || '');
+    setAmountInCents(payment?.amountInCents || 0);
+    setCategory(payment?.categoryId || '');
+    setAccountingDate(payment?.accountingDate ? payment.accountingDate.split('T')[0] : '');
+    setDescription(payment?.description || '');
+    setWallet(payment?.wallet || '');
+    setTags(payment?.tags || []);
+  }, [payment]);
 
   // Fetch categories and wallets
   const { data: categories = [] } = useQuery({
@@ -117,7 +126,7 @@ export function EditPaymentDialog({
     const paymentUpdate: PaymentUpdate = {
       merchantName: merchantName.trim(),
       amountInCents,
-      category,
+      categoryId: category,
       accountingDate: accountingDate + 'T00:00:00', // Backend expects NaiveDateTime
       description: description.trim() || undefined,
       wallet,

@@ -53,15 +53,15 @@ export class PaymentsApi extends BaseApiClient {
   async getCategories(type?: 'expense' | 'income'): Promise<CategoryItem[]> {
     if (USE_MOCK_DATA) {
       const categories = mockCategories;
-      if (type === 'expense') return categories.filter(c => c !== 'income');
-      if (type === 'income') return categories.filter(c => c === 'income');
+      if (type === 'expense') return categories.filter(c => (typeof c === 'string' ? c !== 'income' : c.name !== 'income'));
+      if (type === 'income') return categories.filter(c => (typeof c === 'string' ? c === 'income' : c.name === 'income'));
       return categories;
     }
 
     const url = type ? `/api/payments/categories?type=${type}` : '/api/payments/categories';
     // API may return either array of strings (legacy) or array of objects { name, icon }
     const data = await this.fetch<any[]>(url);
-    return data.map((d) => (typeof d === 'string' ? d : { name: d.name, icon: d.icon ?? null }));
+    return data.map((d) => (typeof d === 'string' ? d : { id: d.id ?? d.name, name: d.name, icon: d.icon ?? null }));
   }
 
   // Payments
