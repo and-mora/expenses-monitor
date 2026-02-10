@@ -1,14 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum CategoryKind {
+    #[default]
     Expense,
     Income,
-}
-
-impl Default for CategoryKind {
-    fn default() -> Self {
-        CategoryKind::Expense
-    }
 }
