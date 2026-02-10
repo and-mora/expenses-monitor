@@ -13,8 +13,9 @@ export default function CategoryList({ categories, onEdit }: Props) {
       {categories.map((c, idx) => {
         const name = typeof c === 'string' ? c : c.name;
         const iconName = typeof c === 'string' ? undefined : c.icon;
-        // @ts-ignore dynamic lookup
-        const Icon = iconName ? (LucideIcons as any)[iconName] : null;
+        const Icon = iconName
+          ? (LucideIcons as unknown as Record<string, React.ComponentType<unknown>>)[iconName]
+          : null;
         return (
           <li key={`${name}-${idx}`} className="flex items-center gap-3 p-2">
             <div className="w-6 h-6">

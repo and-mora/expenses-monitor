@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { PaymentsApi } from './api/payments';
+import type { CategoryItem } from '@/types/api';
+import type { SpyInstance } from 'vitest';
 
 describe('PaymentsApi.getCategories contract', () => {
-  let fetchSpy: any;
+  let fetchSpy: SpyInstance;
 
   beforeEach(() => {
     fetchSpy = vi.spyOn(global, 'fetch');
@@ -33,8 +35,11 @@ describe('PaymentsApi.getCategories contract', () => {
     // Strings are returned as-is; objects are normalized to { id, name, icon }
     expect(typeof result[0]).toBe('string');
     expect(result[0]).toBe('food');
-    expect(typeof result[1]).toBe('object');
-    expect((result[1] as any).id).toBe('transport');
-    expect((result[1] as any).name).toBe('transport');
+    const item = result[1] as CategoryItem;
+    expect(typeof item).toBe('object');
+    if (typeof item !== 'string') {
+      expect(item.id).toBe('transport');
+      expect(item.name).toBe('transport');
+    }
   });
 });

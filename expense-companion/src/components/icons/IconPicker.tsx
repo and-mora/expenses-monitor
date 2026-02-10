@@ -31,8 +31,7 @@ export default function IconPicker({ value, onChange, ariaLabel = 'Scegli icona'
           — Nessuna —
         </button>
         {list.map(name => {
-          // @ts-ignore dynamic lookup
-          const Icon = (LucideIcons as any)[name];
+          const Icon = (LucideIcons as unknown as Record<string, React.ComponentType<unknown>>)[name];
           return (
             <button
               key={name}

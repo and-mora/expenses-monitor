@@ -60,8 +60,12 @@ export class PaymentsApi extends BaseApiClient {
 
     const url = type ? `/api/payments/categories?type=${type}` : '/api/payments/categories';
     // API may return either array of strings (legacy) or array of objects { name, icon }
-    const data = await this.fetch<any[]>(url);
-    return data.map((d) => (typeof d === 'string' ? d : { id: d.id ?? d.name, name: d.name, icon: d.icon ?? null }));
+    const data = await this.fetch<unknown[]>(url);
+    return data.map((d) => {
+      if (typeof d === 'string') return d as string;
+      const obj = d as { id?: string; name: string; icon?: string | null };
+      return { id: obj.id ?? obj.name, name: obj.name, icon: obj.icon ?? null };
+    });
   }
 
   // Payments
