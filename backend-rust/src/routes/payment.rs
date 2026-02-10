@@ -43,7 +43,11 @@ pub enum CategoryIdentifier {
 
 impl Payment {
     // Build Payment from DTO after resolving the canonical category_id (Uuid).
-    fn try_from_dto(dto: PaymentDto, wallet_id: Option<Uuid>, category_id: Uuid) -> Result<Self, String> {
+    fn try_from_dto(
+        dto: PaymentDto,
+        wallet_id: Option<Uuid>,
+        category_id: Uuid,
+    ) -> Result<Self, String> {
         // Parse description only if provided and non-empty
         let description = dto
             .description
@@ -69,7 +73,9 @@ impl TryFrom<Json<PaymentDto>> for Payment {
         // Attempt to convert only when client provided a UUID; otherwise caller must resolve name.
         match json.0.category_id.clone() {
             CategoryIdentifier::Uid(uid) => Self::try_from_dto(json.0, None, uid),
-            CategoryIdentifier::Name(_) => Err("category name provided; resolve to id before conversion".into()),
+            CategoryIdentifier::Name(_) => {
+                Err("category name provided; resolve to id before conversion".into())
+            }
         }
     }
 }
@@ -132,7 +138,10 @@ pub async fn create_payment(
                     {
                         Ok(new_id) => new_id,
                         Err(insert_err) => {
-                            tracing::warn!("Failed to insert category (maybe concurrent): {:?}", insert_err);
+                            tracing::warn!(
+                                "Failed to insert category (maybe concurrent): {:?}",
+                                insert_err
+                            );
                             // Try to select again in case another request inserted it concurrently
                             match sqlx::query_scalar!(
                                 "SELECT id FROM expenses.categories WHERE LOWER(name) = LOWER($1)",
@@ -143,7 +152,10 @@ pub async fn create_payment(
                             {
                                 Ok(Some(id)) => id,
                                 Ok(None) => {
-                                    tracing::error!("Failed to create category and it does not exist: {}", name);
+                                    tracing::error!(
+                                        "Failed to create category and it does not exist: {}",
+                                        name
+                                    );
                                     return HttpResponse::InternalServerError().finish();
                                 }
                                 Err(e) => {
@@ -401,7 +413,10 @@ pub async fn update_payment(
                     {
                         Ok(new_id) => new_id,
                         Err(insert_err) => {
-                            tracing::warn!("Failed to insert category (maybe concurrent): {:?}", insert_err);
+                            tracing::warn!(
+                                "Failed to insert category (maybe concurrent): {:?}",
+                                insert_err
+                            );
                             match sqlx::query_scalar!(
                                 "SELECT id FROM expenses.categories WHERE LOWER(name) = LOWER($1)",
                                 name
@@ -411,7 +426,10 @@ pub async fn update_payment(
                             {
                                 Ok(Some(id)) => id,
                                 Ok(None) => {
-                                    tracing::error!("Failed to create category and it does not exist: {}", name);
+                                    tracing::error!(
+                                        "Failed to create category and it does not exist: {}",
+                                        name
+                                    );
                                     return HttpResponse::InternalServerError().finish();
                                 }
                                 Err(e) => {
