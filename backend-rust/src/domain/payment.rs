@@ -6,6 +6,7 @@ use uuid::Uuid;
 pub struct Payment {
     pub description: Option<PaymentDescription>,
     pub category: PaymentCategory,
+    pub category_id: Option<Uuid>,
     pub amount_in_cents: i32,
     pub merchant_name: PaymentMerchant,
     pub accounting_date: NaiveDateTime,

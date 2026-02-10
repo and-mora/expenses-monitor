@@ -365,6 +365,11 @@ paths:
                 type: string
                 description: Comma-separated list of category names
                 example: Groceries,Transportation,Entertainment,Dining,Healthcare
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -545,6 +550,17 @@ components:
           minLength: 1
           maxLength: 100
           example: Shopping
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Optional reference to canonical category id (preferred). If provided, server will use it; otherwise 'category' name may be used to resolve or create a category.
+          example: 550e8400-e29b-41d4-a716-446655440000
+        categoryIcon:
+          type: string
+          nullable: true
+          description: Optional icon identifier (frontend-only helper; server may ignore in favor of category record)
+          example: coffee
         accountingDate:
           type: string
           format: date-time
@@ -596,6 +612,17 @@ components:
           minLength: 1
           maxLength: 100
           example: Shopping
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Optional category id (UUID) - API accepts either `category` name or `categoryId`.
+          example: 550e8400-e29b-41d4-a716-446655440000
+        categoryIcon:
+          type: string
+          nullable: true
+          description: Optional icon identifier for compatibility.
+          example: coffee
         accountingDate:
           type: string
           format: date-time
@@ -647,6 +674,17 @@ components:
           minLength: 1
           maxLength: 100
           example: Shopping
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Optional category id (UUID) - API accepts either `category` name or `categoryId`.
+          example: 550e8400-e29b-41d4-a716-446655440000
+        categoryIcon:
+          type: string
+          nullable: true
+          description: Optional icon identifier for compatibility.
+          example: coffee
         accountingDate:
           type: string
           format: date-time
@@ -697,6 +735,21 @@ components:
           minLength: 1
           maxLength: 100
           example: PayPal
+
+    Category:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Category name
+          example: food
+        icon:
+          type: string
+          nullable: true
+          description: Optional icon identifier used by frontend
+          example: coffee
 
     Tag:
       type: object
@@ -795,6 +848,7 @@ components:
         merchantName: "Employer Corp"
         amountInCents: 250000
         category: "Salary"
+        categoryId: null
         accountingDate: "2026-01-15"
         description: "Monthly salary"
         wallet: "Bank Account"

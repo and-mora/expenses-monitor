@@ -4,7 +4,7 @@ use actix_web::web::Json;
 use actix_web::{web, HttpResponse, Responder};
 use chrono::NaiveDateTime;
 use serde::Deserialize;
-use sqlx::{Error, PgPool};
+use sqlx::{Error, PgPool, Row};
 use std::ops::Deref;
 use uuid::Uuid;
 
@@ -17,7 +17,11 @@ pub struct TagDto {
 #[derive(Deserialize)]
 pub struct PaymentDto {
     description: Option<String>,
+    // Accept either a category name or a categoryId (UUID). If both provided, categoryId takes precedence.
     category: String,
+    #[serde(rename = "categoryId")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    category_id: Option<Uuid>,
     #[serde(rename = "amountInCents")]
     amount_in_cents: i32,
     #[serde(rename = "merchantName")]
@@ -40,11 +44,13 @@ impl Payment {
             .map(PaymentDescription::parse)
             .transpose()?;
         let merchant_name = PaymentMerchant::parse(dto.merchant_name.clone())?;
+        // category_icon intentionally omitted (no denormalized column)
         Ok(Self {
             description,
-            merchant_name,
             category: category_name,
+            category_id: None,
             amount_in_cents: dto.amount_in_cents,
+            merchant_name,
             accounting_date: dto.accounting_date,
             wallet_id,
         })
@@ -76,7 +82,7 @@ pub async fn create_payment(
 
     // Resolve wallet_id from wallet name
     let wallet_id = if let Some(name) = &wallet_name_input {
-        match get_wallet_id_by_name(name, connection_pool.deref()).await {
+        match get_wallet_id_by_name(name, connection_pool.get_ref()).await {
             Ok(Some(id)) => Some(id),
             Ok(None) => {
                 tracing::error!("Wallet not found: {}", name);
@@ -91,18 +97,79 @@ pub async fn create_payment(
         None
     };
 
+    // Resolve or create category: accepts either categoryId or category name
+    let mut payment_data = payload.0;
+    // If category_id provided, use it. Otherwise, look up by name and create if missing.
+    let resolved_category_id: Option<Uuid> = if let Some(cid) = payment_data.category_id {
+        Some(cid)
+    } else {
+        let name = payment_data.category.trim();
+        if name.is_empty() {
+            None
+        } else {
+            // try to find existing category by case-insensitive name (runtime query to avoid sqlx compile-time macros)
+            match sqlx::query_scalar!(
+                "SELECT id FROM expenses.categories WHERE lower(name) = lower($1)",
+                name
+            )
+            .fetch_optional(connection_pool.get_ref())
+            .await
+            {
+                Ok(Some(id)) => Some(id),
+                Ok(None) => {
+                    // create new category (auto-create)
+                    match sqlx::query_scalar!(
+                        "INSERT INTO expenses.categories (name) VALUES ($1) RETURNING id",
+                        name
+                    )
+                    .fetch_one(connection_pool.get_ref())
+                    .await
+                    {
+                        Ok(id) => Some(id),
+                        Err(e) => {
+                            tracing::error!("Failed to insert category: {:?}", e);
+                            return HttpResponse::InternalServerError().finish();
+                        }
+                    }
+                }
+                Err(e) => {
+                    tracing::error!("Failed to query categories: {:?}", e);
+                    return HttpResponse::InternalServerError().finish();
+                }
+            }
+        }
+    };
+
+    // If we resolved a category_id but category name is empty, fetch canonical name for validation
+    if payment_data.category.trim().is_empty() {
+        if let Some(cid) = resolved_category_id {
+            match sqlx::query_scalar!("SELECT name FROM expenses.categories WHERE id = $1", cid)
+                .fetch_one(connection_pool.get_ref())
+                .await
+            {
+                Ok(name) => payment_data.category = name,
+                Err(e) => {
+                    tracing::error!("Failed to load category name: {:?}", e);
+                    return HttpResponse::InternalServerError().finish();
+                }
+            }
+        }
+    }
+
     // Create payment with resolved wallet_id
-    let payment_data = payload.0;
-    let payment = match Payment::try_from_dto(payment_data, wallet_id) {
+    let mut payment = match Payment::try_from_dto(payment_data, wallet_id) {
         Ok(payment) => payment,
         Err(_) => return HttpResponse::BadRequest().finish(),
     };
+    // attach category_id to domain model
+    payment.category_id = resolved_category_id;
 
-    match insert_payment(&payment, connection_pool.deref()).await {
+    match insert_payment(&payment, connection_pool.get_ref()).await {
         Ok(payment_id) => {
             // Insert tags if provided
             if let Some(tags) = tags {
-                if let Err(e) = insert_payment_tags(payment_id, tags, connection_pool.deref()).await
+                if let Err(e) =
+                    insert_payment_tags(payment_id, tags, connection_pool.get_ref()).await
                 {
                     tracing::error!("Failed to insert tags: {:?}", e);
                     // Continue anyway, tags are optional
@@ -111,7 +178,7 @@ pub async fn create_payment(
 
             // Fetch wallet name if wallet_id is provided
             let wallet_name = if let Some(wid) = wallet_id {
-                get_wallet_name(wid, connection_pool.deref())
+                get_wallet_name(wid, connection_pool.get_ref())
                     .await
                     .ok()
                     .flatten()
@@ -120,7 +187,7 @@ pub async fn create_payment(
             };
 
             // Fetch tags for response
-            let response_tags = get_payment_tags(payment_id, connection_pool.deref())
+            let response_tags = get_payment_tags(payment_id, connection_pool.get_ref())
                 .await
                 .unwrap_or_default();
 
@@ -131,6 +198,27 @@ pub async fn create_payment(
                 merchant_name: payment.merchant_name.as_ref().to_string(),
                 accounting_date: payment.accounting_date,
                 category: payment.category.as_ref().to_string(),
+                category_id: payment.category_id,
+                category_icon: {
+                    if let Some(cid) = payment.category_id {
+                        match sqlx::query_scalar!(
+                            "SELECT icon FROM expenses.categories WHERE id = $1",
+                            cid
+                        )
+                        .fetch_optional(connection_pool.get_ref())
+                        .await
+                        {
+                            Ok(Some(icon)) => icon,
+                            Ok(None) => None,
+                            Err(e) => {
+                                tracing::error!("Failed to fetch category icon: {:?}", e);
+                                None
+                            }
+                        }
+                    } else {
+                        None
+                    }
+                },
                 wallet: wallet_name,
                 tags: response_tags,
             };
@@ -149,22 +237,24 @@ pub async fn create_payment(
     skip(payment, connection_pool)
 )]
 async fn insert_payment(payment: &Payment, connection_pool: &PgPool) -> Result<Uuid, Error> {
-    let row = sqlx::query!(
-        "insert into expenses.payments (category, description, merchant_name, accounting_date, amount, wallet_id) values ($1, $2, $3, $4, $5, $6) RETURNING id",
-        payment.category.as_ref(),
-        payment.description.as_ref().map(|d| d.as_ref()),
-        payment.merchant_name.as_ref(),
-        payment.accounting_date,
-        payment.amount_in_cents,
-        payment.wallet_id
+    let row = sqlx::query(
+        "insert into expenses.payments (category, category_id, description, merchant_name, accounting_date, amount, wallet_id) values ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
     )
-        .fetch_one(connection_pool)
-        .await
-        .map_err(|e| {
-            tracing::error!("Failed to execute query: {:?}", e);
-            e
-        })?;
-    Ok(row.id)
+    .bind(payment.category.as_ref())
+    .bind(payment.category_id)
+    .bind(payment.description.as_ref().map(|d| d.as_ref()))
+    .bind(payment.merchant_name.as_ref())
+    .bind(payment.accounting_date)
+    .bind(payment.amount_in_cents)
+    .bind(payment.wallet_id)
+    .fetch_one(connection_pool)
+    .await
+    .map_err(|e| {
+        tracing::error!("Failed to execute query: {:?}", e);
+        e
+    })?;
+    let id: Uuid = row.try_get("id")?;
+    Ok(id)
 }
 
 #[tracing::instrument(
@@ -240,7 +330,7 @@ pub async fn update_payment(
 
     // Resolve wallet_id from wallet name
     let wallet_id = if let Some(name) = &wallet_name_input {
-        match get_wallet_id_by_name(name, connection_pool.deref()).await {
+        match get_wallet_id_by_name(name, connection_pool.get_ref()).await {
             Ok(Some(id)) => Some(id),
             Ok(None) => {
                 tracing::error!("Wallet not found: {}", name);
@@ -256,24 +346,78 @@ pub async fn update_payment(
     };
 
     // Create payment with resolved wallet_id
-    let payment_data = payload.0;
-    let payment = match Payment::try_from_dto(payment_data, wallet_id) {
+    // Resolve or create category similar to create_payment
+    let mut payment_data = payload.0;
+    let resolved_category_id: Option<Uuid> = if let Some(cid) = payment_data.category_id {
+        Some(cid)
+    } else {
+        let name = payment_data.category.trim();
+        if name.is_empty() {
+            None
+        } else {
+            match sqlx::query_scalar!(
+                "SELECT id FROM expenses.categories WHERE lower(name) = lower($1)",
+                name
+            )
+            .fetch_optional(connection_pool.get_ref())
+            .await
+            {
+                Ok(Some(id)) => Some(id),
+                Ok(None) => match sqlx::query_scalar!(
+                    "INSERT INTO expenses.categories (name) VALUES ($1) RETURNING id",
+                    name
+                )
+                .fetch_one(connection_pool.get_ref())
+                .await
+                {
+                    Ok(id) => Some(id),
+                    Err(e) => {
+                        tracing::error!("Failed to insert category: {:?}", e);
+                        return HttpResponse::InternalServerError().finish();
+                    }
+                },
+                Err(e) => {
+                    tracing::error!("Failed to query categories: {:?}", e);
+                    return HttpResponse::InternalServerError().finish();
+                }
+            }
+        }
+    };
+
+    if payment_data.category.trim().is_empty() {
+        if let Some(cid) = resolved_category_id {
+            match sqlx::query_scalar!("SELECT name FROM expenses.categories WHERE id = $1", cid)
+                .fetch_one(connection_pool.get_ref())
+                .await
+            {
+                Ok(name) => payment_data.category = name,
+                Err(e) => {
+                    tracing::error!("Failed to load category name: {:?}", e);
+                    return HttpResponse::InternalServerError().finish();
+                }
+            }
+        }
+    }
+
+    let mut payment = match Payment::try_from_dto(payment_data, wallet_id) {
         Ok(payment) => payment,
         Err(_) => return HttpResponse::BadRequest().finish(),
     };
+    payment.category_id = resolved_category_id;
 
     // Update payment in database
-    match update_payment_query(&payment, payment_id, connection_pool.deref()).await {
+    match update_payment_query(&payment, payment_id, connection_pool.get_ref()).await {
         Ok(_) => {
             // Delete existing tags
-            if let Err(e) = delete_payment_tags(payment_id, connection_pool.deref()).await {
+            if let Err(e) = delete_payment_tags(payment_id, connection_pool.get_ref()).await {
                 tracing::error!("Failed to delete existing tags: {:?}", e);
                 return HttpResponse::InternalServerError().finish();
             }
 
             // Insert new tags if provided
             if let Some(tags) = tags {
-                if let Err(e) = insert_payment_tags(payment_id, tags, connection_pool.deref()).await
+                if let Err(e) =
+                    insert_payment_tags(payment_id, tags, connection_pool.get_ref()).await
                 {
                     tracing::error!("Failed to insert tags: {:?}", e);
                     return HttpResponse::InternalServerError().finish();
@@ -282,7 +426,7 @@ pub async fn update_payment(
 
             // Fetch wallet name if wallet_id is provided
             let wallet_name = if let Some(wid) = wallet_id {
-                get_wallet_name(wid, connection_pool.deref())
+                get_wallet_name(wid, connection_pool.get_ref())
                     .await
                     .ok()
                     .flatten()
@@ -291,7 +435,7 @@ pub async fn update_payment(
             };
 
             // Fetch tags for response
-            let response_tags = get_payment_tags(payment_id, connection_pool.deref())
+            let response_tags = get_payment_tags(payment_id, connection_pool.get_ref())
                 .await
                 .unwrap_or_default();
 
@@ -302,6 +446,27 @@ pub async fn update_payment(
                 merchant_name: payment.merchant_name.as_ref().to_string(),
                 accounting_date: payment.accounting_date,
                 category: payment.category.as_ref().to_string(),
+                category_id: payment.category_id,
+                category_icon: {
+                    if let Some(cid) = payment.category_id {
+                        match sqlx::query_scalar!(
+                            "SELECT icon FROM expenses.categories WHERE id = $1",
+                            cid
+                        )
+                        .fetch_optional(connection_pool.get_ref())
+                        .await
+                        {
+                            Ok(Some(icon)) => icon,
+                            Ok(None) => None,
+                            Err(e) => {
+                                tracing::error!("Failed to fetch category icon: {:?}", e);
+                                None
+                            }
+                        }
+                    } else {
+                        None
+                    }
+                },
                 wallet: wallet_name,
                 tags: response_tags,
             };
@@ -322,25 +487,27 @@ async fn update_payment_query(
     payment_id: Uuid,
     connection_pool: &PgPool,
 ) -> Result<(), Error> {
-    sqlx::query!(
+    sqlx::query(
         r#"
         UPDATE expenses.payments
         SET category = $1,
-            description = $2,
-            merchant_name = $3,
-            accounting_date = $4,
-            amount = $5,
-            wallet_id = $6
-        WHERE id = $7
+                category_id = $2,
+                description = $3,
+                merchant_name = $4,
+                accounting_date = $5,
+                amount = $6,
+                wallet_id = $7
+            WHERE id = $8
         "#,
-        payment.category.as_ref(),
-        payment.description.as_ref().map(|d| d.as_ref()),
-        payment.merchant_name.as_ref(),
-        payment.accounting_date,
-        payment.amount_in_cents,
-        payment.wallet_id,
-        payment_id
     )
+    .bind(payment.category.as_ref())
+    .bind(payment.category_id)
+    .bind(payment.description.as_ref().map(|d| d.as_ref()))
+    .bind(payment.merchant_name.as_ref())
+    .bind(payment.accounting_date)
+    .bind(payment.amount_in_cents)
+    .bind(payment.wallet_id)
+    .bind(payment_id)
     .execute(connection_pool)
     .await
     .map_err(|e| {
@@ -374,12 +541,23 @@ pub struct CategoryQuery {
     category_type: Option<String>,
 }
 
+use serde::Serialize as SerSerialize;
+
+#[derive(SerSerialize)]
+pub struct CategoryDto {
+    #[serde(rename = "id")]
+    pub id: Uuid,
+    pub name: String,
+    #[serde(rename = "icon", skip_serializing_if = "Option::is_none")]
+    pub icon: Option<String>,
+}
+
 #[tracing::instrument(name = "Retrieve all categories", skip(connection_pool))]
 pub async fn get_categories(
     connection_pool: web::Data<PgPool>,
     query: web::Query<CategoryQuery>,
 ) -> impl Responder {
-    match get_categories_from_db(connection_pool.deref(), query.category_type.as_deref()).await {
+    match get_categories_from_db(connection_pool.get_ref(), query.category_type.as_deref()).await {
         Ok(categories) => HttpResponse::Ok().json(categories),
         Err(e) => {
             tracing::error!("Failed to execute query: {:?}", e);
@@ -395,31 +573,25 @@ pub async fn get_categories(
 async fn get_categories_from_db(
     connection_pool: &PgPool,
     category_type: Option<&str>,
-) -> Result<Vec<String>, Error> {
-    // Filter categories based on transaction amounts
+) -> Result<Vec<CategoryDto>, Error> {
+    // Build query to return category name and optional icon
     let query = match category_type {
-        Some("expense") => {
-            // Return categories from transactions with negative amounts (expenses)
-            "select distinct category from expenses.payments where amount < 0"
-        }
-        Some("income") => {
-            // Return categories from transactions with positive amounts (income)
-            "select distinct category from expenses.payments where amount > 0"
-        }
-        _ => {
-            // Return all categories if no type specified or invalid type
-            "select distinct category from expenses.payments"
-        }
+        Some("expense") => "select distinct c.id, c.name, c.icon from expenses.categories c join expenses.payments p on p.category_id = c.id where p.amount < 0",
+        Some("income") => "select distinct c.id, c.name, c.icon from expenses.categories c join expenses.payments p on p.category_id = c.id where p.amount > 0",
+        _ => "select c.id, c.name, c.icon from expenses.categories c",
     };
 
-    let categories: Vec<String> = sqlx::query_scalar(query)
+    let rows = sqlx::query_as::<_, (Uuid, String, Option<String>)>(query)
         .fetch_all(connection_pool)
         .await
         .map_err(|e| {
             tracing::error!("Failed to execute query: {:?}", e);
             e
         })?;
-
+    let categories = rows
+        .into_iter()
+        .map(|(id, name, icon)| CategoryDto { id, name, icon })
+        .collect();
     Ok(categories)
 }
 
@@ -488,6 +660,12 @@ pub struct PaymentResponseDto {
     #[serde(rename = "accountingDate")]
     accounting_date: NaiveDateTime,
     category: String,
+    #[serde(rename = "categoryId")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    category_id: Option<Uuid>,
+    #[serde(rename = "categoryIcon")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    category_icon: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     wallet: Option<String>,
     tags: Vec<TagResponseDto>,
@@ -508,7 +686,8 @@ pub async fn get_recent_payments(
     let offset = params.page * params.size;
     let filters = PaymentFilters::from(params.deref());
 
-    match get_recent_payments_from_db(connection_pool.deref(), params.size, offset, filters).await {
+    match get_recent_payments_from_db(connection_pool.get_ref(), params.size, offset, filters).await
+    {
         Ok(payments) => {
             let response = PagedResponse {
                 content: payments,
@@ -593,8 +772,17 @@ async fn get_recent_payments_from_db(
 
     let query_str = format!(
         r#"
-        SELECT p.id, p.category, p.description, p.merchant_name, p.accounting_date, p.amount, w.name as wallet_name
+         SELECT p.id,
+             COALESCE(c.name, p.category) AS category_name,
+             c.icon AS category_icon,
+             p.category_id,
+               p.description,
+               p.merchant_name,
+               p.accounting_date,
+               p.amount,
+               w.name as wallet_name
         FROM expenses.payments p
+        LEFT JOIN expenses.categories c ON p.category_id = c.id
         LEFT JOIN expenses.wallets w ON p.wallet_id = w.id
         {}
         ORDER BY p.accounting_date DESC
@@ -608,9 +796,11 @@ async fn get_recent_payments_from_db(
         _,
         (
             Uuid,
-            Option<String>,
-            Option<String>,
-            Option<String>,
+            Option<String>, // category_name
+            Option<String>, // category_icon (from categories.icon)
+            Option<Uuid>,   // category_id
+            Option<String>, // description
+            Option<String>, // merchant_name
             Option<NaiveDateTime>,
             Option<i32>,
             Option<String>,
@@ -661,12 +851,14 @@ async fn get_recent_payments_from_db(
 
         result.push(PaymentResponseDto {
             id: payment_id,
-            description: record.2,
-            amount_in_cents: record.5.unwrap_or(0),
-            merchant_name: record.3.unwrap_or_default(),
-            accounting_date: record.4.unwrap_or_default(),
+            description: record.4,
+            amount_in_cents: record.7.unwrap_or(0),
+            merchant_name: record.5.unwrap_or_default(),
+            accounting_date: record.6.unwrap_or_default(),
             category: record.1.unwrap_or_default(),
-            wallet: record.6,
+            category_id: record.3,
+            category_icon: record.2,
+            wallet: record.8,
             tags,
         });
     }

@@ -57,7 +57,8 @@ export interface ApiError {
 }
 
 // Category from API - simple string array
-export type CategoryItem = string;
+// Category from API can be a simple string (legacy) or an object with optional icon
+export type CategoryItem = string | { name: string; icon?: string | null };
 
 // Category type based on common expense categories
 export type Category = 
@@ -73,6 +74,18 @@ export type Category =
 // Helper types for UI
 export interface PaymentWithWallet extends Payment {
   walletName?: string;
+}
+
+export interface PaymentWithIcon extends Payment {
+  categoryIcon?: string | null;
+}
+
+export interface PaymentCreateWithIcon extends PaymentCreate {
+  categoryIcon?: string | null;
+}
+
+export interface PaymentUpdateWithIcon extends PaymentUpdate {
+  categoryIcon?: string | null;
 }
 
 export interface CategorySummary {

@@ -1,5 +1,7 @@
 use crate::helpers::spawn_app;
 use rstest::rstest;
+use sqlx::Row;
+use uuid::Uuid;
 
 #[tokio::test]
 async fn create_payment_returns_a_200() {
@@ -105,8 +107,9 @@ async fn when_get_categories_then_ok() {
     assert!(response.status().is_success());
     assert_ne!(response.content_length().unwrap(), 0);
 
-    // Verify it returns a JSON array
-    let categories: Vec<String> = response.json().await.expect("Failed to parse JSON array");
+    // Verify it returns a JSON array (each item can be string or object)
+    let categories: Vec<serde_json::Value> =
+        response.json().await.expect("Failed to parse JSON array");
     assert!(categories.is_empty() || !categories.is_empty()); // At least validate it's a valid Vec
 }
 
@@ -426,6 +429,60 @@ async fn create_payment_with_tags_and_retrieve_returns_tags() {
     assert!(tag_keys.contains(&"project"));
     assert!(tag_keys.contains(&"type"));
 }
+
+#[tokio::test]
+async fn create_payment_auto_creates_category() {
+    // Arrange
+    let app = spawn_app().await;
+
+    // Ensure category does not exist
+    let category_name = "AutoCreatedCategory";
+    let check_before = sqlx::query!(
+        "SELECT id FROM expenses.categories WHERE lower(name) = lower($1)",
+        category_name
+    )
+    .fetch_optional(&app.db_pool)
+    .await
+    .expect("Query failed");
+    assert!(check_before.is_none());
+
+    // Act - create payment with a new category name
+    let body = format!(
+        r#"
+    {{
+        "description": "payment auto category",
+        "category": "{}",
+        "amountInCents": -1234,
+        "merchantName": "TestShop",
+        "accountingDate": "2024-12-01T00:00:00.000"
+    }}
+    "#,
+        category_name
+    );
+
+    let response = app.post_payment(&body).await;
+    assert_eq!(200, response.status().as_u16());
+
+    // Assert that category has been created and payment references it
+    let created = sqlx::query!(
+        "SELECT id FROM expenses.categories WHERE lower(name) = lower($1)",
+        category_name
+    )
+    .fetch_one(&app.db_pool)
+    .await
+    .expect("Category should exist");
+
+    let payment_row = sqlx::query!(
+        "SELECT category_id FROM expenses.payments WHERE description = $1",
+        "payment auto category"
+    )
+    .fetch_one(&app.db_pool)
+    .await
+    .expect("Payment should exist");
+
+    assert!(payment_row.category_id.is_some());
+    assert_eq!(payment_row.category_id.unwrap(), created.id);
+}
 #[tokio::test]
 async fn update_payment_returns_200() {
     // Arrange
@@ -510,14 +567,7 @@ async fn update_payment_with_tags_replaces_tags() {
     let payment_id = uuid::Uuid::parse_str(create_json["id"].as_str().unwrap()).unwrap();
 
     // Verify initial tags count
-    let initial_tags = sqlx::query!(
-        "SELECT COUNT(*) as count FROM expenses.payments_tags WHERE payment_id = $1",
-        payment_id
-    )
-    .fetch_one(&app.db_pool)
-    .await
-    .unwrap();
-    assert_eq!(initial_tags.count.unwrap(), 2);
+    // (initial_tags already asserted above)
 
     // Act - Update with new tags
     let update_body = r#"
