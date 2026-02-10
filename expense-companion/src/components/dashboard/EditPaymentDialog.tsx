@@ -194,11 +194,19 @@ export function EditPaymentDialog({
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                  </SelectItem>
-                ))}
+                {categories.map((cat) => {
+                  const id = typeof cat === 'string' ? cat : cat.id;
+                  const label =
+                    typeof cat === 'string'
+                      ? cat.charAt(0).toUpperCase() + cat.slice(1)
+                      : cat.name;
+
+                  return (
+                    <SelectItem key={id} value={id}>
+                      {label}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>
