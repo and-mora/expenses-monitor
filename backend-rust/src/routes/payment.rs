@@ -324,7 +324,7 @@ pub async fn update_payment(
             tracing::error!("Failed to validate category: {:?}", e);
             return HttpResponse::InternalServerError().finish();
         }
-    }
+    };
 
     let payment = match Payment::try_from_dto(payment_data, wallet_id) {
         Ok(payment) => payment,
