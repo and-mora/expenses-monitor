@@ -510,8 +510,12 @@ async fn get_categories_from_db(
 ) -> Result<Vec<CategoryDto>, Error> {
     // Build query to return category name and optional icon
     let query = match category_type {
-        Some("expense") => "select c.id, c.name, c.icon from expenses.categories c where c.kind = 'expense'",
-        Some("income") => "select c.id, c.name, c.icon from expenses.categories c where c.kind = 'income'",
+        Some("expense") => {
+            "select c.id, c.name, c.icon from expenses.categories c where c.kind = 'expense'"
+        }
+        Some("income") => {
+            "select c.id, c.name, c.icon from expenses.categories c where c.kind = 'income'"
+        }
         _ => "select c.id, c.name, c.icon from expenses.categories c",
     };
 
