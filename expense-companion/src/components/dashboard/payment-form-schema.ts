@@ -16,7 +16,7 @@ export type PaymentFormValues = z.infer<typeof paymentSchema>;
 export interface PaymentSubmitData {
   merchantName: string;
   amountInCents: number;
-  category: string;
+  categoryId: string;
   accountingDate: string;
   description?: string;
   wallet: string;

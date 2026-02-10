@@ -292,7 +292,7 @@ describe('AddPaymentDialog', () => {
           expect.objectContaining({
             merchantName: 'Test Merchant',
             amountInCents: -5000, // 50.00 * 100 * -1 (expense)
-            category: 'customcategory',
+            categoryId: 'customcategory',
             wallet: 'Main Account',
           })
         );
@@ -340,7 +340,7 @@ describe('AddPaymentDialog', () => {
           expect.objectContaining({
             merchantName: 'Test Merchant',
             amountInCents: -2550, // 25.50 * 100 * -1 (expense)
-            category: 'food',
+            categoryId: 'food',
             wallet: 'Main Account',
           })
         );
@@ -477,7 +477,7 @@ describe('AddPaymentDialog', () => {
           expect.objectContaining({
             merchantName: 'Restaurant Lunch',
             amountInCents: -2550,
-            category: 'food',
+            categoryId: 'food',
           })
         );
       });

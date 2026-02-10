@@ -112,20 +112,54 @@ pub async fn create_payment(
     // Resolve category identifier to canonical UUID
     let resolved_category_id: Uuid = match payment_data.category_id.clone() {
         CategoryIdentifier::Uid(uid) => uid,
-        CategoryIdentifier::Name(name) => match sqlx::query_scalar!(
-            "SELECT id FROM expenses.categories WHERE LOWER(name) = LOWER($1)",
-            name
-        )
-        .fetch_optional(connection_pool.get_ref())
-        .await
-        {
-            Ok(Some(id)) => id,
-            Ok(None) => return HttpResponse::BadRequest().body(format!("category '{}' not found", name)),
-            Err(e) => {
-                tracing::error!("Failed to lookup category by name: {:?}", e);
-                return HttpResponse::InternalServerError().finish();
+        CategoryIdentifier::Name(name) => {
+            match sqlx::query_scalar!(
+                "SELECT id FROM expenses.categories WHERE LOWER(name) = LOWER($1)",
+                name
+            )
+            .fetch_optional(connection_pool.get_ref())
+            .await
+            {
+                Ok(Some(id)) => id,
+                Ok(None) => {
+                    // Category not found: create it (safe due to unique index on lower(name)).
+                    match sqlx::query_scalar!(
+                        "INSERT INTO expenses.categories (name) VALUES ($1) RETURNING id",
+                        name
+                    )
+                    .fetch_one(connection_pool.get_ref())
+                    .await
+                    {
+                        Ok(new_id) => new_id,
+                        Err(insert_err) => {
+                            tracing::warn!("Failed to insert category (maybe concurrent): {:?}", insert_err);
+                            // Try to select again in case another request inserted it concurrently
+                            match sqlx::query_scalar!(
+                                "SELECT id FROM expenses.categories WHERE LOWER(name) = LOWER($1)",
+                                name
+                            )
+                            .fetch_optional(connection_pool.get_ref())
+                            .await
+                            {
+                                Ok(Some(id)) => id,
+                                Ok(None) => {
+                                    tracing::error!("Failed to create category and it does not exist: {}", name);
+                                    return HttpResponse::InternalServerError().finish();
+                                }
+                                Err(e) => {
+                                    tracing::error!("Failed to lookup category by name after insert error: {:?}", e);
+                                    return HttpResponse::InternalServerError().finish();
+                                }
+                            }
+                        }
+                    }
+                }
+                Err(e) => {
+                    tracing::error!("Failed to lookup category by name: {:?}", e);
+                    return HttpResponse::InternalServerError().finish();
+                }
             }
-        },
+        }
     };
 
     // Validate category exists when UUID was provided by client
@@ -347,20 +381,53 @@ pub async fn update_payment(
     // Resolve category identifier to canonical UUID
     let resolved_category_id: Uuid = match payment_data.category_id.clone() {
         CategoryIdentifier::Uid(uid) => uid,
-        CategoryIdentifier::Name(name) => match sqlx::query_scalar!(
-            "SELECT id FROM expenses.categories WHERE LOWER(name) = LOWER($1)",
-            name
-        )
-        .fetch_optional(connection_pool.get_ref())
-        .await
-        {
-            Ok(Some(id)) => id,
-            Ok(None) => return HttpResponse::BadRequest().body(format!("category '{}' not found", name)),
-            Err(e) => {
-                tracing::error!("Failed to lookup category by name: {:?}", e);
-                return HttpResponse::InternalServerError().finish();
+        CategoryIdentifier::Name(name) => {
+            match sqlx::query_scalar!(
+                "SELECT id FROM expenses.categories WHERE LOWER(name) = LOWER($1)",
+                name
+            )
+            .fetch_optional(connection_pool.get_ref())
+            .await
+            {
+                Ok(Some(id)) => id,
+                Ok(None) => {
+                    // Category not found: create it and return new id
+                    match sqlx::query_scalar!(
+                        "INSERT INTO expenses.categories (name) VALUES ($1) RETURNING id",
+                        name
+                    )
+                    .fetch_one(connection_pool.get_ref())
+                    .await
+                    {
+                        Ok(new_id) => new_id,
+                        Err(insert_err) => {
+                            tracing::warn!("Failed to insert category (maybe concurrent): {:?}", insert_err);
+                            match sqlx::query_scalar!(
+                                "SELECT id FROM expenses.categories WHERE LOWER(name) = LOWER($1)",
+                                name
+                            )
+                            .fetch_optional(connection_pool.get_ref())
+                            .await
+                            {
+                                Ok(Some(id)) => id,
+                                Ok(None) => {
+                                    tracing::error!("Failed to create category and it does not exist: {}", name);
+                                    return HttpResponse::InternalServerError().finish();
+                                }
+                                Err(e) => {
+                                    tracing::error!("Failed to lookup category by name after insert error: {:?}", e);
+                                    return HttpResponse::InternalServerError().finish();
+                                }
+                            }
+                        }
+                    }
+                }
+                Err(e) => {
+                    tracing::error!("Failed to lookup category by name: {:?}", e);
+                    return HttpResponse::InternalServerError().finish();
+                }
             }
-        },
+        }
     };
 
     // Validate category exists when UUID was provided by client
