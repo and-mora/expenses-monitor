@@ -6,13 +6,13 @@ on:
       enabled:
         required: false
         type: string
-        default: true
+        default: 'true'
   workflow_call:
     inputs:
       enabled:
         required: true
         type: string
-        default: false
+        default: 'false'
     secrets:
       VM_HOST:
         required: true

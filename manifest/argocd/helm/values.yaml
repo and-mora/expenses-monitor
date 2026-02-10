@@ -21,14 +21,7 @@ argo-cd:
 
   server:
     ingress:
-      enabled: true
-      ingressClassName: public
-      annotations:
-        nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-        nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-        cert-manager.io/cluster-issuer: letsencrypt
-      hostname: argocd.expmonitor.freeddns.org
-      tls: true
+      enabled: false
     httproute:
       enabled: true
       parentRefs:
