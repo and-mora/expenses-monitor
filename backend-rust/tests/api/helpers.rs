@@ -43,10 +43,70 @@ pub struct TestApp {
 
 impl TestApp {
     pub async fn post_payment(&self, body: &str) -> reqwest::Response {
+        // Tests historically posted `category` as a name. After API change we
+        // require `categoryId` (UUID). To keep tests concise we transform the
+        // body: if it contains `category` but not `categoryId`, ensure the
+        // category exists in the DB and replace it with `categoryId`.
+        let mut payload: serde_json::Value = match serde_json::from_str(body) {
+            Ok(v) => v,
+            Err(_) => {
+                // Not JSON (some tests send empty string) - forward as-is
+                return reqwest::Client::new()
+                    .post(&format!("{}/api/payments", &self.address))
+                    .header("Content-Type", "application/json")
+                    .body(body.to_owned())
+                    .send()
+                    .await
+                    .expect("Failed to execute request.");
+            }
+        };
+
+        if payload.get("categoryId").is_none() {
+            if let Some(cat_val) = payload.get("category") {
+                if let Some(cat_name) = cat_val.as_str() {
+                    let cat_trimmed = cat_name.trim();
+                    // Only map non-empty category names to ids. Empty category should be
+                    // left as-is so server validation can reject it.
+                    if !cat_trimmed.is_empty() {
+                        // Try to find existing category (case-insensitive)
+                        if let Ok(row) = sqlx::query_scalar!(
+                            "SELECT id FROM expenses.categories WHERE lower(name) = lower($1)",
+                            cat_trimmed
+                        )
+                        .fetch_optional(&self.db_pool)
+                        .await
+                        {
+                            let id = if let Some(id) = row {
+                                id
+                            } else {
+                                // Insert and return id
+                                sqlx::query_scalar!(
+                                    "INSERT INTO expenses.categories (name) VALUES ($1) RETURNING id",
+                                    cat_trimmed
+                                )
+                                .fetch_one(&self.db_pool)
+                                .await
+                                .expect("Failed to insert category in test helper")
+                            };
+                            // Replace payload
+                            payload.as_object_mut().map(|m| {
+                                m.remove("category");
+                                m.insert(
+                                    "categoryId".to_string(),
+                                    serde_json::Value::String(id.to_string()),
+                                );
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        let body = serde_json::to_string(&payload).expect("Failed to serialize payload");
         reqwest::Client::new()
             .post(&format!("{}/api/payments", &self.address))
             .header("Content-Type", "application/json")
-            .body(body.to_owned())
+            .body(body)
             .send()
             .await
             .expect("Failed to execute request.")
@@ -123,10 +183,62 @@ impl TestApp {
     }
 
     pub async fn update_payment(&self, id: uuid::Uuid, body: &str) -> reqwest::Response {
+        // Mirror the post_payment behaviour: translate `category` name -> `categoryId`
+        // for update requests as well to keep test payloads using names working.
+        let mut payload: serde_json::Value = match serde_json::from_str(body) {
+            Ok(v) => v,
+            Err(_) => {
+                return reqwest::Client::new()
+                    .put(&format!("{}/api/payments/{}", &self.address, id))
+                    .header("Content-Type", "application/json")
+                    .body(body.to_owned())
+                    .send()
+                    .await
+                    .expect("Failed to execute request.");
+            }
+        };
+
+        if payload.get("categoryId").is_none() {
+            if let Some(cat_val) = payload.get("category") {
+                if let Some(cat_name) = cat_val.as_str() {
+                    let cat_trimmed = cat_name.trim();
+                    if !cat_trimmed.is_empty() {
+                        if let Ok(row) = sqlx::query_scalar!(
+                            "SELECT id FROM expenses.categories WHERE lower(name) = lower($1)",
+                            cat_trimmed
+                        )
+                        .fetch_optional(&self.db_pool)
+                        .await
+                        {
+                            let id = if let Some(id) = row {
+                                id
+                            } else {
+                                sqlx::query_scalar!(
+                                    "INSERT INTO expenses.categories (name) VALUES ($1) RETURNING id",
+                                    cat_trimmed
+                                )
+                                .fetch_one(&self.db_pool)
+                                .await
+                                .expect("Failed to insert category in test helper")
+                            };
+                            payload.as_object_mut().map(|m| {
+                                m.remove("category");
+                                m.insert(
+                                    "categoryId".to_string(),
+                                    serde_json::Value::String(id.to_string()),
+                                );
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        let body = serde_json::to_string(&payload).expect("Failed to serialize payload");
         reqwest::Client::new()
             .put(&format!("{}/api/payments/{}", &self.address, id))
             .header("Content-Type", "application/json")
-            .body(body.to_owned())
+            .body(body)
             .send()
             .await
             .expect("Failed to execute request.")

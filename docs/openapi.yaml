@@ -522,6 +522,7 @@ components:
         - merchantName
         - amountInCents
         - category
+        - categoryId
         - accountingDate
         - wallet
       properties:
@@ -546,15 +547,15 @@ components:
           example: -5499
         category:
           type: string
-          description: Payment category
+          description: Canonical category name resolved from `categoryId`
           minLength: 1
           maxLength: 100
           example: Shopping
         categoryId:
           type: string
           format: uuid
-          nullable: true
-          description: Optional reference to canonical category id (preferred). If provided, server will use it; otherwise 'category' name may be used to resolve or create a category.
+          nullable: false
+          description: Canonical reference to category id (UUID). Clients MUST provide `categoryId` when creating/updating payments.
           example: 550e8400-e29b-41d4-a716-446655440000
         categoryIcon:
           type: string
@@ -588,7 +589,7 @@ components:
       required:
         - merchantName
         - amountInCents
-        - category
+        - categoryId
         - accountingDate
         - wallet
       properties:
@@ -606,22 +607,16 @@ components:
             - Positive values represent income
             - Negative values represent expenses
           example: -5499
-        category:
-          type: string
-          description: Payment category
-          minLength: 1
-          maxLength: 100
-          example: Shopping
         categoryId:
           type: string
           format: uuid
-          nullable: true
-          description: Optional category id (UUID) - API accepts either `category` name or `categoryId`.
+          nullable: false
+          description: Canonical category id (UUID). Clients MUST provide this field.
           example: 550e8400-e29b-41d4-a716-446655440000
         categoryIcon:
           type: string
           nullable: true
-          description: Optional icon identifier for compatibility.
+          description: Optional icon identifier for compatibility. Server ignores this in favor of category record.
           example: coffee
         accountingDate:
           type: string
@@ -649,7 +644,7 @@ components:
       required:
         - merchantName
         - amountInCents
-        - category
+        - categoryId
         - accountingDate
         - wallet
       properties:
@@ -668,22 +663,16 @@ components:
             - Negative values represent expenses
             - Cannot be zero
           example: -5499
-        category:
-          type: string
-          description: Payment category
-          minLength: 1
-          maxLength: 100
-          example: Shopping
         categoryId:
           type: string
           format: uuid
-          nullable: true
-          description: Optional category id (UUID) - API accepts either `category` name or `categoryId`.
+          nullable: false
+          description: Canonical category id (UUID). Clients MUST provide this field when updating a payment.
           example: 550e8400-e29b-41d4-a716-446655440000
         categoryIcon:
           type: string
           nullable: true
-          description: Optional icon identifier for compatibility.
+          description: Optional icon identifier for compatibility. Server ignores this in favor of category record.
           example: coffee
         accountingDate:
           type: string

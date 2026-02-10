@@ -1,7 +1,5 @@
 use crate::helpers::spawn_app;
 use rstest::rstest;
-use sqlx::Row;
-use uuid::Uuid;
 
 #[tokio::test]
 async fn create_payment_returns_a_200() {
@@ -23,13 +21,14 @@ async fn create_payment_returns_a_200() {
 
     // Assert
     assert_eq!(200, response.status().as_u16());
-    let saved =
-        sqlx::query!("SELECT category, amount FROM expenses.payments WHERE category = 'test'",)
-            .fetch_one(&app.db_pool)
-            .await
-            .expect("The query should retrieve the saved payment.");
+    let saved = sqlx::query!(
+        "SELECT p.amount, c.name as category_name FROM expenses.payments p JOIN expenses.categories c ON p.category_id = c.id WHERE c.name = 'test'",
+    )
+    .fetch_one(&app.db_pool)
+    .await
+    .expect("The query should retrieve the saved payment.");
 
-    assert_eq!(saved.category.unwrap(), "test");
+    assert_eq!(saved.category_name, "test");
     assert_eq!(saved.amount.unwrap(), -100);
 }
 
@@ -238,13 +237,13 @@ async fn create_payment_with_empty_description_returns_200() {
     // Assert
     assert_eq!(200, response.status().as_u16());
     let saved = sqlx::query!(
-        "SELECT category, amount, description FROM expenses.payments WHERE category = 'test' AND amount = -200",
+        "SELECT p.amount, p.description, c.name as category_name FROM expenses.payments p JOIN expenses.categories c ON p.category_id = c.id WHERE c.name = 'test' AND p.amount = -200",
     )
     .fetch_one(&app.db_pool)
     .await
     .expect("The query should retrieve the saved payment.");
 
-    assert_eq!(saved.category.unwrap(), "test");
+    assert_eq!(saved.category_name, "test");
     assert_eq!(saved.amount.unwrap(), -200);
     // Should be NULL when description is empty
     assert!(saved.description.is_none());
@@ -270,13 +269,13 @@ async fn create_payment_without_description_returns_200() {
     // Assert
     assert_eq!(200, response.status().as_u16());
     let saved = sqlx::query!(
-        "SELECT category, amount, description FROM expenses.payments WHERE category = 'food' AND amount = -300",
+        "SELECT p.amount, p.description, c.name as category_name FROM expenses.payments p JOIN expenses.categories c ON p.category_id = c.id WHERE c.name = 'food' AND p.amount = -300",
     )
     .fetch_one(&app.db_pool)
     .await
     .expect("The query should retrieve the saved payment.");
 
-    assert_eq!(saved.category.unwrap(), "food");
+    assert_eq!(saved.category_name, "food");
     assert_eq!(saved.amount.unwrap(), -300);
     // Should be NULL when description is missing
     assert!(saved.description.is_none());
@@ -528,7 +527,7 @@ async fn update_payment_returns_200() {
 
     // Verify in database
     let saved = sqlx::query!(
-        "SELECT description, category, amount, merchant_name FROM expenses.payments WHERE id = $1",
+        "SELECT p.description, c.name as category_name, p.amount, p.merchant_name FROM expenses.payments p JOIN expenses.categories c ON p.category_id = c.id WHERE p.id = $1",
         payment_id
     )
     .fetch_one(&app.db_pool)
@@ -536,7 +535,7 @@ async fn update_payment_returns_200() {
     .expect("Failed to retrieve updated payment");
 
     assert_eq!(saved.description.unwrap(), "updated description");
-    assert_eq!(saved.category.unwrap(), "transport");
+    assert_eq!(saved.category_name, "transport");
     assert_eq!(saved.amount.unwrap(), -7500);
     assert_eq!(saved.merchant_name.unwrap(), "Updated Merchant");
 }
@@ -698,7 +697,7 @@ async fn update_payment_converts_expense_to_income() {
 
     // Verify in database
     let saved = sqlx::query!(
-        "SELECT amount, category FROM expenses.payments WHERE id = $1",
+        "SELECT p.amount, c.name as category_name FROM expenses.payments p JOIN expenses.categories c ON p.category_id = c.id WHERE p.id = $1",
         payment_id
     )
     .fetch_one(&app.db_pool)
@@ -706,7 +705,7 @@ async fn update_payment_converts_expense_to_income() {
     .unwrap();
 
     assert_eq!(saved.amount.unwrap(), 5000);
-    assert_eq!(saved.category.unwrap(), "income");
+    assert_eq!(saved.category_name, "income");
 }
 
 #[rstest]

@@ -1,5 +1,4 @@
 use crate::helpers::spawn_app;
-use sqlx::Row;
 use uuid::Uuid;
 
 #[tokio::test]
