@@ -66,7 +66,12 @@ export function CategoryCombobox({
           )}
         >
           <span className="truncate">
-            {value || placeholder}
+            {(() => {
+              if (!value) return placeholder;
+              const found = categories.find((c) => (typeof c === 'string' ? c === value : c.id === value));
+              if (!found) return value;
+              return typeof found === 'string' ? found : found.name;
+            })()}
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>

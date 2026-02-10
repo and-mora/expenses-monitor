@@ -88,7 +88,9 @@ export function AddPaymentDialog({ wallets, onSubmit, isLoading, trigger }: AddP
     const paymentData = {
       merchantName: values.merchantName,
       amountInCents: values.isExpense ? -amountInCents : amountInCents,
+      // include both `categoryId` and legacy `category` for compatibility with callers/tests
       categoryId: values.category,
+      category: values.category,
       accountingDate: format(values.accountingDate, "yyyy-MM-dd'T'HH:mm:ss"),
       description: values.description,
       wallet: selectedWallet?.name || values.wallet,
