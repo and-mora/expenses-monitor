@@ -14,12 +14,13 @@ pub struct TagDto {
     value: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct PaymentDto {
     description: Option<String>,
-    // Now require canonical category id (UUID). Breaking change: clients must send `categoryId`.
+    // Accept either a UUID or a category name for backward compatibility.
     #[serde(rename = "categoryId")]
-    category_id: Uuid,
+    category_id: CategoryIdentifier,
     #[serde(rename = "amountInCents")]
     amount_in_cents: i32,
     #[serde(rename = "merchantName")]
@@ -32,9 +33,17 @@ pub struct PaymentDto {
     tags: Option<Vec<TagDto>>,
 }
 
+// CategoryIdentifier accepts either a UUID or a name string from clients.
+#[derive(Deserialize, Debug, Clone)]
+#[serde(untagged)]
+pub enum CategoryIdentifier {
+    Uid(Uuid),
+    Name(String),
+}
+
 impl Payment {
-    fn try_from_dto(dto: PaymentDto, wallet_id: Option<Uuid>) -> Result<Self, String> {
-        // category_id is now canonical; we don't parse category name here
+    // Build Payment from DTO after resolving the canonical category_id (Uuid).
+    fn try_from_dto(dto: PaymentDto, wallet_id: Option<Uuid>, category_id: Uuid) -> Result<Self, String> {
         // Parse description only if provided and non-empty
         let description = dto
             .description
@@ -44,7 +53,7 @@ impl Payment {
         let merchant_name = PaymentMerchant::parse(dto.merchant_name.clone())?;
         Ok(Self {
             description,
-            category_id: dto.category_id,
+            category_id,
             amount_in_cents: dto.amount_in_cents,
             merchant_name,
             accounting_date: dto.accounting_date,
@@ -57,7 +66,11 @@ impl TryFrom<Json<PaymentDto>> for Payment {
     type Error = String;
 
     fn try_from(json: Json<PaymentDto>) -> Result<Self, Self::Error> {
-        Self::try_from_dto(json.0, None)
+        // Attempt to convert only when client provided a UUID; otherwise caller must resolve name.
+        match json.0.category_id.clone() {
+            CategoryIdentifier::Uid(uid) => Self::try_from_dto(json.0, None, uid),
+            CategoryIdentifier::Name(_) => Err("category name provided; resolve to id before conversion".into()),
+        }
     }
 }
 
@@ -66,7 +79,7 @@ impl TryFrom<Json<PaymentDto>> for Payment {
     skip(payload, connection_pool),
     fields(
         merchant_name = %payload.merchant_name,
-        category_id = %payload.category_id
+        category_id = ?payload.category_id
     )
 )]
 pub async fn create_payment(
@@ -93,12 +106,32 @@ pub async fn create_payment(
         None
     };
 
-    // Create payment: now require canonical category_id provided by client
+    // Create payment: accept either canonical `categoryId` (UUID) or legacy category name
     let payment_data = payload.0;
-    // Validate category exists
+
+    // Resolve category identifier to canonical UUID
+    let resolved_category_id: Uuid = match payment_data.category_id.clone() {
+        CategoryIdentifier::Uid(uid) => uid,
+        CategoryIdentifier::Name(name) => match sqlx::query_scalar!(
+            "SELECT id FROM expenses.categories WHERE LOWER(name) = LOWER($1)",
+            name
+        )
+        .fetch_optional(connection_pool.get_ref())
+        .await
+        {
+            Ok(Some(id)) => id,
+            Ok(None) => return HttpResponse::BadRequest().body(format!("category '{}' not found", name)),
+            Err(e) => {
+                tracing::error!("Failed to lookup category by name: {:?}", e);
+                return HttpResponse::InternalServerError().finish();
+            }
+        },
+    };
+
+    // Validate category exists when UUID was provided by client
     match sqlx::query_scalar!(
         "SELECT id FROM expenses.categories WHERE id = $1",
-        payment_data.category_id
+        resolved_category_id
     )
     .fetch_optional(connection_pool.get_ref())
     .await
@@ -111,7 +144,7 @@ pub async fn create_payment(
         }
     }
 
-    let payment = match Payment::try_from_dto(payment_data, wallet_id) {
+    let payment = match Payment::try_from_dto(payment_data, wallet_id, resolved_category_id) {
         Ok(payment) => payment,
         Err(_) => return HttpResponse::BadRequest().finish(),
     };
@@ -276,7 +309,7 @@ async fn delete_payment_query(connection_pool: &PgPool, payment_id: Uuid) -> Res
     fields(
         payment_id = %path.clone(),
         merchant_name = %payload.merchant_name,
-        category_id = %payload.category_id
+        category_id = ?payload.category_id
     )
 )]
 pub async fn update_payment(
@@ -310,10 +343,30 @@ pub async fn update_payment(
 
     // Create payment with resolved wallet_id
     let payment_data = payload.0;
-    // Validate category exists
+
+    // Resolve category identifier to canonical UUID
+    let resolved_category_id: Uuid = match payment_data.category_id.clone() {
+        CategoryIdentifier::Uid(uid) => uid,
+        CategoryIdentifier::Name(name) => match sqlx::query_scalar!(
+            "SELECT id FROM expenses.categories WHERE LOWER(name) = LOWER($1)",
+            name
+        )
+        .fetch_optional(connection_pool.get_ref())
+        .await
+        {
+            Ok(Some(id)) => id,
+            Ok(None) => return HttpResponse::BadRequest().body(format!("category '{}' not found", name)),
+            Err(e) => {
+                tracing::error!("Failed to lookup category by name: {:?}", e);
+                return HttpResponse::InternalServerError().finish();
+            }
+        },
+    };
+
+    // Validate category exists when UUID was provided by client
     match sqlx::query_scalar!(
         "SELECT id FROM expenses.categories WHERE id = $1",
-        payment_data.category_id
+        resolved_category_id
     )
     .fetch_optional(connection_pool.get_ref())
     .await
@@ -326,7 +379,7 @@ pub async fn update_payment(
         }
     };
 
-    let payment = match Payment::try_from_dto(payment_data, wallet_id) {
+    let payment = match Payment::try_from_dto(payment_data, wallet_id, resolved_category_id) {
         Ok(payment) => payment,
         Err(_) => return HttpResponse::BadRequest().finish(),
     };

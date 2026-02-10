@@ -52,7 +52,7 @@ impl TestApp {
             Err(_) => {
                 // Not JSON (some tests send empty string) - forward as-is
                 return reqwest::Client::new()
-                    .post(&format!("{}/api/payments", &self.address))
+                    .post(format!("{}/api/payments", &self.address))
                     .header("Content-Type", "application/json")
                     .body(body.to_owned())
                     .send()
@@ -89,13 +89,13 @@ impl TestApp {
                                 .expect("Failed to insert category in test helper")
                             };
                             // Replace payload
-                            payload.as_object_mut().map(|m| {
+                            if let Some(m) = payload.as_object_mut() {
                                 m.remove("category");
                                 m.insert(
                                     "categoryId".to_string(),
                                     serde_json::Value::String(id.to_string()),
                                 );
-                            });
+                            }
                         }
                     }
                 }
@@ -104,7 +104,7 @@ impl TestApp {
 
         let body = serde_json::to_string(&payload).expect("Failed to serialize payload");
         reqwest::Client::new()
-            .post(&format!("{}/api/payments", &self.address))
+            .post(format!("{}/api/payments", &self.address))
             .header("Content-Type", "application/json")
             .body(body)
             .send()
@@ -114,7 +114,7 @@ impl TestApp {
 
     pub async fn get_categories(&self) -> reqwest::Response {
         reqwest::Client::new()
-            .get(&format!("{}/api/payments/categories", &self.address))
+            .get(format!("{}/api/payments/categories", &self.address))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -122,7 +122,7 @@ impl TestApp {
 
     pub async fn get_payments(&self, query: &str) -> reqwest::Response {
         reqwest::Client::new()
-            .get(&format!("{}/api/payments{}", &self.address, query))
+            .get(format!("{}/api/payments{}", &self.address, query))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -130,7 +130,7 @@ impl TestApp {
 
     pub async fn get_balance(&self) -> reqwest::Response {
         reqwest::Client::new()
-            .get(&format!("{}/api/balance", &self.address))
+            .get(format!("{}/api/balance", &self.address))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -138,7 +138,7 @@ impl TestApp {
 
     pub async fn get_balance_with_query(&self, query: &str) -> reqwest::Response {
         reqwest::Client::new()
-            .get(&format!("{}/api/balance{}", &self.address, query))
+            .get(format!("{}/api/balance{}", &self.address, query))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -146,7 +146,7 @@ impl TestApp {
 
     pub async fn create_wallet(&self, body: &str) -> reqwest::Response {
         reqwest::Client::new()
-            .post(&format!("{}/api/wallets", &self.address))
+            .post(format!("{}/api/wallets", &self.address))
             .header("Content-Type", "application/json")
             .body(body.to_owned())
             .send()
@@ -160,7 +160,7 @@ impl TestApp {
 
     pub async fn get_wallets(&self) -> reqwest::Response {
         reqwest::Client::new()
-            .get(&format!("{}/api/wallets", &self.address))
+            .get(format!("{}/api/wallets", &self.address))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -168,7 +168,7 @@ impl TestApp {
 
     pub async fn delete_wallet(&self, id: uuid::Uuid) -> reqwest::Response {
         reqwest::Client::new()
-            .delete(&format!("{}/api/wallets/{}", &self.address, id))
+            .delete(format!("{}/api/wallets/{}", &self.address, id))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -176,7 +176,7 @@ impl TestApp {
 
     pub async fn delete_payment(&self, id: uuid::Uuid) -> reqwest::Response {
         reqwest::Client::new()
-            .delete(&format!("{}/api/payments/{}", &self.address, id))
+            .delete(format!("{}/api/payments/{}", &self.address, id))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -189,7 +189,7 @@ impl TestApp {
             Ok(v) => v,
             Err(_) => {
                 return reqwest::Client::new()
-                    .put(&format!("{}/api/payments/{}", &self.address, id))
+                    .put(format!("{}/api/payments/{}", &self.address, id))
                     .header("Content-Type", "application/json")
                     .body(body.to_owned())
                     .send()
@@ -221,13 +221,13 @@ impl TestApp {
                                 .await
                                 .expect("Failed to insert category in test helper")
                             };
-                            payload.as_object_mut().map(|m| {
+                            if let Some(m) = payload.as_object_mut() {
                                 m.remove("category");
                                 m.insert(
                                     "categoryId".to_string(),
                                     serde_json::Value::String(id.to_string()),
                                 );
-                            });
+                            }
                         }
                     }
                 }
@@ -236,7 +236,7 @@ impl TestApp {
 
         let body = serde_json::to_string(&payload).expect("Failed to serialize payload");
         reqwest::Client::new()
-            .put(&format!("{}/api/payments/{}", &self.address, id))
+            .put(format!("{}/api/payments/{}", &self.address, id))
             .header("Content-Type", "application/json")
             .body(body)
             .send()
@@ -267,7 +267,7 @@ pub async fn spawn_app() -> TestApp {
 
     // Get the port before spawning the application
     let address = format!("http://127.0.0.1:{}", application.port());
-    let _ = tokio::spawn(application.run_until_stopped());
+    tokio::spawn(application.run_until_stopped());
     TestApp {
         address,
         db_pool: get_connection_pool(&configuration),
@@ -275,7 +275,7 @@ pub async fn spawn_app() -> TestApp {
 }
 
 pub async fn configure_database(config: &DatabaseSettings) -> PgPool {
-    let connection = PgPool::connect(&config.connection_string_without_db().expose_secret())
+    let connection = PgPool::connect(config.connection_string_without_db().expose_secret())
         .await
         .expect("failed to connect db.");
 
@@ -294,7 +294,7 @@ pub async fn configure_database(config: &DatabaseSettings) -> PgPool {
         .await
         .expect("failed to create db");
 
-    let connection_pool = PgPool::connect(&config.connection_string().expose_secret())
+    let connection_pool = PgPool::connect(config.connection_string().expose_secret())
         .await
         .expect("failed to connect");
 
