@@ -14,6 +14,7 @@ import {
   ChevronUp,
   FileText,
 } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -146,7 +147,8 @@ function TransactionItem({
   style 
 }: TransactionItemProps) {
   const category = payment.category.toLowerCase();
-  const Icon = categoryIcons[category] || categoryIcons.other;
+  const dynamicIcon = payment.categoryIcon ? (LucideIcons as any)[payment.categoryIcon] : undefined;
+  const Icon = dynamicIcon || categoryIcons[category] || categoryIcons.other;
   const colorClass = categoryColors[category] || categoryColors.other;
   const isIncome = payment.amountInCents > 0;
   const hasTags = payment.tags && payment.tags.length > 0;

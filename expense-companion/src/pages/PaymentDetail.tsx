@@ -30,6 +30,7 @@ import {
   TrendingUp,
   CircleDot,
 } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import type { ElementType } from 'react';
 import type { Payment } from '@/types/api';
 
@@ -127,7 +128,8 @@ const PaymentDetail = () => {
     );
   }
 
-  const Icon = categoryIcons[payment.category.toLowerCase()] || categoryIcons.other;
+  const dynamicIcon = payment.categoryIcon ? (LucideIcons as any)[payment.categoryIcon] : undefined;
+  const Icon = dynamicIcon || categoryIcons[payment.category.toLowerCase()] || categoryIcons.other;
   const hasTags = payment.tags && payment.tags.length > 0;
   const hasDescription = payment.description && payment.description.trim().length > 0;
 
