@@ -19,6 +19,12 @@ spec:
     - from:
       - podSelector:
           matchLabels:
+            app: keycloak
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: expenses-monitor
+        podSelector:
+          matchLabels:
             app: backend-rust
       - podSelector:
           matchLabels:
