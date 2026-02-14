@@ -17,10 +17,16 @@ spec:
   ingress:
     # Allow only from backend-rust and migration job
     - from:
-      - podSelector:
+      - namespaceSelector:
+          matchLabels:
+            name: expenses-monitor
+        podSelector:
           matchLabels:
             app: backend-rust
-      - podSelector:
+      - namespaceSelector:
+          matchLabels:
+            name: expenses-monitor
+        podSelector:
           matchLabels:
             job-name: backend-rust-db-migration
       ports:
