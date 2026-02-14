@@ -249,4 +249,51 @@ describe('PaymentDetail Page', () => {
     // Tags label should not appear
     expect(screen.queryByText('Tags')).not.toBeInTheDocument();
   });
+
+  it('should render dynamic category icon when categoryIcon is set', () => {
+    const paymentWithDynamicIcon: Payment = {
+      ...mockPayment,
+      categoryIcon: 'Apple',
+    };
+
+    render(<PaymentDetail />, {
+      wrapper: createWrapper([`/transactions/${paymentWithDynamicIcon.id}`], { payment: paymentWithDynamicIcon }),
+    });
+
+    // Should render the Apple icon
+    const appleIcon = document.querySelector('svg.lucide-apple');
+    expect(appleIcon).toBeInTheDocument();
+  });
+
+  it('should fallback to static category icon when categoryIcon is invalid', () => {
+    const paymentWithInvalidIcon: Payment = {
+      ...mockPayment,
+      category: 'food',
+      categoryIcon: 'InvalidIconName',
+    };
+
+    render(<PaymentDetail />, {
+      wrapper: createWrapper([`/transactions/${paymentWithInvalidIcon.id}`], { payment: paymentWithInvalidIcon }),
+    });
+
+    // Should fallback to Utensils icon for food category
+    const utensilsIcon = document.querySelector('svg.lucide-utensils');
+    expect(utensilsIcon).toBeInTheDocument();
+  });
+
+  it('should use static category icon when categoryIcon is null', () => {
+    const paymentWithNullIcon: Payment = {
+      ...mockPayment,
+      category: 'food',
+      categoryIcon: null,
+    };
+
+    render(<PaymentDetail />, {
+      wrapper: createWrapper([`/transactions/${paymentWithNullIcon.id}`], { payment: paymentWithNullIcon }),
+    });
+
+    // Should use Utensils icon for food category
+    const utensilsIcon = document.querySelector('svg.lucide-utensils');
+    expect(utensilsIcon).toBeInTheDocument();
+  });
 });

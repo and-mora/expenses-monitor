@@ -397,5 +397,59 @@ describe('TransactionTimeline', () => {
 
       expect(netflixIndex).toBeLessThan(supermarketIndex);
     });
+
+    it('should render dynamic category icon when categoryIcon is set', () => {
+      const paymentWithDynamicIcon: Payment = {
+        id: '4',
+        merchantName: 'Apple Store',
+        amountInCents: -10000,
+        category: 'shopping',
+        categoryIcon: 'Apple',
+        accountingDate: '2026-01-30T10:00:00',
+        wallet: 'Main Account',
+      };
+
+      renderWithRouter(<TransactionTimeline payments={[paymentWithDynamicIcon]} />);
+
+      // Should render the Apple icon
+      const appleIcon = document.querySelector('svg.lucide-apple');
+      expect(appleIcon).toBeInTheDocument();
+    });
+
+    it('should fallback to static category icon when categoryIcon is invalid', () => {
+      const paymentWithInvalidIcon: Payment = {
+        id: '5',
+        merchantName: 'Test Store',
+        amountInCents: -5000,
+        category: 'food',
+        categoryIcon: 'InvalidIconName',
+        accountingDate: '2026-01-30T10:00:00',
+        wallet: 'Main Account',
+      };
+
+      renderWithRouter(<TransactionTimeline payments={[paymentWithInvalidIcon]} />);
+
+      // Should fallback to Utensils icon for food category
+      const utensilsIcon = document.querySelector('svg.lucide-utensils');
+      expect(utensilsIcon).toBeInTheDocument();
+    });
+
+    it('should use static category icon when categoryIcon is null', () => {
+      const paymentWithNullIcon: Payment = {
+        id: '6',
+        merchantName: 'Test Store',
+        amountInCents: -5000,
+        category: 'food',
+        categoryIcon: null,
+        accountingDate: '2026-01-30T10:00:00',
+        wallet: 'Main Account',
+      };
+
+      renderWithRouter(<TransactionTimeline payments={[paymentWithNullIcon]} />);
+
+      // Should use Utensils icon for food category
+      const utensilsIcon = document.querySelector('svg.lucide-utensils');
+      expect(utensilsIcon).toBeInTheDocument();
+    });
   });
 });

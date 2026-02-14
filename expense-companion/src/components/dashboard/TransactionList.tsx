@@ -15,7 +15,7 @@ import {
   FileText,
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
-import type { ElementType, CSSProperties } from 'react';
+import type { ElementType } from 'react';
 import { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
