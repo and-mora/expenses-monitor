@@ -10,13 +10,21 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: postgresql
+      app.kubernetes.io/name: postgresql
+      app.kubernetes.io/instance: postgresql
+      app.kubernetes.io/component: primary
   policyTypes:
     - Ingress
   
   ingress:
     # Allow only from backend-rust and migration job
     - from:
+      - namespaceSelector:
+          matchLabels:
+            name: expenses-monitor
+        podSelector:
+          matchLabels:
+            app: keycloak
       - namespaceSelector:
           matchLabels:
             name: expenses-monitor
