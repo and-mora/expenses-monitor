@@ -30,6 +30,12 @@ spec:
             name: expenses-monitor
         podSelector:
           matchLabels:
+            app: keycloak
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: expenses-monitor
+        podSelector:
+          matchLabels:
             app: backend-rust
       - namespaceSelector:
           matchLabels:

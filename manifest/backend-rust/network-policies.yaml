@@ -40,7 +40,7 @@ spec:
     - from:
       - namespaceSelector:
           matchLabels:
-            name: monitoring
+            kubernetes.io/metadata.name: monitoring
       ports:
         - protocol: TCP
           port: 8080  # /metrics endpoint
@@ -60,17 +60,21 @@ spec:
     - to:
       - namespaceSelector:
           matchLabels:
-            name: default
+            kubernetes.io/metadata.name: default
         podSelector:
           matchLabels:
-            app: postgresql
+            app.kubernetes.io/name: postgresql
+            app.kubernetes.io/instance: postgresql
       ports:
         - protocol: TCP
           port: 5432
     
     # Allow connection to OTEL collector
     - to:
-      - podSelector:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: monitoring
+        podSelector:
           matchLabels:
             app: opentelemetry-collector
       ports:
