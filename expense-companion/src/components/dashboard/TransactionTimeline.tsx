@@ -19,6 +19,7 @@ import {
   Edit2,
   ChevronRight,
 } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import type { Payment } from '@/types/api';
 
 const categoryIcons: Record<string, ElementType> = {
@@ -123,7 +124,10 @@ function TimelineItem({
   isDeleting,
 }: TimelineItemProps) {
   const navigate = useNavigate();
-  const Icon = categoryIcons[payment.category.toLowerCase()] || categoryIcons.other;
+  const dynamicIcon = payment.categoryIcon
+    ? (LucideIcons as unknown as Record<string, React.ComponentType<unknown>>)[payment.categoryIcon]
+    : undefined;
+  const Icon = (dynamicIcon as ElementType) || categoryIcons[payment.category.toLowerCase()] || categoryIcons.other;
 
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
