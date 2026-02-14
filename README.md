@@ -1,6 +1,7 @@
 # Expenses Monitor
 ![Release](https://img.shields.io/github/v/release/and-mora/expenses-monitor?label=monitoring-stack-release&sort=semver&filter=*-monitoring)
 ![Release](https://img.shields.io/github/v/release/and-mora/expenses-monitor?label=backend-release&sort=semver&filter=*-backend&color=blue)
+![Release](https://img.shields.io/github/v/release/and-mora/expenses-monitor?label=expense-companion-release&sort=semver&filter=*-expense-companion&color=green)
 
 [![Trivy scan](https://github.com/and-mora/expenses-monitor/actions/workflows/trivy.yml/badge.svg?branch=master)](https://github.com/and-mora/expenses-monitor/actions/workflows/trivy.yml)
 [![Build backend](https://github.com/and-mora/expenses-monitor/actions/workflows/build-be.yml/badge.svg)](https://github.com/and-mora/expenses-monitor/actions/workflows/build-be.yml)
