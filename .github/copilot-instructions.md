@@ -1,7 +1,7 @@
 # Expenses Monitor - AI Agent Instructions
 
 ## Project Overview
-Personal finance tracking application with multiple frontends (Angular legacy, React companion), dual backend (Java Spring Boot being replaced by Rust Actix), PostgreSQL database, and full observability stack (Prometheus, Grafana, Loki, Tempo). Deployed on Kubernetes via ArgoCD GitOps.
+Personal finance tracking application with React frontend, dual backend (Java Spring Boot being replaced by Rust Actix), PostgreSQL database, and full observability stack (Prometheus, Grafana, Loki, Tempo). Deployed on Kubernetes via ArgoCD GitOps.
 
 ## 🚨 MANDATORY TESTING POLICY
 
@@ -106,7 +106,6 @@ Before merging any PR:
 - **backend-rust/** (primary) - Actix-web REST API on port 8080, actively developed
 - **backend/** (legacy) - Spring Boot WebFlux, being phased out
 - **expense-companion/** - Modern React+Vite frontend with Keycloak auth
-- **frontend/** - Legacy Angular frontend
 - **database/** - PostgreSQL with schema `expenses` (wallets, payments, tags)
 
 ### Key Data Flows
@@ -161,7 +160,7 @@ npm run lint                  # ESLint check
 **Environment**: Never commit `.env.local`. Production defaults are ARG in [Dockerfile](expense-companion/Dockerfile#L3-L8). For local dev, copy `.env.example` and override `VITE_API_BASE_URL=http://localhost:8080`.
 
 ### CI/CD Pipeline
-- **Semantic versioning**: Each module (backend, backend-rust, frontend, expense-companion) has independent version tags with suffixes
+- **Semantic versioning**: Each module (backend, backend-rust, expense-companion) has independent version tags with suffixes
 - **Deployment**: ArgoCD syncs from [manifest/](manifest/) on master push. See [.github/workflows/cd-pipeline.yml](.github/workflows/cd-pipeline.yml#L13-L32) for change detection logic
 - **Security**: Trivy scans run on all Docker images
 - **Workflow Security**: Always use environment variables in `run:` blocks instead of direct input interpolation to prevent script injection vulnerabilities
