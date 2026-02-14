@@ -4,6 +4,7 @@ use actix_web::web::Json;
 use actix_web::{web, HttpResponse, Responder};
 use chrono::NaiveDateTime;
 use serde::Deserialize;
+use serde_json;
 use sqlx::{Error, PgPool, Row};
 use std::ops::Deref;
 use uuid::Uuid;
@@ -717,7 +718,7 @@ fn default_size() -> i64 {
 
 use serde::Serialize;
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct TagResponseDto {
     id: Uuid,
     key: String,
@@ -866,11 +867,16 @@ async fn get_recent_payments_from_db(
                p.merchant_name,
                p.accounting_date,
                p.amount,
-               w.name as wallet_name
+               w.name as wallet_name,
+               COALESCE(json_agg(
+                   json_build_object('id', pt.id, 'key', pt.key, 'value', pt.value)
+               ) FILTER (WHERE pt.id IS NOT NULL), '[]'::json) as tags
         FROM expenses.payments p
         LEFT JOIN expenses.categories c ON p.category_id = c.id
         LEFT JOIN expenses.wallets w ON p.wallet_id = w.id
+        LEFT JOIN expenses.payments_tags pt ON p.id = pt.payment_id
         {}
+        GROUP BY p.id, c.name, c.icon, p.category_id, p.description, p.merchant_name, p.accounting_date, p.amount, w.name
         ORDER BY p.accounting_date DESC
         LIMIT $1 OFFSET $2
         "#,
@@ -889,7 +895,8 @@ async fn get_recent_payments_from_db(
             Option<String>, // merchant_name
             Option<NaiveDateTime>,
             Option<i32>,
-            Option<String>,
+            Option<String>,    // wallet_name
+            serde_json::Value, // tags as JSON array
         ),
     >(&query_str)
     .bind(limit)
@@ -925,17 +932,12 @@ async fn get_recent_payments_from_db(
     let mut result = Vec::new();
     for record in records {
         let payment_id = record.0;
-        let tags = match get_payment_tags(payment_id, connection_pool).await {
-            Ok(tags) => {
-                tracing::debug!("Retrieved {} tags for payment {}", tags.len(), payment_id);
-                tags
-            }
+        let tags_json = record.9;
+
+        let tags: Vec<TagResponseDto> = match serde_json::from_value(tags_json) {
+            Ok(tags) => tags,
             Err(e) => {
-                tracing::error!(
-                    "Failed to retrieve tags for payment {}: {:?}",
-                    payment_id,
-                    e
-                );
+                tracing::error!("Failed to parse tags for payment {}: {:?}", payment_id, e);
                 Vec::new()
             }
         };
