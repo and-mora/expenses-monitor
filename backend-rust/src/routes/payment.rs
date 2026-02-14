@@ -868,15 +868,13 @@ async fn get_recent_payments_from_db(
                p.accounting_date,
                p.amount,
                w.name as wallet_name,
-               COALESCE(json_agg(
+               COALESCE((SELECT json_agg(
                    json_build_object('id', pt.id, 'key', pt.key, 'value', pt.value)
-               ) FILTER (WHERE pt.id IS NOT NULL), '[]'::json) as tags
+               ) FROM expenses.payments_tags pt WHERE pt.payment_id = p.id), '[]'::json) as tags
         FROM expenses.payments p
         LEFT JOIN expenses.categories c ON p.category_id = c.id
         LEFT JOIN expenses.wallets w ON p.wallet_id = w.id
-        LEFT JOIN expenses.payments_tags pt ON p.id = pt.payment_id
         {}
-        GROUP BY p.id, c.name, c.icon, p.category_id, p.description, p.merchant_name, p.accounting_date, p.amount, w.name
         ORDER BY p.accounting_date DESC
         LIMIT $1 OFFSET $2
         "#,
