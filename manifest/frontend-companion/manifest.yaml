@@ -29,7 +29,7 @@ spec:
         - name: nginx-run
           emptyDir: { }
       containers:
-        - image: ghcr.io/and-mora/expenses-monitor:v1.0.0-expense-companion
+        - image: ghcr.io/and-mora/expenses-monitor:v1.0.1-expense-companion
           name: frontend-companion
           volumeMounts:
             - mountPath: "/etc/nginx/conf.d"
