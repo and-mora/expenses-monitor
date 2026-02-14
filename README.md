@@ -1,7 +1,7 @@
 # Expenses Monitor
 ![Release](https://img.shields.io/github/v/release/and-mora/expenses-monitor?label=monitoring-stack-release&sort=semver&filter=*-monitoring)
 ![Release](https://img.shields.io/github/v/release/and-mora/expenses-monitor?label=backend-release&sort=semver&filter=*-backend&color=blue)
-![Release](https://img.shields.io/github/v/release/and-mora/expenses-monitor?label=frontend-release&sort=semver&filter=*-frontend&color=red)
+![Release](https://img.shields.io/github/v/release/and-mora/expenses-monitor?label=expense-companion-release&sort=semver&filter=*-expense-companion&color=green)
 
 [![Trivy scan](https://github.com/and-mora/expenses-monitor/actions/workflows/trivy.yml/badge.svg?branch=master)](https://github.com/and-mora/expenses-monitor/actions/workflows/trivy.yml)
 [![Build backend](https://github.com/and-mora/expenses-monitor/actions/workflows/build-be.yml/badge.svg)](https://github.com/and-mora/expenses-monitor/actions/workflows/build-be.yml)
@@ -30,7 +30,7 @@ I will experiment Gradle, Spring Webflux.
 It's a monorepo containing all the components involved in the application:
 - Grafana server for dashboards and alerting
 - Backend server in Spring Boot
-- Frontend in Angular (overkill of course, but the most known and with materialUI)
+- Frontend in React (modern and lightweight with Vite)
 - Postgresql database
 - A monitoring stack (deployed with helm, including Prometheus, Loki, Tempo and a OpenTelemetry collector)
 - Microk8s (the project started with Docker Swarm and upgraded later to K8s)
