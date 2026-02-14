@@ -19,8 +19,6 @@ jobs:
       backend_version_tag: ${{ steps.backend-versioning.outputs.version_tag }}
       backend_rust_changed: ${{ steps.backend-rust-versioning.outputs.changed }}
       backend_rust_version_tag: ${{ steps.backend-rust-versioning.outputs.version_tag }}
-      frontend_changed: ${{ steps.frontend-versioning.outputs.changed }}
-      frontend_version_tag: ${{ steps.frontend-versioning.outputs.version_tag }}
       frontend_companion_changed: ${{ steps.frontend-companion-versioning.outputs.changed }}
       frontend_companion_version_tag: ${{ steps.frontend-companion-versioning.outputs.version_tag }}
       database_changed: ${{ steps.database-versioning.outputs.changed }}
@@ -52,15 +50,6 @@ jobs:
         with:
           change_path: "backend-rust"
           namespace: backend-rust
-          major_pattern: "breaking"
-          minor_pattern: "feat"
-
-      - name: Frontend Version
-        id: frontend-versioning
-        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
-        with:
-          change_path: "frontend"
-          namespace: frontend
           major_pattern: "breaking"
           minor_pattern: "feat"
 
@@ -207,31 +196,6 @@ jobs:
     with:
       version: ${{needs.SemanticVersioning.outputs.database_version_tag}}
       enabled: ${{needs.SemanticVersioning.outputs.database_changed}}
-    secrets: inherit
-
-  FrontendRelease:
-    needs: SemanticVersioning
-    uses: ./.github/workflows/release.yml
-    with:
-      tag: ${{needs.SemanticVersioning.outputs.frontend_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.frontend_changed}}
-
-  FrontendBuildAndPush:
-    needs: [ SemanticVersioning, FrontendRelease ]
-    uses: ./.github/workflows/build-push-workflow.yml
-    with:
-      version: ${{needs.SemanticVersioning.outputs.frontend_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.frontend_changed}}
-      folder: frontend
-    secrets: inherit
-
-  FrontendUpdateManifest:
-    needs: [ SemanticVersioning, FrontendBuildAndPush ]
-    uses: ./.github/workflows/update_manifest.yml
-    with:
-      version: ${{needs.SemanticVersioning.outputs.frontend_version_tag}}
-      component: frontend
-      auto_merge: false  # true per deploy automatico, false per review manuale
     secrets: inherit
 
   FrontendCompanionRelease:

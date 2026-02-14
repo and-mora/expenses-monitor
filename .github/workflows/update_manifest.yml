@@ -9,7 +9,7 @@ on:
       component:
         required: true
         type: string
-        description: 'backend, backend-rust, frontend, or frontend-companion'
+        description: 'backend, backend-rust, or frontend-companion'
       auto_merge:
         required: false
         type: boolean
@@ -45,9 +45,6 @@ jobs:
               ;;
             "backend-rust")
               IMAGE_SUFFIX="backend-rust"
-              ;;
-            "frontend")
-              IMAGE_SUFFIX="frontend"
               ;;
             "frontend-companion")
               IMAGE_SUFFIX="expense-companion"
