@@ -1,10 +1,10 @@
-import { 
-  Utensils, 
-  Car, 
-  ShoppingBag, 
-  Film, 
-  Zap, 
-  Heart, 
+import {
+  Utensils,
+  Car,
+  ShoppingBag,
+  Film,
+  Zap,
+  Heart,
   TrendingUp,
   CircleDot,
   Trash2,
@@ -15,6 +15,7 @@ import {
   FileText,
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
+import type { ElementType, CSSProperties } from 'react';
 import { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,7 +26,7 @@ import { PaymentTags } from './PaymentTags';
 import { EditPaymentDialog } from './EditPaymentDialog';
 import type { Payment } from '@/types/api';
 
-const categoryIcons: Record<string, React.ElementType> = {
+const categoryIcons: Record<string, ElementType> = {
   food: Utensils,
   transport: Car,
   shopping: ShoppingBag,
@@ -147,8 +148,10 @@ function TransactionItem({
   style 
 }: TransactionItemProps) {
   const category = payment.category.toLowerCase();
-  const dynamicIcon = payment.categoryIcon ? (LucideIcons as any)[payment.categoryIcon] : undefined;
-  const Icon = dynamicIcon || categoryIcons[category] || categoryIcons.other;
+  const dynamicIcon = payment.categoryIcon
+    ? (LucideIcons as unknown as Record<string, React.ComponentType<unknown>>)[payment.categoryIcon]
+    : undefined;
+  const Icon = (dynamicIcon as ElementType) || categoryIcons[category] || categoryIcons.other;
   const colorClass = categoryColors[category] || categoryColors.other;
   const isIncome = payment.amountInCents > 0;
   const hasTags = payment.tags && payment.tags.length > 0;

@@ -124,8 +124,10 @@ function TimelineItem({
   isDeleting,
 }: TimelineItemProps) {
   const navigate = useNavigate();
-  const dynamicIcon = payment.categoryIcon ? (LucideIcons as any)[payment.categoryIcon] : undefined;
-  const Icon = dynamicIcon || categoryIcons[payment.category.toLowerCase()] || categoryIcons.other;
+  const dynamicIcon = payment.categoryIcon
+    ? (LucideIcons as unknown as Record<string, React.ComponentType<unknown>>)[payment.categoryIcon]
+    : undefined;
+  const Icon = (dynamicIcon as ElementType) || categoryIcons[payment.category.toLowerCase()] || categoryIcons.other;
 
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
