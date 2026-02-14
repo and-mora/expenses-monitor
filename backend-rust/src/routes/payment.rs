@@ -895,7 +895,7 @@ async fn get_recent_payments_from_db(
             Option<String>, // merchant_name
             Option<NaiveDateTime>,
             Option<i32>,
-            Option<String>, // wallet_name
+            Option<String>,    // wallet_name
             serde_json::Value, // tags as JSON array
         ),
     >(&query_str)
@@ -933,15 +933,11 @@ async fn get_recent_payments_from_db(
     for record in records {
         let payment_id = record.0;
         let tags_json = record.9;
-        
+
         let tags: Vec<TagResponseDto> = match serde_json::from_value(tags_json) {
             Ok(tags) => tags,
             Err(e) => {
-                tracing::error!(
-                    "Failed to parse tags for payment {}: {:?}",
-                    payment_id,
-                    e
-                );
+                tracing::error!("Failed to parse tags for payment {}: {:?}", payment_id, e);
                 Vec::new()
             }
         };
