@@ -58,7 +58,10 @@ spec:
     
     # Allow connection to PostgreSQL
     - to:
-      - podSelector:
+      - namespaceSelector:
+          matchLabels:
+            name: default
+        podSelector:
           matchLabels:
             app: postgresql
       ports:
