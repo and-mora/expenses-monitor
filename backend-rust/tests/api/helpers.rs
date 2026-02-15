@@ -128,9 +128,12 @@ impl TestApp {
             .expect("Failed to execute request.")
     }
 
-    pub async fn get_balance(&self) -> reqwest::Response {
+    pub async fn get_balance(&self, wallet_name: &str) -> reqwest::Response {
         reqwest::Client::new()
-            .get(format!("{}/api/balance", &self.address))
+            .get(format!(
+                "{}/api/balance?wallet_name={}",
+                &self.address, wallet_name
+            ))
             .send()
             .await
             .expect("Failed to execute request.")
