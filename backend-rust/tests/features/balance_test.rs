@@ -4,7 +4,12 @@ use crate::helpers::spawn_app;
 async fn get_balance_returns_zero_when_no_payments() {
     let app = spawn_app().await;
 
-    let response = app.get_balance().await;
+    // Create wallet
+    let wallet_body = r#"{"name": "test_wallet"}"#;
+    let response = app.create_wallet(wallet_body).await;
+    assert_eq!(201, response.status().as_u16());
+
+    let response = app.get_balance_with_query("?wallet_name=test_wallet").await;
 
     assert_eq!(response.status().as_u16(), 200);
 
@@ -19,13 +24,19 @@ async fn get_balance_returns_zero_when_no_payments() {
 async fn get_balance_calculates_total_income_and_expenses() {
     let app = spawn_app().await;
 
+    // Create wallet
+    let wallet_body = r#"{"name": "test_wallet"}"#;
+    let response = app.create_wallet(wallet_body).await;
+    assert_eq!(201, response.status().as_u16());
+
     // Create income payment (+1000)
     let income_payload = serde_json::json!({
         "merchantName": "Salary",
         "amountInCents": 100000,
         "category": "salary",
         "accountingDate": "2026-01-15T10:00:00",
-        "description": "Monthly salary"
+        "description": "Monthly salary",
+        "walletName": "test_wallet"
     });
 
     app.post_payment(&income_payload.to_string()).await;
@@ -36,7 +47,8 @@ async fn get_balance_calculates_total_income_and_expenses() {
         "amountInCents": -50000,
         "category": "food",
         "accountingDate": "2026-01-16T10:00:00",
-        "description": "Groceries"
+        "description": "Groceries",
+        "walletName": "test_wallet"
     });
 
     app.post_payment(&expense1_payload.to_string()).await;
@@ -47,12 +59,13 @@ async fn get_balance_calculates_total_income_and_expenses() {
         "amountInCents": -30000,
         "category": "food",
         "accountingDate": "2026-01-17T10:00:00",
-        "description": "Dinner"
+        "description": "Dinner",
+        "walletName": "test_wallet"
     });
 
     app.post_payment(&expense2_payload.to_string()).await;
 
-    let response = app.get_balance().await;
+    let response = app.get_balance_with_query("?wallet_name=test_wallet").await;
 
     assert_eq!(response.status().as_u16(), 200);
 
@@ -70,13 +83,19 @@ async fn get_balance_calculates_total_income_and_expenses() {
 async fn get_balance_filters_by_start_date() {
     let app = spawn_app().await;
 
+    // Create wallet
+    let wallet_body = r#"{"name": "test_wallet"}"#;
+    let response = app.create_wallet(wallet_body).await;
+    assert_eq!(201, response.status().as_u16());
+
     // Payment before filter range
     let old_payment = serde_json::json!({
         "merchantName": "Old Payment",
         "amountInCents": -10000,
         "category": "food",
         "accountingDate": "2025-12-01T10:00:00",
-        "description": "Old"
+        "description": "Old",
+        "walletName": "test_wallet"
     });
 
     app.post_payment(&old_payment.to_string()).await;
@@ -87,12 +106,15 @@ async fn get_balance_filters_by_start_date() {
         "amountInCents": -5000,
         "category": "food",
         "accountingDate": "2026-01-15T10:00:00",
-        "description": "New"
+        "description": "New",
+        "walletName": "test_wallet"
     });
 
     app.post_payment(&new_payment.to_string()).await;
 
-    let response = app.get_balance_with_query("?startDate=2026-01-01").await;
+    let response = app
+        .get_balance_with_query("?wallet_name=test_wallet&startDate=2026-01-01")
+        .await;
 
     assert_eq!(response.status().as_u16(), 200);
 

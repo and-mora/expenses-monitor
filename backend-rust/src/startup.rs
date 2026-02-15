@@ -1,8 +1,6 @@
 use crate::configuration::Settings;
-use crate::routes::{
-    create_payment, create_wallet, delete_payment, delete_wallet, get_balance, get_categories,
-    get_recent_payments, get_wallets, greet, health_check, metrics, update_payment,
-};
+use crate::features::{balance, payments, wallets};
+use crate::routes::{greet, health_check, metrics};
 use crate::telemetry::init_meter;
 use actix_cors::Cors;
 use actix_web::dev::Server;
@@ -88,16 +86,10 @@ pub fn run(
             .route("/metrics", web::get().to(metrics))
             .wrap(TracingLogger::default())
             .route("/health", web::get().to(health_check))
-            .route("/api/payments/categories", web::get().to(get_categories))
+            .configure(payments::configure)
+            .configure(wallets::configure)
+            .configure(balance::configure)
             .route("/greet", web::get().to(greet))
-            .route("/api/payments", web::get().to(get_recent_payments))
-            .route("/api/payments", web::post().to(create_payment))
-            .route("/api/payments/{id}", web::put().to(update_payment))
-            .route("/api/payments/{id}", web::delete().to(delete_payment))
-            .route("/api/balance", web::get().to(get_balance))
-            .route("/api/wallets", web::get().to(get_wallets))
-            .route("/api/wallets", web::post().to(create_wallet))
-            .route("/api/wallets/{id}", web::delete().to(delete_wallet))
             .app_data(metrics_registry.clone())
             .app_data(connection_pool.clone())
     })

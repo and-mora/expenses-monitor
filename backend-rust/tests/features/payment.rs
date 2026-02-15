@@ -289,7 +289,7 @@ async fn create_payment_with_wallet_name_returns_200() {
     // First create a wallet
     let wallet_body = r#"{"name": "TestWallet"}"#;
     let wallet_response = app.post_wallet(wallet_body).await;
-    assert_eq!(200, wallet_response.status().as_u16());
+    assert_eq!(201, wallet_response.status().as_u16());
 
     // Act - Create payment with wallet name
     let body = r#"
@@ -306,7 +306,7 @@ async fn create_payment_with_wallet_name_returns_200() {
     let response = app.post_payment(body).await;
 
     // Assert
-    assert_eq!(200, response.status().as_u16());
+    assert_eq!(201, response.status().as_u16());
     let json: serde_json::Value = response.json().await.unwrap();
     assert_eq!(json["wallet"], "TestWallet");
     assert_eq!(json["amountInCents"], -1500);
