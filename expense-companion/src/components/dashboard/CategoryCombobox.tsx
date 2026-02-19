@@ -111,9 +111,17 @@ export function CategoryCombobox({
                   return (
                     <CommandItem
                       key={id}
-                      value={id}
-                      onSelect={(currentValue) => {
-                        onChange(currentValue);
+                      // Use the human-readable name as the command value so
+                      // the internal Command filter matches user input against
+                      // the visible label instead of the backend ID.
+                      value={name}
+                      onSelect={(selectedName) => {
+                        // Resolve the selected name back to the canonical id
+                        const found = categories.find((c) =>
+                          typeof c === 'string' ? c === selectedName : c.name === selectedName
+                        );
+                        const valueToSet = found ? (typeof found === 'string' ? found : found.id) : selectedName;
+                        onChange(valueToSet);
                         setOpen(false);
                         setSearch('');
                       }}
