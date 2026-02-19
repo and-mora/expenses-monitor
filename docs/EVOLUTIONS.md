@@ -4,30 +4,44 @@ Based on the architectural and functional analysis of the current system, severa
 
 ---
 
-## 🎯 NEXT PRIORITY: Category Icons Feature
+## 🎯 NEXT PRIORITY: PSD2 Bank Account Integration
 
 ### Problem Statement
-Categories are extracted dynamically from existing payments (`SELECT DISTINCT category FROM payments`), allowing users to create custom category names. However, the frontend has hardcoded icon mappings for only 8 predefined categories (food, transport, shopping, entertainment, utilities, health, income, other). 
+Users must manually enter each expense, which is time-consuming and error-prone. To achieve "zero manual entry", we need to automatically import transactions from bank accounts while maintaining user control over categorization and validation.
 
-**Result**: All custom categories fallback to a generic `CircleDot` icon, providing poor UX.
+### Chosen Solution: Open Banking Integration with Staging Table
 
-### Chosen Solution: Category Table with Icons (Option B)
+#### Architecture Overview
+- **Provider Selection**: Use **Nordigen** (reliable EU-based Open Banking aggregator) or **GoCardless** for developer-friendly APIs
+- **Data Flow**: K8s CronJob → Bank API → Staging Table → User Review → Import
+- **Security**: OAuth2 consent flow, encrypted storage, no permanent bank credentials
 
 #### Database Schema
 ```sql
--- Migration: YYYYMMDDHHMMSS_create_categories_table.sql
-CREATE TABLE expenses.categories (
-    name TEXT PRIMARY KEY,                           -- Unique category name (case-sensitive)
-    icon_name TEXT NOT NULL DEFAULT 'circle-dot',   -- lucide-react icon name (e.g., 'utensils', 'car')
-    color TEXT NOT NULL DEFAULT '#6b7280',          -- Hex color for badge/icon
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+-- Staging table for imported transactions
+CREATE TABLE expenses.staging_transactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id TEXT NOT NULL,                           -- From Keycloak
+    bank_transaction_id TEXT UNIQUE NOT NULL,        -- Bank's unique ID
+    amount_in_cents BIGINT NOT NULL,                 -- Always in cents
+    currency TEXT NOT NULL DEFAULT 'EUR',
+    booking_date DATE NOT NULL,
+    value_date DATE,
+    creditor_name TEXT,                              -- Merchant/payee
+    debtor_name TEXT,                                -- For income transactions
+    remittance_info TEXT,                            -- Transaction description
+    suggested_category TEXT,                         -- AI/ML suggestion (future)
+    suggested_merchant TEXT,                         -- Normalized merchant name
+    status TEXT NOT NULL DEFAULT 'pending'           -- pending/reviewed/imported/rejected
+        CHECK (status IN ('pending', 'reviewed', 'imported', 'rejected')),
+    imported_payment_id UUID REFERENCES expenses.payments(id),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Index for fast lookups
-CREATE INDEX idx_categories_name ON expenses.categories(name);
-
--- Comment
-COMMENT ON TABLE expenses.categories IS 'User-defined categories with icon and color customization';
+-- Index for performance
+CREATE INDEX idx_staging_user_status ON expenses.staging_transactions(user_id, status);
+CREATE INDEX idx_staging_booking_date ON expenses.staging_transactions(booking_date);
 ```
 
 #### API Changes
@@ -35,63 +49,45 @@ COMMENT ON TABLE expenses.categories IS 'User-defined categories with icon and c
 **New Endpoints:**
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `GET /categories` | GET | Returns categories with icon and color (enhanced) |
-| `PUT /categories/{name}` | PUT | Update icon/color for a category |
-| `POST /categories` | POST | Create a new category (optional, auto-created on payment) |
+| `POST /banking/connect` | POST | Initiate bank connection (OAuth2 flow) |
+| `GET /banking/accounts` | GET | List connected bank accounts |
+| `POST /banking/sync/{accountId}` | POST | Trigger manual sync for account |
+| `GET /staging/transactions` | GET | List staging transactions with pagination |
+| `PUT /staging/transactions/{id}` | PUT | Update staging transaction (category, merchant, status) |
+| `POST /staging/import` | POST | Bulk import approved staging transactions |
 
-**Response Format (Enhanced):**
-```json
-[
-  {
-    "name": "Ristorante",
-    "iconName": "utensils",
-    "color": "#f97316"
-  },
-  {
-    "name": "Benzina", 
-    "iconName": "fuel",
-    "color": "#3b82f6"
-  }
-]
-```
+**Bank Connection Flow:**
+1. User clicks "Connect Bank" → Redirect to Nordigen/GoCardless OAuth2
+2. User selects bank and consents to data access
+3. Backend receives access token, stores encrypted refresh token
+4. K8s CronJob runs daily to fetch new transactions
 
 #### Frontend Changes
 
-1. **CategoryIcon Component**: Create a reusable component that:
-   - Fetches category metadata from API
-   - Renders the correct lucide icon by name
-   - Falls back to `CircleDot` if icon not found
+1. **Banking Settings Page**: 
+   - Connect/disconnect bank accounts
+   - View connected accounts and last sync status
+   - Manual sync button
 
-2. **Settings Page**: Add "Category Management" section:
-   - List all existing categories
-   - Icon picker (grid of ~40 common icons)
-   - Color picker (preset palette or hex input)
-   - Save changes via `PUT /categories/{name}`
+2. **Staging Review UI**:
+   - List pending transactions with smart suggestions
+   - Bulk edit category/merchant
+   - Approve/reject transactions
+   - Auto-import rules (future: "always import from this merchant as category X")
 
-3. **Auto-create Categories**: When a new payment uses a category name not in the table:
-   - Backend auto-inserts with default icon/color
-   - User can customize later in Settings
-
-#### Icon Set (Suggested)
-Limit to ~40 commonly used icons from lucide-react:
-```
-utensils, car, fuel, shopping-bag, shopping-cart, film, tv, music, 
-zap, heart, pill, stethoscope, plane, train, bus, bike, home, 
-building, briefcase, laptop, smartphone, gift, coffee, beer, wine, 
-book, graduation-cap, dumbbell, scissors, wrench, hammer, credit-card,
-banknote, piggy-bank, trending-up, trending-down, receipt, tag, 
-calendar, clock, circle-dot
-```
+3. **Transaction Matching**:
+   - Fuzzy matching against existing payments to avoid duplicates
+   - Confidence scoring for auto-import candidates
 
 #### Implementation Steps
-1. Create migration `YYYYMMDDHHMMSS_create_categories_table.sql`
-2. Populate table from existing `SELECT DISTINCT category FROM payments`
-3. Update `GET /categories` endpoint to return icon/color
-4. Create `PUT /categories/{name}` endpoint
-5. Update OpenAPI spec (`docs/openapi.yaml`)
-6. Create `CategoryIcon` component in frontend
-7. Add "Category Management" to Settings page
-8. Update `TransactionList`, `PaymentDetail`, `SpendingChart` to use new icons
+1. Choose Open Banking provider (Nordigen recommended for EU compliance)
+2. Create staging_transactions table migration
+3. Implement OAuth2 connection flow in backend
+4. Add K8s CronJob for automated sync
+5. Create staging API endpoints
+6. Build frontend banking settings and staging review UI
+7. Add transaction deduplication logic
+8. Update OpenAPI spec and test integration
 
 ---
 
@@ -109,12 +105,12 @@ calendar, clock, circle-dot
 
 ## 2. Evolution Proposals
 
-### A. Category Icons & Customization 🆕 HIGH PRIORITY
+### A. Category Icons & Customization ✅ COMPLETED
 Allow users to customize icons and colors for their categories.
 *   **Category Table**: Store icon_name and color per category in DB.
 *   **Icon Picker UI**: Settings page with icon grid selection.
 *   **Auto-creation**: New categories auto-created with defaults on first use.
-*   See "NEXT PRIORITY" section above for full specification.
+*   See Completed Features table for implementation details.
 
 ### B. Automation and Data Integration (Goal: Zero Manual Entry)
 Drastically reduce the time spent on data entry.
@@ -190,8 +186,8 @@ Leverage the existing Kubernetes infrastructure to add value.
 
 | Phase | Focus Area | Features | Effort |
 |-------|------------|----------|--------|
-| **1** | **Category Icons** 🔥 | Categories table, icon picker, auto-creation | 1-2 days |
-| **2** | CSV Export | Export filtered transactions to CSV | 0.5 days |
+| **1** | **Category Icons** ✅ | Categories table, icon picker, auto-creation | 1-2 days |
+| **2** | PSD2 Integration | Open Banking, staging table, auto-import | 5-10 days |
 | **3** | Reporting | In-app "Spend by category", "Top merchants" views | 1-2 days |
 | **4** | Budgets | Monthly budgets per category, threshold warnings | 2-3 days |
 | **5** | Recurring Payments | K8s CronJobs, templates, skip/pause | 2-3 days |
@@ -219,3 +215,4 @@ Leverage the existing Kubernetes infrastructure to add value.
 | Kubernetes Deployment | ✅ | ArgoCD GitOps |
 | Observability Stack | ✅ | Prometheus, Loki, Tempo, Grafana |
 | DB Migrations Automation | ✅ | K8s Job with ArgoCD PreSync hook, sqlx-cli |
+| Category Icons | ✅ | Categories table with icons and colors, icon picker UI, auto-creation |

@@ -305,6 +305,27 @@ Not currently implemented (future consideration)
 - For new function: Test happy path
 - For new endpoint: Test successful request/response
 
+## 📚 MANDATORY DOCUMENTATION POLICY
+
+**CRITICAL**: All documentation in the `docs/` folder MUST be kept up-to-date with every code change, feature implementation, or architectural decision. This is non-negotiable.
+
+### Requirements
+1. **OpenAPI Specification**: Any REST API change (new endpoint, modified request/response, status codes) MUST update [docs/openapi.yaml](docs/openapi.yaml) immediately
+2. **Evolutions Document**: New features, completed features, or roadmap changes MUST update [docs/EVOLUTIONS.md](docs/EVOLUTIONS.md)
+3. **Other Documentation**: Update relevant docs (e.g., [docs/FUNCTIONAL_ANALYSIS.md](docs/FUNCTIONAL_ANALYSIS.md), [docs/TESTING_INTEGRATION.md](docs/TESTING_INTEGRATION.md)) when changes affect their content
+4. **Accuracy Check**: Before committing, verify that all referenced files, endpoints, and features in docs match the current implementation
+
+### Workflow
+```
+Implement feature → Update relevant docs → Verify docs accuracy → Commit
+```
+
+**Never** consider a task complete without:
+- ✅ Documentation updated and committed
+- ✅ Docs reviewed for accuracy and completeness
+
+If documentation becomes outdated, update it immediately as part of the next change.
+
 ## Warnings
 
 ⚠️ **Never use floating point for money** - Always `amountInCents` as INTEGER  
