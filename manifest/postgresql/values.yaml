@@ -9,3 +9,16 @@ primary:
   initdb:
     scriptsConfigMap: postgresql-init-schema
     scriptsSecret: postgresql-init-user-script
+  # PostgreSQL configuration to enable pg_stat_statements for query metrics
+  configuration: |
+    shared_preload_libraries = 'pg_stat_statements'
+    pg_stat_statements.track = all
+
+metrics:
+  enabled: true
+  # configure ServiceMonitor for Prometheus Operator (if installed)
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    additionalLabels: {}
+ 
