@@ -66,7 +66,7 @@ jobs:
         id: database-versioning
         uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
         with:
-          change_path: "database"
+          change_path: "manifest/postgresql"
           namespace: database
           major_pattern: "breaking"
           minor_pattern: "feat"
@@ -183,21 +183,6 @@ jobs:
   #   uses: ./.github/workflows/deploy_backend_rust_argocd.yml
   #   secrets: inherit
 
-  DatabaseRelease:
-    needs: SemanticVersioning
-    uses: ./.github/workflows/release.yml
-    with:
-      tag: ${{needs.SemanticVersioning.outputs.database_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.database_changed}}
-
-  DatabaseDeploy:
-    needs: [ SemanticVersioning, DatabaseRelease ]
-    uses: ./.github/workflows/deploy_database.yml
-    with:
-      version: ${{needs.SemanticVersioning.outputs.database_version_tag}}
-      enabled: ${{needs.SemanticVersioning.outputs.database_changed}}
-    secrets: inherit
-
   FrontendCompanionRelease:
     needs: SemanticVersioning
     uses: ./.github/workflows/release.yml
@@ -249,6 +234,12 @@ jobs:
     uses: ./.github/workflows/deploy_argocd_apps.yml
     with:
       enabled: ${{needs.SemanticVersioning.outputs.argocd_apps_changed}}
+    secrets: inherit
+
+  PostgresqlArgoCDDeploy:
+    needs: SemanticVersioning
+    if: ${{ needs.SemanticVersioning.outputs.database_changed == 'true' }}
+    uses: ./.github/workflows/deploy_postgresql_argocd.yml
     secrets: inherit
 
   GatewayApiDeploy:
