@@ -26,4 +26,7 @@ postgresql:
       enabled: true
       interval: 30s
       additionalLabels: {}
+    env:
+      - name: PG_EXPORTER_DATABASES
+        value: "postgres,expenses-monitor"
   
