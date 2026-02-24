@@ -27,6 +27,3 @@ postgresql:
       additionalLabels: {}
     collectors:
       stat_statements: true
-    extraEnvVars:
-      - name: PG_EXPORTER_DATABASES
-        value: "postgres,expenses-monitor"
