@@ -19,27 +19,24 @@ spec:
   ingress:
     # Allow only from backend-rust and migration job
     - from:
+      # Allow Keycloak running in the 'default' namespace
       - namespaceSelector:
           matchLabels:
-            name: expenses-monitor
+            kubernetes.io/metadata.name: default
         podSelector:
           matchLabels:
             app: keycloak
-      - namespaceSelector:
-          matchLabels:
-            name: expenses-monitor
-        podSelector:
-          matchLabels:
-            app: keycloak
+      # Allow backend-rust (in 'expenses-monitor' namespace) to reach Postgres
       - namespaceSelector:
           matchLabels:
             kubernetes.io/metadata.name: expenses-monitor
         podSelector:
           matchLabels:
             app: backend-rust
+      # Allow DB migration job from 'expenses-monitor' namespace
       - namespaceSelector:
           matchLabels:
-            name: expenses-monitor
+            kubernetes.io/metadata.name: expenses-monitor
         podSelector:
           matchLabels:
             job-name: backend-rust-db-migration
