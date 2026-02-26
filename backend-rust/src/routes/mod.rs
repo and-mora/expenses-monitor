@@ -1,5 +1,6 @@
 mod admin;
 mod balance;
+mod debug;
 mod greet;
 mod health_check;
 mod payment;
@@ -7,6 +8,7 @@ mod wallet;
 
 pub use admin::*;
 pub use balance::*;
+pub use debug::*;
 pub use greet::*;
 pub use health_check::*;
 pub use payment::*;

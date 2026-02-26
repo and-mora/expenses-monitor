@@ -1,3 +1,4 @@
+use base64::Engine;
 use expenses_monitor_be::configuration::{get_configuration, DatabaseSettings, TelemetrySettings};
 use expenses_monitor_be::startup::{get_connection_pool, Application};
 use expenses_monitor_be::telemetry::{get_subscriber, init_subscriber};
@@ -39,6 +40,7 @@ static TRACING: Lazy<()> = Lazy::new(|| {
 pub struct TestApp {
     pub address: String,
     pub db_pool: PgPool,
+    pub auth_token: String,
 }
 
 impl TestApp {
@@ -148,6 +150,18 @@ impl TestApp {
         reqwest::Client::new()
             .post(format!("{}/api/wallets", &self.address))
             .header("Content-Type", "application/json")
+            .header("Authorization", format!("Bearer {}", self.auth_token))
+            .body(body.to_owned())
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
+
+    pub async fn create_wallet_with_auth(&self, body: &str, token: &str) -> reqwest::Response {
+        reqwest::Client::new()
+            .post(format!("{}/api/wallets", &self.address))
+            .header("Content-Type", "application/json")
+            .header("Authorization", format!("Bearer {}", token))
             .body(body.to_owned())
             .send()
             .await
@@ -161,6 +175,16 @@ impl TestApp {
     pub async fn get_wallets(&self) -> reqwest::Response {
         reqwest::Client::new()
             .get(format!("{}/api/wallets", &self.address))
+            .header("Authorization", format!("Bearer {}", self.auth_token))
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
+
+    pub async fn get_wallets_with_auth(&self, token: &str) -> reqwest::Response {
+        reqwest::Client::new()
+            .get(format!("{}/api/wallets", &self.address))
+            .header("Authorization", format!("Bearer {}", token))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -169,6 +193,16 @@ impl TestApp {
     pub async fn delete_wallet(&self, id: uuid::Uuid) -> reqwest::Response {
         reqwest::Client::new()
             .delete(format!("{}/api/wallets/{}", &self.address, id))
+            .header("Authorization", format!("Bearer {}", self.auth_token))
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
+
+    pub async fn delete_wallet_with_auth(&self, id: uuid::Uuid, token: &str) -> reqwest::Response {
+        reqwest::Client::new()
+            .delete(format!("{}/api/wallets/{}", &self.address, id))
+            .header("Authorization", format!("Bearer {}", token))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -268,9 +302,23 @@ pub async fn spawn_app() -> TestApp {
     // Get the port before spawning the application
     let address = format!("http://127.0.0.1:{}", application.port());
     tokio::spawn(application.run_until_stopped());
+    // Create a default unsigned JWT token for tests to use when hitting
+    // endpoints that expect an authenticated user (gateway-forwarded JWT).
+    let sub = Uuid::new_v4().to_string();
+    let header = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(r#"{"alg":"none"}"#);
+    let payload = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(
+        serde_json::json!({
+            "sub": sub,
+            "exp": (chrono::Utc::now().timestamp() + 60)
+        })
+        .to_string(),
+    );
+    let token = format!("{}.{}.", header, payload);
+
     TestApp {
         address,
         db_pool: get_connection_pool(&configuration),
+        auth_token: token,
     }
 }
 

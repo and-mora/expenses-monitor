@@ -32,6 +32,7 @@ pub struct WalletResponseDto {
 )]
 pub async fn create_wallet(
     payload: web::Json<WalletDto>,
+    user: crate::auth::AuthenticatedUser,
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
     let wallet_name = match WalletName::parse(payload.name.clone()) {
@@ -39,7 +40,7 @@ pub async fn create_wallet(
         Err(_) => return HttpResponse::BadRequest().finish(),
     };
 
-    match insert_wallet(&wallet_name, connection_pool.deref()).await {
+    match insert_wallet(&wallet_name, &user.sub, connection_pool.deref()).await {
         Ok(wallet) => HttpResponse::Ok().json(WalletResponseDto {
             id: wallet.id.unwrap(),
             name: wallet.name.as_ref().to_string(),
@@ -58,27 +59,36 @@ pub async fn create_wallet(
 }
 
 #[tracing::instrument(name = "Inserting wallet in database", skip(name, pool))]
-async fn insert_wallet(name: &WalletName, pool: &PgPool) -> Result<Wallet, sqlx::Error> {
+async fn insert_wallet(
+    name: &WalletName,
+    user_id: &str,
+    pool: &PgPool,
+) -> Result<Wallet, sqlx::Error> {
     let row = sqlx::query!(
         r#"
-        INSERT INTO expenses.wallets (name)
-        VALUES ($1)
-        RETURNING id, name as "name!"
+        INSERT INTO expenses.wallets (name, user_id)
+        VALUES ($1, $2)
+        RETURNING id, name as "name!", user_id
         "#,
-        name.as_ref()
+        name.as_ref(),
+        user_id
     )
     .fetch_one(pool)
     .await?;
 
     Ok(Wallet {
         id: Some(row.id),
+        user_id: row.user_id,
         name: WalletName::parse(row.name).expect("Stored name should be valid"),
     })
 }
 
 #[tracing::instrument(name = "Get all wallets", skip(connection_pool))]
-pub async fn get_wallets(connection_pool: web::Data<PgPool>) -> impl Responder {
-    match get_wallets_from_db(connection_pool.deref()).await {
+pub async fn get_wallets(
+    user: crate::auth::AuthenticatedUser,
+    connection_pool: web::Data<PgPool>,
+) -> impl Responder {
+    match get_wallets_from_db(&user.sub, connection_pool.deref()).await {
         Ok(wallets) => {
             let dtos: Vec<WalletResponseDto> = wallets
                 .into_iter()
@@ -97,13 +107,15 @@ pub async fn get_wallets(connection_pool: web::Data<PgPool>) -> impl Responder {
 }
 
 #[tracing::instrument(name = "Retrieving wallets from database", skip(pool))]
-async fn get_wallets_from_db(pool: &PgPool) -> Result<Vec<Wallet>, sqlx::Error> {
+async fn get_wallets_from_db(user_id: &str, pool: &PgPool) -> Result<Vec<Wallet>, sqlx::Error> {
     let rows = sqlx::query!(
         r#"
-        SELECT id, name as "name!"
+        SELECT id, name as "name!", user_id
         FROM expenses.wallets
+        WHERE user_id = $1
         ORDER BY name
-        "#
+        "#,
+        user_id
     )
     .fetch_all(pool)
     .await?;
@@ -112,6 +124,7 @@ async fn get_wallets_from_db(pool: &PgPool) -> Result<Vec<Wallet>, sqlx::Error> 
         .into_iter()
         .map(|row| Wallet {
             id: Some(row.id),
+            user_id: row.user_id,
             name: WalletName::parse(row.name).expect("Stored name should be valid"),
         })
         .collect();
