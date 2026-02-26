@@ -88,6 +88,7 @@ pub fn run(
             .route("/metrics", web::get().to(metrics))
             .wrap(TracingLogger::default())
             .route("/health", web::get().to(health_check))
+            .route("/api/debug/sub", web::get().to(crate::routes::get_sub))
             .route("/api/payments/categories", web::get().to(get_categories))
             .route("/greet", web::get().to(greet))
             .route("/api/payments", web::get().to(get_recent_payments))

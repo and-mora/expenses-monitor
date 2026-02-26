@@ -1,4 +1,6 @@
 use crate::helpers::spawn_app;
+use base64::Engine;
+use chrono;
 use uuid::Uuid;
 
 #[tokio::test]
@@ -13,18 +15,30 @@ async fn create_wallet_returns_200() {
     }
     "#;
 
-    let response = app.create_wallet(body).await;
+    let header = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(r#"{"alg":"none"}"#);
+    let payload = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(
+        serde_json::json!({
+            "sub": "test-sub",
+            "exp": (chrono::Utc::now().timestamp() + 60)
+        })
+        .to_string(),
+    );
+    let token = format!("{}.{}.", header, payload);
+
+    let response = app.create_wallet_with_auth(body, &token).await;
 
     // Assert
     assert_eq!(200, response.status().as_u16());
 
-    let saved =
-        sqlx::query!("SELECT name as \"name!\" FROM expenses.wallets WHERE name = 'My Wallet'")
-            .fetch_one(&app.db_pool)
-            .await
-            .expect("Failed to fetch saved wallet");
+    let saved = sqlx::query!(
+        "SELECT name as \"name!\", user_id FROM expenses.wallets WHERE name = 'My Wallet'",
+    )
+    .fetch_one(&app.db_pool)
+    .await
+    .expect("Failed to fetch saved wallet");
 
     assert_eq!(saved.name.as_str(), "My Wallet");
+    assert_eq!(saved.user_id.as_deref(), Some("test-sub"));
 }
 
 #[tokio::test]
@@ -32,10 +46,20 @@ async fn create_wallet_returns_409_when_duplicate() {
     // Arrange
     let app = spawn_app().await;
     let body = r#"{"name": "My Wallet"}"#;
-    app.create_wallet(body).await;
+    let header = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(r#"{"alg":"none"}"#);
+    let payload = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(
+        serde_json::json!({
+            "sub": "dup-sub",
+            "exp": (chrono::Utc::now().timestamp() + 60)
+        })
+        .to_string(),
+    );
+    let token = format!("{}.{}.", header, payload);
+
+    app.create_wallet_with_auth(body, &token).await;
 
     // Act
-    let response = app.create_wallet(body).await;
+    let response = app.create_wallet_with_auth(body, &token).await;
 
     // Assert
     assert_eq!(409, response.status().as_u16());
@@ -47,11 +71,21 @@ async fn get_wallets_returns_list() {
     let app = spawn_app().await;
     let body1 = r#"{"name": "Wallet A"}"#;
     let body2 = r#"{"name": "Wallet B"}"#;
-    app.create_wallet(body1).await;
-    app.create_wallet(body2).await;
+    let header = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(r#"{"alg":"none"}"#);
+    let payload = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(
+        serde_json::json!({
+            "sub": "list-sub",
+            "exp": (chrono::Utc::now().timestamp() + 60)
+        })
+        .to_string(),
+    );
+    let token = format!("{}.{}.", header, payload);
+
+    app.create_wallet_with_auth(body1, &token).await;
+    app.create_wallet_with_auth(body2, &token).await;
 
     // Act
-    let response = app.get_wallets().await;
+    let response = app.get_wallets_with_auth(&token).await;
 
     // Assert
     assert_eq!(200, response.status().as_u16());
@@ -65,13 +99,23 @@ async fn delete_wallet_returns_200() {
     // Arrange
     let app = spawn_app().await;
     let body = r#"{"name": "To Delete"}"#;
-    let create_response = app.create_wallet(body).await;
+    let header = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(r#"{"alg":"none"}"#);
+    let payload = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(
+        serde_json::json!({
+            "sub": "del-sub",
+            "exp": (chrono::Utc::now().timestamp() + 60)
+        })
+        .to_string(),
+    );
+    let token = format!("{}.{}.", header, payload);
+
+    let create_response = app.create_wallet_with_auth(body, &token).await;
     let json: serde_json::Value = create_response.json().await.unwrap();
     let id_str = json["id"].as_str().unwrap();
     let id = Uuid::parse_str(id_str).unwrap();
 
     // Act
-    let response = app.delete_wallet(id).await;
+    let response = app.delete_wallet_with_auth(id, &token).await;
 
     // Assert
     assert_eq!(200, response.status().as_u16());

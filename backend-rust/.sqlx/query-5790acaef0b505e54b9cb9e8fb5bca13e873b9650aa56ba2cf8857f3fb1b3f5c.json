@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        INSERT INTO expenses.wallets (name)\n        VALUES ($1)\n        RETURNING id, name as \"name!\"\n        ",
+  "query": "\n        SELECT id, name as \"name!\", user_id\n        FROM expenses.wallets\n        WHERE user_id = $1\n        ORDER BY name\n        ",
   "describe": {
     "columns": [
       {
@@ -12,17 +12,23 @@
         "ordinal": 1,
         "name": "name!",
         "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "user_id",
+        "type_info": "Text"
       }
     ],
     "parameters": {
       "Left": [
-        "Varchar"
+        "Text"
       ]
     },
     "nullable": [
       false,
+      true,
       true
     ]
   },
-  "hash": "d7449f3730c5eec9c89b7d664af8091d6f3cbb71a23558961b68b6143b60b57f"
+  "hash": "5790acaef0b505e54b9cb9e8fb5bca13e873b9650aa56ba2cf8857f3fb1b3f5c"
 }

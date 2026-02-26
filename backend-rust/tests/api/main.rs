@@ -1,3 +1,4 @@
+mod auth;
 mod balance;
 mod balance_test;
 mod health_check;
