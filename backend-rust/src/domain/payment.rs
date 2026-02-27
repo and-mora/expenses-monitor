@@ -10,4 +10,5 @@ pub struct Payment {
     pub merchant_name: PaymentMerchant,
     pub accounting_date: NaiveDateTime,
     pub wallet_id: Option<Uuid>,
+    pub user_id: String,
 }
