@@ -21,9 +21,9 @@ postgresql:
       registry: docker.io
       repository: bitnamilegacy/postgres-exporter
       tag: "0.15.0-debian-12-r39"
-    # configure ServiceMonitor for Prometheus Operator (if installed)
     serviceMonitor:
       enabled: true
       interval: 30s
       additionalLabels: {}
-  
+    collectors:
+      stat_statements: true
