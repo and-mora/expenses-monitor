@@ -91,14 +91,16 @@ impl TryFrom<Json<PaymentDto>> for Payment {
 )]
 pub async fn create_payment(
     payload: Json<PaymentDto>,
+    user: crate::auth::AuthenticatedUser,
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
+    let user_id = user.sub;
     let tags = payload.0.tags.clone();
     let wallet_name_input = payload.0.wallet.clone();
 
     // Resolve wallet_id from wallet name
     let wallet_id = if let Some(name) = &wallet_name_input {
-        match get_wallet_id_by_name(name, connection_pool.get_ref()).await {
+        match get_wallet_id_by_name(name, connection_pool.get_ref(), &user_id).await {
             Ok(Some(id)) => Some(id),
             Ok(None) => {
                 tracing::error!("Wallet not found: {}", name);
@@ -197,12 +199,12 @@ pub async fn create_payment(
     };
     // category_id already set on domain model via try_from_dto
 
-    match insert_payment(&payment, connection_pool.get_ref()).await {
+    match insert_payment(&payment, connection_pool.get_ref(), &user_id).await {
         Ok(payment_id) => {
             // Insert tags if provided
             if let Some(tags) = tags {
                 if let Err(e) =
-                    insert_payment_tags(payment_id, tags, connection_pool.get_ref()).await
+                    insert_payment_tags(payment_id, tags, connection_pool.get_ref(), &user_id).await
                 {
                     tracing::error!("Failed to insert tags: {:?}", e);
                     // Continue anyway, tags are optional
@@ -211,7 +213,7 @@ pub async fn create_payment(
 
             // Fetch wallet name if wallet_id is provided
             let wallet_name = if let Some(wid) = wallet_id {
-                get_wallet_name(wid, connection_pool.get_ref())
+                get_wallet_name(wid, connection_pool.get_ref(), &user_id)
                     .await
                     .ok()
                     .flatten()
@@ -220,7 +222,7 @@ pub async fn create_payment(
             };
 
             // Fetch tags for response
-            let response_tags = get_payment_tags(payment_id, connection_pool.get_ref())
+            let response_tags = get_payment_tags(payment_id, connection_pool.get_ref(), &user_id)
                 .await
                 .unwrap_or_default();
 
@@ -280,9 +282,13 @@ pub async fn create_payment(
     name = "Inserting a new payment in the database",
     skip(payment, connection_pool)
 )]
-async fn insert_payment(payment: &Payment, connection_pool: &PgPool) -> Result<Uuid, Error> {
+async fn insert_payment(
+    payment: &Payment,
+    connection_pool: &PgPool,
+    user_id: &str,
+) -> Result<Uuid, Error> {
     let row = sqlx::query(
-        "insert into expenses.payments (category_id, description, merchant_name, accounting_date, amount, wallet_id) values ($1, $2, $3, $4, $5, $6) RETURNING id",
+        "insert into expenses.payments (category_id, description, merchant_name, accounting_date, amount, wallet_id, user_id) values ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
     )
     .bind(payment.category_id)
     .bind(payment.description.as_ref().map(|d| d.as_ref()))
@@ -290,6 +296,7 @@ async fn insert_payment(payment: &Payment, connection_pool: &PgPool) -> Result<U
     .bind(payment.accounting_date)
     .bind(payment.amount_in_cents)
     .bind(payment.wallet_id)
+    .bind(user_id)
     .fetch_one(connection_pool)
     .await
     .map_err(|e| {
@@ -309,11 +316,13 @@ async fn insert_payment(payment: &Payment, connection_pool: &PgPool) -> Result<U
 )]
 pub async fn delete_payment(
     path: web::Path<Uuid>,
+    user: crate::auth::AuthenticatedUser,
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
     let payment_id = path.into_inner();
+    let user_id = user.sub;
 
-    match delete_payment_query(connection_pool.get_ref(), payment_id).await {
+    match delete_payment_query(connection_pool.get_ref(), payment_id, &user_id).await {
         Ok(_) => HttpResponse::NoContent().finish(),
         Err(e) => {
             tracing::error!("Failed to execute query: {:?}", e);
@@ -326,11 +335,16 @@ pub async fn delete_payment(
     name = "Deleting a payment in the database",
     skip(payment_id, connection_pool)
 )]
-async fn delete_payment_query(connection_pool: &PgPool, payment_id: Uuid) -> Result<(), Error> {
+async fn delete_payment_query(
+    connection_pool: &PgPool,
+    payment_id: Uuid,
+    user_id: &str,
+) -> Result<(), Error> {
     // First, delete all associated tags to avoid foreign key constraint violation
     sqlx::query!(
-        "delete from expenses.payments_tags where payment_id = $1",
-        payment_id
+        "delete from expenses.payments_tags where payment_id = $1 AND user_id = $2",
+        payment_id,
+        user_id
     )
     .execute(connection_pool)
     .await
@@ -340,13 +354,17 @@ async fn delete_payment_query(connection_pool: &PgPool, payment_id: Uuid) -> Res
     })?;
 
     // Then delete the payment itself
-    sqlx::query!("delete from expenses.payments where id = $1", payment_id)
-        .execute(connection_pool)
-        .await
-        .map_err(|e| {
-            tracing::error!("Failed to delete payment: {:?}", e);
-            e
-        })?;
+    sqlx::query!(
+        "delete from expenses.payments where id = $1 AND user_id = $2",
+        payment_id,
+        user_id
+    )
+    .execute(connection_pool)
+    .await
+    .map_err(|e| {
+        tracing::error!("Failed to delete payment: {:?}", e);
+        e
+    })?;
     Ok(())
 }
 
@@ -362,18 +380,20 @@ async fn delete_payment_query(connection_pool: &PgPool, payment_id: Uuid) -> Res
 pub async fn update_payment(
     path: web::Path<Uuid>,
     payload: Json<PaymentDto>,
+    user: crate::auth::AuthenticatedUser,
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
     let payment_id = path.into_inner();
     let tags = payload.0.tags.clone();
     let wallet_name_input = payload.0.wallet.clone();
+    let user_id = user.sub;
 
     // Audit log: log payment modification
     tracing::info!("Updating payment with id: {}", payment_id);
 
     // Resolve wallet_id from wallet name
     let wallet_id = if let Some(name) = &wallet_name_input {
-        match get_wallet_id_by_name(name, connection_pool.get_ref()).await {
+        match get_wallet_id_by_name(name, connection_pool.get_ref(), &user_id).await {
             Ok(Some(id)) => Some(id),
             Ok(None) => {
                 tracing::error!("Wallet not found: {}", name);
@@ -471,10 +491,12 @@ pub async fn update_payment(
     };
 
     // Update payment in database
-    match update_payment_query(&payment, payment_id, connection_pool.get_ref()).await {
+    match update_payment_query(&payment, payment_id, connection_pool.get_ref(), &user_id).await {
         Ok(_) => {
             // Delete existing tags
-            if let Err(e) = delete_payment_tags(payment_id, connection_pool.get_ref()).await {
+            if let Err(e) =
+                delete_payment_tags(payment_id, connection_pool.get_ref(), &user_id).await
+            {
                 tracing::error!("Failed to delete existing tags: {:?}", e);
                 return HttpResponse::InternalServerError().finish();
             }
@@ -482,7 +504,7 @@ pub async fn update_payment(
             // Insert new tags if provided
             if let Some(tags) = tags {
                 if let Err(e) =
-                    insert_payment_tags(payment_id, tags, connection_pool.get_ref()).await
+                    insert_payment_tags(payment_id, tags, connection_pool.get_ref(), &user_id).await
                 {
                     tracing::error!("Failed to insert tags: {:?}", e);
                     return HttpResponse::InternalServerError().finish();
@@ -491,7 +513,7 @@ pub async fn update_payment(
 
             // Fetch wallet name if wallet_id is provided
             let wallet_name = if let Some(wid) = wallet_id {
-                get_wallet_name(wid, connection_pool.get_ref())
+                get_wallet_name(wid, connection_pool.get_ref(), &user_id)
                     .await
                     .ok()
                     .flatten()
@@ -500,7 +522,7 @@ pub async fn update_payment(
             };
 
             // Fetch tags for response
-            let response_tags = get_payment_tags(payment_id, connection_pool.get_ref())
+            let response_tags = get_payment_tags(payment_id, connection_pool.get_ref(), &user_id)
                 .await
                 .unwrap_or_default();
 
@@ -561,6 +583,7 @@ async fn update_payment_query(
     payment: &Payment,
     payment_id: Uuid,
     connection_pool: &PgPool,
+    user_id: &str,
 ) -> Result<(), Error> {
     sqlx::query(
         r#"
@@ -571,7 +594,7 @@ async fn update_payment_query(
                 accounting_date = $4,
                 amount = $5,
                 wallet_id = $6
-            WHERE id = $7
+            WHERE id = $7 AND user_id = $8
         "#,
     )
     .bind(payment.category_id)
@@ -581,6 +604,7 @@ async fn update_payment_query(
     .bind(payment.amount_in_cents)
     .bind(payment.wallet_id)
     .bind(payment_id)
+    .bind(user_id)
     .execute(connection_pool)
     .await
     .map_err(|e| {
@@ -591,10 +615,15 @@ async fn update_payment_query(
 }
 
 #[tracing::instrument(name = "Deleting payment tags", skip(connection_pool))]
-async fn delete_payment_tags(payment_id: Uuid, connection_pool: &PgPool) -> Result<(), Error> {
+async fn delete_payment_tags(
+    payment_id: Uuid,
+    connection_pool: &PgPool,
+    user_id: &str,
+) -> Result<(), Error> {
     sqlx::query!(
-        "DELETE FROM expenses.payments_tags WHERE payment_id = $1",
-        payment_id
+        "DELETE FROM expenses.payments_tags WHERE payment_id = $1 AND user_id = $2",
+        payment_id,
+        user_id
     )
     .execute(connection_pool)
     .await
@@ -966,17 +995,19 @@ async fn insert_payment_tags(
     payment_id: Uuid,
     tags: Vec<TagDto>,
     connection_pool: &PgPool,
+    user_id: &str,
 ) -> Result<(), Error> {
     for tag in tags {
         // Insert directly into payments_tags (denormalized structure)
         sqlx::query!(
             r#"
-            INSERT INTO expenses.payments_tags (payment_id, key, value)
-            VALUES ($1, $2, $3)
+            INSERT INTO expenses.payments_tags (payment_id, key, value, user_id)
+            VALUES ($1, $2, $3, $4)
             "#,
             payment_id,
             tag.key,
-            tag.value
+            tag.value,
+            user_id
         )
         .execute(connection_pool)
         .await?;
@@ -988,14 +1019,16 @@ async fn insert_payment_tags(
 async fn get_payment_tags(
     payment_id: Uuid,
     connection_pool: &PgPool,
+    user_id: &str,
 ) -> Result<Vec<TagResponseDto>, Error> {
     let tags = sqlx::query!(
         r#"
         SELECT id, key, value
         FROM expenses.payments_tags
-        WHERE payment_id = $1
+        WHERE payment_id = $1 AND user_id = $2
         "#,
-        payment_id
+        payment_id,
+        user_id
     )
     .fetch_all(connection_pool)
     .await?
@@ -1014,14 +1047,16 @@ async fn get_payment_tags(
 async fn get_wallet_name(
     wallet_id: Uuid,
     connection_pool: &PgPool,
+    user_id: &str,
 ) -> Result<Option<String>, Error> {
     let result = sqlx::query!(
         r#"
         SELECT name as "name!"
         FROM expenses.wallets
-        WHERE id = $1
+        WHERE id = $1 AND user_id = $2
         "#,
-        wallet_id
+        wallet_id,
+        user_id
     )
     .fetch_optional(connection_pool)
     .await?;

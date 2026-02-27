@@ -61,7 +61,7 @@ impl FromRequest for AuthenticatedUser {
             }
         }
 
-        let sub = token_claims.sub.clone();
+        let sub = token_claims.sub;
 
         ready(Ok(AuthenticatedUser { sub }))
     }

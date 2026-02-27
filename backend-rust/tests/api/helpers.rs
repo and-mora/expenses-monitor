@@ -41,6 +41,7 @@ pub struct TestApp {
     pub address: String,
     pub db_pool: PgPool,
     pub auth_token: String,
+    pub auth_sub: String,
 }
 
 impl TestApp {
@@ -108,6 +109,7 @@ impl TestApp {
         reqwest::Client::new()
             .post(format!("{}/api/payments", &self.address))
             .header("Content-Type", "application/json")
+            .header("Authorization", format!("Bearer {}", self.auth_token))
             .body(body)
             .send()
             .await
@@ -125,6 +127,16 @@ impl TestApp {
     pub async fn get_payments(&self, query: &str) -> reqwest::Response {
         reqwest::Client::new()
             .get(format!("{}/api/payments{}", &self.address, query))
+            .header("Authorization", format!("Bearer {}", self.auth_token))
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
+
+    pub async fn get_payments_with_auth(&self, query: &str, token: &str) -> reqwest::Response {
+        reqwest::Client::new()
+            .get(format!("{}/api/payments{}", &self.address, query))
+            .header("Authorization", format!("Bearer {}", token))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -133,6 +145,7 @@ impl TestApp {
     pub async fn get_balance(&self) -> reqwest::Response {
         reqwest::Client::new()
             .get(format!("{}/api/balance", &self.address))
+            .header("Authorization", format!("Bearer {}", self.auth_token))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -141,6 +154,7 @@ impl TestApp {
     pub async fn get_balance_with_query(&self, query: &str) -> reqwest::Response {
         reqwest::Client::new()
             .get(format!("{}/api/balance{}", &self.address, query))
+            .header("Authorization", format!("Bearer {}", self.auth_token))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -170,6 +184,67 @@ impl TestApp {
 
     pub async fn post_wallet(&self, body: &str) -> reqwest::Response {
         self.create_wallet(body).await
+    }
+
+    pub async fn post_payment_with_auth(&self, body: &str, token: &str) -> reqwest::Response {
+        // Mirror post_payment but allow custom token
+        let mut payload: serde_json::Value = match serde_json::from_str(body) {
+            Ok(v) => v,
+            Err(_) => {
+                return reqwest::Client::new()
+                    .post(format!("{}/api/payments", &self.address))
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", format!("Bearer {}", token))
+                    .body(body.to_owned())
+                    .send()
+                    .await
+                    .expect("Failed to execute request.");
+            }
+        };
+
+        if payload.get("categoryId").is_none() {
+            if let Some(cat_val) = payload.get("category") {
+                if let Some(cat_name) = cat_val.as_str() {
+                    let cat_trimmed = cat_name.trim();
+                    if !cat_trimmed.is_empty() {
+                        if let Ok(row) = sqlx::query_scalar!(
+                            "SELECT id FROM expenses.categories WHERE lower(name) = lower($1)",
+                            cat_trimmed
+                        )
+                        .fetch_optional(&self.db_pool)
+                        .await
+                        {
+                            let id = if let Some(id) = row { id } else {
+                                sqlx::query_scalar!(
+                                    "INSERT INTO expenses.categories (name) VALUES ($1) RETURNING id",
+                                    cat_trimmed
+                                )
+                                .fetch_one(&self.db_pool)
+                                .await
+                                .expect("Failed to insert category in test helper")
+                            };
+                            if let Some(m) = payload.as_object_mut() {
+                                m.remove("category");
+                                m.insert(
+                                    "categoryId".to_string(),
+                                    serde_json::Value::String(id.to_string()),
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        let body = serde_json::to_string(&payload).expect("Failed to serialize payload");
+        reqwest::Client::new()
+            .post(format!("{}/api/payments", &self.address))
+            .header("Content-Type", "application/json")
+            .header("Authorization", format!("Bearer {}", token))
+            .body(body)
+            .send()
+            .await
+            .expect("Failed to execute request.")
     }
 
     pub async fn get_wallets(&self) -> reqwest::Response {
@@ -211,6 +286,7 @@ impl TestApp {
     pub async fn delete_payment(&self, id: uuid::Uuid) -> reqwest::Response {
         reqwest::Client::new()
             .delete(format!("{}/api/payments/{}", &self.address, id))
+            .header("Authorization", format!("Bearer {}", self.auth_token))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -272,6 +348,7 @@ impl TestApp {
         reqwest::Client::new()
             .put(format!("{}/api/payments/{}", &self.address, id))
             .header("Content-Type", "application/json")
+            .header("Authorization", format!("Bearer {}", self.auth_token))
             .body(body)
             .send()
             .await
@@ -319,6 +396,7 @@ pub async fn spawn_app() -> TestApp {
         address,
         db_pool: get_connection_pool(&configuration),
         auth_token: token,
+        auth_sub: sub,
     }
 }
 
