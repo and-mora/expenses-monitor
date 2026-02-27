@@ -264,7 +264,7 @@ pub async fn create_payment(
                 accounting_date: payment.accounting_date,
                 category: category_name,
                 category_id: Some(payment.category_id),
-                category_icon: category_icon,
+                category_icon,
                 wallet: wallet_name,
                 tags: response_tags,
             };
@@ -560,7 +560,7 @@ pub async fn update_payment(
                 accounting_date: payment.accounting_date,
                 category: category_name,
                 category_id: Some(payment.category_id),
-                category_icon: category_icon,
+                category_icon,
                 wallet: wallet_name,
                 tags: response_tags,
             };
