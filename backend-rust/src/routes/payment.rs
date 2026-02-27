@@ -205,8 +205,13 @@ pub async fn create_payment(
         Ok(payment_id) => {
             // Insert tags if provided
             if let Some(tags) = tags {
-                if let Err(e) =
-                    insert_payment_tags(payment_id, tags, connection_pool.get_ref(), payment.user_id.as_str()).await
+                if let Err(e) = insert_payment_tags(
+                    payment_id,
+                    tags,
+                    connection_pool.get_ref(),
+                    payment.user_id.as_str(),
+                )
+                .await
                 {
                     tracing::error!("Failed to insert tags: {:?}", e);
                     // Continue anyway, tags are optional
@@ -224,9 +229,13 @@ pub async fn create_payment(
             };
 
             // Fetch tags for response
-            let response_tags = get_payment_tags(payment_id, connection_pool.get_ref(), payment.user_id.as_str())
-                .await
-                .unwrap_or_default();
+            let response_tags = get_payment_tags(
+                payment_id,
+                connection_pool.get_ref(),
+                payment.user_id.as_str(),
+            )
+            .await
+            .unwrap_or_default();
 
             // Fetch category name and icon in a single query to avoid duplicate DB hits
             let (category_name, category_icon): (String, Option<String>) = match sqlx::query_as!(
@@ -274,10 +283,7 @@ pub async fn create_payment(
     name = "Inserting a new payment in the database",
     skip(payment, connection_pool)
 )]
-async fn insert_payment(
-    payment: &Payment,
-    connection_pool: &PgPool,
-) -> Result<Uuid, Error> {
+async fn insert_payment(payment: &Payment, connection_pool: &PgPool) -> Result<Uuid, Error> {
     let row = sqlx::query(
         "insert into expenses.payments (category_id, description, merchant_name, accounting_date, amount, wallet_id, user_id) values ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
     )
@@ -499,8 +505,13 @@ pub async fn update_payment(
 
             // Insert new tags if provided
             if let Some(tags) = tags {
-                if let Err(e) =
-                    insert_payment_tags(payment_id, tags, connection_pool.get_ref(), user_id.as_str()).await
+                if let Err(e) = insert_payment_tags(
+                    payment_id,
+                    tags,
+                    connection_pool.get_ref(),
+                    user_id.as_str(),
+                )
+                .await
                 {
                     tracing::error!("Failed to insert tags: {:?}", e);
                     return HttpResponse::InternalServerError().finish();
@@ -518,9 +529,10 @@ pub async fn update_payment(
             };
 
             // Fetch tags for response
-            let response_tags = get_payment_tags(payment_id, connection_pool.get_ref(), user_id.as_str())
-                .await
-                .unwrap_or_default();
+            let response_tags =
+                get_payment_tags(payment_id, connection_pool.get_ref(), user_id.as_str())
+                    .await
+                    .unwrap_or_default();
 
             // Fetch category name and icon in a single query to avoid duplicate DB hits
             let (category_name, category_icon): (String, Option<String>) = match sqlx::query_as!(

@@ -214,7 +214,9 @@ impl TestApp {
                         .fetch_optional(&self.db_pool)
                         .await
                         {
-                            let id = if let Some(id) = row { id } else {
+                            let id = if let Some(id) = row {
+                                id
+                            } else {
                                 sqlx::query_scalar!(
                                     "INSERT INTO expenses.categories (name) VALUES ($1) RETURNING id",
                                     cat_trimmed
