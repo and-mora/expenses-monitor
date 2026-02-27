@@ -238,15 +238,14 @@ pub async fn create_payment(
             .unwrap_or_default();
 
             // Fetch category name and icon in a single query to avoid duplicate DB hits
-            let (category_name, category_icon): (String, Option<String>) = match sqlx::query_as!(
-                (String, Option<String>),
+            let (category_name, category_icon): (String, Option<String>) = match sqlx::query!(
                 "SELECT name, icon FROM expenses.categories WHERE id = $1",
                 payment.category_id
             )
             .fetch_optional(connection_pool.get_ref())
             .await
             {
-                Ok(Some((name, icon))) => (name, icon),
+                Ok(Some(row)) => (row.name, row.icon),
                 Ok(None) => {
                     tracing::error!("Category not found for response: {}", payment.category_id);
                     (String::new(), None)
@@ -535,15 +534,14 @@ pub async fn update_payment(
                     .unwrap_or_default();
 
             // Fetch category name and icon in a single query to avoid duplicate DB hits
-            let (category_name, category_icon): (String, Option<String>) = match sqlx::query_as!(
-                (String, Option<String>),
+            let (category_name, category_icon): (String, Option<String>) = match sqlx::query!(
                 "SELECT name, icon FROM expenses.categories WHERE id = $1",
                 payment.category_id
             )
             .fetch_optional(connection_pool.get_ref())
             .await
             {
-                Ok(Some((name, icon))) => (name, icon),
+                Ok(Some(row)) => (row.name, row.icon),
                 Ok(None) => {
                     tracing::error!("Category not found for response: {}", payment.category_id);
                     (String::new(), None)
