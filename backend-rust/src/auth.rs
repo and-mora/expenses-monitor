@@ -14,9 +14,8 @@ pub struct AuthenticatedUser {
 struct Claims {
     pub sub: String,
     pub exp: Option<i64>,
-    pub nbf: Option<i64>,
-    pub aud: Option<serde_json::Value>,
-    // roles/scope can be added later if needed
+    // `nbf` and `aud` removed because they are not currently used by
+    // the application. Reintroduce them when explicit validation is required.
 }
 
 impl FromRequest for AuthenticatedUser {

@@ -1,6 +1,5 @@
 use crate::helpers::spawn_app;
 use base64::Engine;
-use chrono;
 use uuid::Uuid;
 
 #[tokio::test]
