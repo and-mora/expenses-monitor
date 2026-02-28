@@ -41,6 +41,7 @@ pub struct TestApp {
     pub address: String,
     pub db_pool: PgPool,
     pub auth_token: String,
+    pub auth_sub: String,
 }
 
 impl TestApp {
@@ -108,6 +109,7 @@ impl TestApp {
         reqwest::Client::new()
             .post(format!("{}/api/payments", &self.address))
             .header("Content-Type", "application/json")
+            .header("Authorization", format!("Bearer {}", self.auth_token))
             .body(body)
             .send()
             .await
@@ -125,6 +127,7 @@ impl TestApp {
     pub async fn get_payments(&self, query: &str) -> reqwest::Response {
         reqwest::Client::new()
             .get(format!("{}/api/payments{}", &self.address, query))
+            .header("Authorization", format!("Bearer {}", self.auth_token))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -133,6 +136,7 @@ impl TestApp {
     pub async fn get_balance(&self) -> reqwest::Response {
         reqwest::Client::new()
             .get(format!("{}/api/balance", &self.address))
+            .header("Authorization", format!("Bearer {}", self.auth_token))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -141,6 +145,7 @@ impl TestApp {
     pub async fn get_balance_with_query(&self, query: &str) -> reqwest::Response {
         reqwest::Client::new()
             .get(format!("{}/api/balance{}", &self.address, query))
+            .header("Authorization", format!("Bearer {}", self.auth_token))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -172,28 +177,10 @@ impl TestApp {
         self.create_wallet(body).await
     }
 
-    pub async fn get_wallets(&self) -> reqwest::Response {
-        reqwest::Client::new()
-            .get(format!("{}/api/wallets", &self.address))
-            .header("Authorization", format!("Bearer {}", self.auth_token))
-            .send()
-            .await
-            .expect("Failed to execute request.")
-    }
-
     pub async fn get_wallets_with_auth(&self, token: &str) -> reqwest::Response {
         reqwest::Client::new()
             .get(format!("{}/api/wallets", &self.address))
             .header("Authorization", format!("Bearer {}", token))
-            .send()
-            .await
-            .expect("Failed to execute request.")
-    }
-
-    pub async fn delete_wallet(&self, id: uuid::Uuid) -> reqwest::Response {
-        reqwest::Client::new()
-            .delete(format!("{}/api/wallets/{}", &self.address, id))
-            .header("Authorization", format!("Bearer {}", self.auth_token))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -211,6 +198,7 @@ impl TestApp {
     pub async fn delete_payment(&self, id: uuid::Uuid) -> reqwest::Response {
         reqwest::Client::new()
             .delete(format!("{}/api/payments/{}", &self.address, id))
+            .header("Authorization", format!("Bearer {}", self.auth_token))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -272,6 +260,7 @@ impl TestApp {
         reqwest::Client::new()
             .put(format!("{}/api/payments/{}", &self.address, id))
             .header("Content-Type", "application/json")
+            .header("Authorization", format!("Bearer {}", self.auth_token))
             .body(body)
             .send()
             .await
@@ -319,6 +308,7 @@ pub async fn spawn_app() -> TestApp {
         address,
         db_pool: get_connection_pool(&configuration),
         auth_token: token,
+        auth_sub: sub,
     }
 }
 

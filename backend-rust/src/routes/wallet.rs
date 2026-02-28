@@ -40,7 +40,15 @@ pub async fn create_wallet(
         Err(_) => return HttpResponse::BadRequest().finish(),
     };
 
-    match insert_wallet(&wallet_name, &user.sub, connection_pool.deref()).await {
+    let user_id = user.sub;
+
+    let input_wallet = Wallet {
+        id: None,
+        user_id,
+        name: wallet_name,
+    };
+
+    match insert_wallet(&input_wallet, connection_pool.deref()).await {
         Ok(wallet) => HttpResponse::Ok().json(WalletResponseDto {
             id: wallet.id.unwrap(),
             name: wallet.name.as_ref().to_string(),
@@ -58,20 +66,16 @@ pub async fn create_wallet(
     }
 }
 
-#[tracing::instrument(name = "Inserting wallet in database", skip(name, pool))]
-async fn insert_wallet(
-    name: &WalletName,
-    user_id: &str,
-    pool: &PgPool,
-) -> Result<Wallet, sqlx::Error> {
+#[tracing::instrument(name = "Inserting wallet in database", skip(wallet, pool))]
+async fn insert_wallet(wallet: &Wallet, pool: &PgPool) -> Result<Wallet, sqlx::Error> {
     let row = sqlx::query!(
         r#"
         INSERT INTO expenses.wallets (name, user_id)
         VALUES ($1, $2)
         RETURNING id, name as "name!", user_id
         "#,
-        name.as_ref(),
-        user_id
+        wallet.name.as_ref(),
+        wallet.user_id
     )
     .fetch_one(pool)
     .await?;
@@ -88,7 +92,9 @@ pub async fn get_wallets(
     user: crate::auth::AuthenticatedUser,
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
-    match get_wallets_from_db(&user.sub, connection_pool.deref()).await {
+    let user_id = user.sub;
+
+    match get_wallets_from_db(&user_id, connection_pool.deref()).await {
         Ok(wallets) => {
             let dtos: Vec<WalletResponseDto> = wallets
                 .into_iter()
@@ -135,10 +141,13 @@ async fn get_wallets_from_db(user_id: &str, pool: &PgPool) -> Result<Vec<Wallet>
 #[tracing::instrument(name = "Deleting a wallet", skip(path, connection_pool))]
 pub async fn delete_wallet(
     path: web::Path<Uuid>,
+    user: crate::auth::AuthenticatedUser,
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
     let wallet_id = path.into_inner();
-    match delete_wallet_from_db(wallet_id, connection_pool.deref()).await {
+    let user_id = user.sub;
+
+    match delete_wallet_from_db(wallet_id, connection_pool.deref(), &user_id).await {
         Ok(_) => HttpResponse::Ok().finish(),
         Err(e) => {
             tracing::error!("Failed to execute query: {:?}", e);
@@ -154,13 +163,14 @@ pub async fn delete_wallet(
 }
 
 #[tracing::instrument(name = "Deleting wallet from database", skip(pool))]
-async fn delete_wallet_from_db(id: Uuid, pool: &PgPool) -> Result<(), sqlx::Error> {
+async fn delete_wallet_from_db(id: Uuid, pool: &PgPool, user_id: &str) -> Result<(), sqlx::Error> {
     sqlx::query!(
         r#"
         DELETE FROM expenses.wallets
-        WHERE id = $1
+        WHERE id = $1 AND user_id = $2
         "#,
-        id
+        id,
+        user_id
     )
     .execute(pool)
     .await?;
@@ -168,14 +178,19 @@ async fn delete_wallet_from_db(id: Uuid, pool: &PgPool) -> Result<(), sqlx::Erro
 }
 
 #[tracing::instrument(name = "Get wallet ID by name", skip(pool))]
-pub async fn get_wallet_id_by_name(name: &str, pool: &PgPool) -> Result<Option<Uuid>, sqlx::Error> {
+pub async fn get_wallet_id_by_name(
+    name: &str,
+    pool: &PgPool,
+    user_id: &str,
+) -> Result<Option<Uuid>, sqlx::Error> {
     let result = sqlx::query!(
         r#"
         SELECT id
         FROM expenses.wallets
-        WHERE name = $1
+        WHERE name = $1 AND user_id = $2
         "#,
-        name
+        name,
+        user_id
     )
     .fetch_optional(pool)
     .await?;
