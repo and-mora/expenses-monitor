@@ -82,7 +82,7 @@ async fn insert_wallet(wallet: &Wallet, pool: &PgPool) -> Result<Wallet, sqlx::E
 
     Ok(Wallet {
         id: Some(row.id),
-        user_id: row.user_id.expect("user_id missing from DB"),
+        user_id: row.user_id,
         name: WalletName::parse(row.name).expect("Stored name should be valid"),
     })
 }
@@ -130,7 +130,7 @@ async fn get_wallets_from_db(user_id: &str, pool: &PgPool) -> Result<Vec<Wallet>
         .into_iter()
         .map(|row| Wallet {
             id: Some(row.id),
-            user_id: row.user_id.expect("user_id missing from DB"),
+            user_id: row.user_id,
             name: WalletName::parse(row.name).expect("Stored name should be valid"),
         })
         .collect();
