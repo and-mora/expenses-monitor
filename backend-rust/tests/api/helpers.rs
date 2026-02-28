@@ -131,7 +131,7 @@ impl TestApp {
             .send()
             .await
             .expect("Failed to execute request.")
-    }    
+    }
 
     pub async fn get_balance(&self) -> reqwest::Response {
         reqwest::Client::new()
@@ -176,10 +176,6 @@ impl TestApp {
     pub async fn post_wallet(&self, body: &str) -> reqwest::Response {
         self.create_wallet(body).await
     }
-
-    
-
-    
 
     pub async fn get_wallets_with_auth(&self, token: &str) -> reqwest::Response {
         reqwest::Client::new()
