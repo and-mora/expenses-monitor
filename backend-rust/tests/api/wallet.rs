@@ -37,7 +37,7 @@ async fn create_wallet_returns_200() {
     .expect("Failed to fetch saved wallet");
 
     assert_eq!(saved.name.as_str(), "My Wallet");
-    assert_eq!(saved.user_id.as_deref(), Some("test-sub"));
+    assert_eq!(saved.user_id.as_str(), "test-sub");
 }
 
 #[tokio::test]
