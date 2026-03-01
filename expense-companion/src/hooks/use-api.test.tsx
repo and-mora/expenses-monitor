@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Payment } from '@/types/api';
 import {
   usePayments,
   useRecentPayments,
@@ -355,10 +356,11 @@ describe('API Hooks - Pagination', () => {
 
   describe('usePayment', () => {
     it('should fetch a single payment by id', async () => {
-      const mockPayment = {
+      const mockPayment: Payment = {
         id: 'abc-123',
         merchantName: 'Test Payment',
         amountInCents: -1000,
+        categoryId: 'food',
         category: 'food',
         accountingDate: '2026-01-31',
         description: 'Test description',
@@ -366,7 +368,7 @@ describe('API Hooks - Pagination', () => {
         tags: [],
       };
 
-      vi.mocked(apiClient.getPayment).mockResolvedValue(mockPayment as any);
+      vi.mocked(apiClient.getPayment).mockResolvedValue(mockPayment);
 
       const { result } = renderHook(() => usePayment('abc-123'), {
         wrapper: createWrapper(),
