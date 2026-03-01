@@ -383,7 +383,6 @@ pub async fn update_payment(
     let user_id = user.sub;
     let tags = payload.0.tags.clone();
     let wallet_name_input = payload.0.wallet.clone();
-    let user_id = user.sub;
 
     // Audit log: log payment modification
     tracing::info!("Updating payment with id: {}", payment_id);
