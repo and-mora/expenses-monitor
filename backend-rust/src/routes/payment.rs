@@ -1118,14 +1118,14 @@ async fn get_payment_from_db(
     .await?;
 
     if let Some(record) = row {
-        let tags: Vec<TagResponseDto> = match serde_json::from_value(record.tags.unwrap_or_default())
-        {
-            Ok(tags) => tags,
-            Err(e) => {
-                tracing::error!("Failed to parse tags for payment {}: {:?}", payment_id, e);
-                Vec::new()
-            }
-        };
+        let tags: Vec<TagResponseDto> =
+            match serde_json::from_value(record.tags.unwrap_or_default()) {
+                Ok(tags) => tags,
+                Err(e) => {
+                    tracing::error!("Failed to parse tags for payment {}: {:?}", payment_id, e);
+                    Vec::new()
+                }
+            };
 
         Ok(Some(PaymentResponseDto {
             id: record.id,
