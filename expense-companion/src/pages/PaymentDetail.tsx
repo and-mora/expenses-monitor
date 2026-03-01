@@ -52,7 +52,7 @@ const PaymentDetail = () => {
   const queryClient = useQueryClient();
   const deletePayment = useDeletePayment();
   
-  const { data: fetchedPayment, isLoading, isError } = usePayment(id);
+  const { data: fetchedPayment, isLoading } = usePayment(id);
   
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const hasRedirected = useRef(false);
