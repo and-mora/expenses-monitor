@@ -128,6 +128,15 @@ export class PaymentsApi extends BaseApiClient {
     );
   }
 
+  async getPayment(id: string): Promise<Payment> {
+    if (USE_MOCK_DATA) {
+      const found = mockPayments.find(p => p.id === id);
+      if (!found) throw new Error('Payment not found');
+      return found;
+    }
+    return this.fetch<Payment>(`/api/payments/${id}`);
+  }
+
   async createPayment(payment: PaymentCreate): Promise<Payment> {
     console.log('[API] Creating payment with data:', JSON.stringify(payment, null, 2));
     

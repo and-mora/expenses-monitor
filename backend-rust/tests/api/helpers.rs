@@ -57,6 +57,7 @@ impl TestApp {
                 return reqwest::Client::new()
                     .post(format!("{}/api/payments", &self.address))
                     .header("Content-Type", "application/json")
+                    .header("Authorization", format!("Bearer {}", self.auth_token))
                     .body(body.to_owned())
                     .send()
                     .await
@@ -119,6 +120,7 @@ impl TestApp {
     pub async fn get_categories(&self) -> reqwest::Response {
         reqwest::Client::new()
             .get(format!("{}/api/payments/categories", &self.address))
+            .header("Authorization", format!("Bearer {}", self.auth_token))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -213,6 +215,7 @@ impl TestApp {
                 return reqwest::Client::new()
                     .put(format!("{}/api/payments/{}", &self.address, id))
                     .header("Content-Type", "application/json")
+                    .header("Authorization", format!("Bearer {}", self.auth_token))
                     .body(body.to_owned())
                     .send()
                     .await
@@ -232,7 +235,7 @@ impl TestApp {
                         .fetch_optional(&self.db_pool)
                         .await
                         {
-                            let id = if let Some(id) = row {
+                            let cat_id = if let Some(id) = row {
                                 id
                             } else {
                                 sqlx::query_scalar!(
@@ -241,13 +244,13 @@ impl TestApp {
                                 )
                                 .fetch_one(&self.db_pool)
                                 .await
-                                .expect("Failed to insert category in test helper")
+                                .expect("Failed to insert category in update test helper")
                             };
                             if let Some(m) = payload.as_object_mut() {
                                 m.remove("category");
                                 m.insert(
                                     "categoryId".to_string(),
-                                    serde_json::Value::String(id.to_string()),
+                                    serde_json::Value::String(cat_id.to_string()),
                                 );
                             }
                         }
@@ -256,12 +259,21 @@ impl TestApp {
             }
         }
 
-        let body = serde_json::to_string(&payload).expect("Failed to serialize payload");
+        let body = serde_json::to_string(&payload).expect("Failed to serialize update payload");
         reqwest::Client::new()
             .put(format!("{}/api/payments/{}", &self.address, id))
             .header("Content-Type", "application/json")
             .header("Authorization", format!("Bearer {}", self.auth_token))
             .body(body)
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
+
+    pub async fn get_payment(&self, id: uuid::Uuid) -> reqwest::Response {
+        reqwest::Client::new()
+            .get(format!("{}/api/payments/{}", &self.address, id))
+            .header("Authorization", format!("Bearer {}", self.auth_token))
             .send()
             .await
             .expect("Failed to execute request.")

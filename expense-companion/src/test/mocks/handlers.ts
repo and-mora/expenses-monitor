@@ -101,6 +101,34 @@ export const handlers = [
     });
   }),
 
+  // Get single payment
+  http.get(`${API_BASE_URL}/api/payments/:id`, ({ params }) => {
+    const { id } = params;
+    
+    // Look for the payment in mock payments
+    const payment = mockPayments.find(p => p.id === id);
+    
+    if (payment) {
+      return HttpResponse.json(payment);
+    }
+    
+    // If testing and using a special ID, return a mock object
+    if (id === 'abc-123') {
+      return HttpResponse.json({
+        id: 'abc-123',
+        merchantName: 'Test Payment',
+        amountInCents: -1000,
+        category: 'food',
+        accountingDate: '2026-01-31',
+        description: 'Test description',
+        wallet: 'Main Account',
+        tags: []
+      });
+    }
+
+    return new HttpResponse(null, { status: 404 });
+  }),
+
   // Create payment
   http.post(`${API_BASE_URL}/api/payments`, async ({ request }) => {
     const body = await request.json() as Payment;

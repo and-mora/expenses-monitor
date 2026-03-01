@@ -222,6 +222,39 @@ paths:
           $ref: '#/components/responses/InternalServerError'
 
   /api/payments/{paymentId}:
+    get:
+      tags:
+        - Payments
+      summary: Get a payment by ID
+      description: Retrieve a single payment by its UUID.
+      operationId: getPaymentById
+      parameters:
+        - name: paymentId
+          in: path
+          description: UUID of the payment to retrieve
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '200':
+          description: Payment retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Payment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
     put:
       tags:
         - Payments

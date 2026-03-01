@@ -1,7 +1,7 @@
 use crate::configuration::Settings;
 use crate::routes::{
     create_payment, create_wallet, delete_payment, delete_wallet, get_balance, get_categories,
-    get_recent_payments, get_wallets, greet, health_check, metrics, update_payment,
+    get_payment, get_recent_payments, get_wallets, greet, health_check, metrics, update_payment,
 };
 use crate::telemetry::init_meter;
 use actix_cors::Cors;
@@ -92,6 +92,7 @@ pub fn run(
             .route("/api/payments/categories", web::get().to(get_categories))
             .route("/greet", web::get().to(greet))
             .route("/api/payments", web::get().to(get_recent_payments))
+            .route("/api/payments/{id}", web::get().to(get_payment))
             .route("/api/payments", web::post().to(create_payment))
             .route("/api/payments/{id}", web::put().to(update_payment))
             .route("/api/payments/{id}", web::delete().to(delete_payment))
