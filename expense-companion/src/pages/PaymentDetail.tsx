@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PaymentTags } from '@/components/dashboard/PaymentTags';
 import { EditPaymentDialog } from '@/components/dashboard/EditPaymentDialog';
-import { useDeletePayment } from '@/hooks/use-api';
+import { useDeletePayment, usePayment } from '@/hooks/use-api';
 import { queryKeys } from '@/hooks/use-api';
 import { capitalize, formatCurrency, formatDate } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
@@ -52,10 +52,12 @@ const PaymentDetail = () => {
   const queryClient = useQueryClient();
   const deletePayment = useDeletePayment();
   
+  const { data: fetchedPayment, isLoading, isError } = usePayment(id);
+  
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const hasRedirected = useRef(false);
 
-  // Get payment from navigation state or from cache
+  // Get payment from navigation state, fetched record, or from cache
   const payment = useMemo(() => {
     // First, check if passed via navigation state
     const statePayment = (location.state as { payment?: Payment })?.payment;
@@ -63,7 +65,12 @@ const PaymentDetail = () => {
       return statePayment;
     }
 
-    // If not in state, try to find in cache
+    // Second, use fetched data if available
+    if (fetchedPayment) {
+      return fetchedPayment;
+    }
+
+    // Finally, try to find in cache as a backup
     if (id) {
       const cachedData = queryClient.getQueriesData<{ content: Payment[] }>({
         queryKey: queryKeys.payments,
@@ -80,16 +87,16 @@ const PaymentDetail = () => {
     }
 
     return null;
-  }, [id, location.state, queryClient]);
+  }, [id, location.state, fetchedPayment, queryClient]);
 
-  // Handle redirect when payment is not found
+  // Handle redirect when payment is not found after loading
   useEffect(() => {
-    if (!payment && !hasRedirected.current) {
+    if (!isLoading && !payment && !hasRedirected.current) {
       hasRedirected.current = true;
       toast.error('Payment not found');
       navigate('/transactions', { replace: true });
     }
-  }, [payment, navigate]);
+  }, [payment, isLoading, navigate]);
 
   const handleDelete = async () => {
     if (!payment) return;

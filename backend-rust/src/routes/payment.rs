@@ -91,14 +91,16 @@ impl TryFrom<Json<PaymentDto>> for Payment {
 )]
 pub async fn create_payment(
     payload: Json<PaymentDto>,
+    user: crate::auth::AuthenticatedUser,
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
+    let user_id = user.sub;
     let tags = payload.0.tags.clone();
     let wallet_name_input = payload.0.wallet.clone();
 
     // Resolve wallet_id from wallet name
     let wallet_id = if let Some(name) = &wallet_name_input {
-        match get_wallet_id_by_name(name, connection_pool.get_ref()).await {
+        match get_wallet_id_by_name(name, connection_pool.get_ref(), &user_id).await {
             Ok(Some(id)) => Some(id),
             Ok(None) => {
                 tracing::error!("Wallet not found: {}", name);
@@ -362,9 +364,11 @@ async fn delete_payment_query(connection_pool: &PgPool, payment_id: Uuid) -> Res
 pub async fn update_payment(
     path: web::Path<Uuid>,
     payload: Json<PaymentDto>,
+    user: crate::auth::AuthenticatedUser,
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
     let payment_id = path.into_inner();
+    let user_id = user.sub;
     let tags = payload.0.tags.clone();
     let wallet_name_input = payload.0.wallet.clone();
 
@@ -373,7 +377,7 @@ pub async fn update_payment(
 
     // Resolve wallet_id from wallet name
     let wallet_id = if let Some(name) = &wallet_name_input {
-        match get_wallet_id_by_name(name, connection_pool.get_ref()).await {
+        match get_wallet_id_by_name(name, connection_pool.get_ref(), &user_id).await {
             Ok(Some(id)) => Some(id),
             Ok(None) => {
                 tracing::error!("Wallet not found: {}", name);
@@ -1027,4 +1031,87 @@ async fn get_wallet_name(
     .await?;
 
     Ok(result.map(|r| r.name))
+}
+
+#[tracing::instrument(
+    name = "Retrieving a payment",
+    skip(path, connection_pool),
+    fields(
+        payment_id = %path.clone()
+    )
+)]
+pub async fn get_payment(
+    path: web::Path<Uuid>,
+    user: crate::auth::AuthenticatedUser,
+    connection_pool: web::Data<PgPool>,
+) -> impl Responder {
+    let payment_id = path.into_inner();
+    let user_id = user.sub;
+
+    match get_payment_from_db(connection_pool.get_ref(), payment_id, &user_id).await {
+        Ok(Some(payment)) => HttpResponse::Ok().json(payment),
+        Ok(None) => HttpResponse::NotFound().finish(),
+        Err(e) => {
+            tracing::error!("Failed to execute query: {:?}", e);
+            HttpResponse::InternalServerError().finish()
+        }
+    }
+}
+
+#[tracing::instrument(name = "Retrieving a payment from the database", skip(connection_pool))]
+async fn get_payment_from_db(
+    connection_pool: &PgPool,
+    payment_id: Uuid,
+    user_id: &str,
+) -> Result<Option<PaymentResponseDto>, Error> {
+    let row = sqlx::query!(
+        r#"
+         SELECT p.id,
+             c.name AS category_name,
+             c.icon AS category_icon,
+             p.category_id,
+               p.description,
+               p.merchant_name,
+               p.accounting_date,
+               p.amount,
+               w.name as wallet_name,
+               COALESCE((SELECT json_agg(
+                   json_build_object('id', pt.id, 'key', pt.key, 'value', pt.value)
+               ) FROM expenses.payments_tags pt WHERE pt.payment_id = p.id), '[]'::json) as tags
+        FROM expenses.payments p
+        LEFT JOIN expenses.categories c ON p.category_id = c.id
+        LEFT JOIN expenses.wallets w ON p.wallet_id = w.id
+        WHERE p.id = $1 AND p.user_id = $2
+        "#,
+        payment_id,
+        user_id
+    )
+    .fetch_optional(connection_pool)
+    .await?;
+
+    if let Some(record) = row {
+        let tags: Vec<TagResponseDto> = match serde_json::from_value(record.tags.unwrap_or_default())
+        {
+            Ok(tags) => tags,
+            Err(e) => {
+                tracing::error!("Failed to parse tags for payment {}: {:?}", payment_id, e);
+                Vec::new()
+            }
+        };
+
+        Ok(Some(PaymentResponseDto {
+            id: record.id,
+            description: record.description,
+            amount_in_cents: record.amount.unwrap_or(0),
+            merchant_name: record.merchant_name.unwrap_or_default(),
+            accounting_date: record.accounting_date.unwrap_or_default(),
+            category: record.category_name,
+            category_id: Some(record.category_id),
+            category_icon: record.category_icon,
+            wallet: record.wallet_name,
+            tags,
+        }))
+    } else {
+        Ok(None)
+    }
 }

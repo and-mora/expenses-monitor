@@ -78,7 +78,7 @@ async fn insert_wallet(
 
     Ok(Wallet {
         id: Some(row.id),
-        user_id: row.user_id,
+        user_id: Some(row.user_id),
         name: WalletName::parse(row.name).expect("Stored name should be valid"),
     })
 }
@@ -124,7 +124,7 @@ async fn get_wallets_from_db(user_id: &str, pool: &PgPool) -> Result<Vec<Wallet>
         .into_iter()
         .map(|row| Wallet {
             id: Some(row.id),
-            user_id: row.user_id,
+            user_id: Some(row.user_id),
             name: WalletName::parse(row.name).expect("Stored name should be valid"),
         })
         .collect();
@@ -168,14 +168,19 @@ async fn delete_wallet_from_db(id: Uuid, pool: &PgPool) -> Result<(), sqlx::Erro
 }
 
 #[tracing::instrument(name = "Get wallet ID by name", skip(pool))]
-pub async fn get_wallet_id_by_name(name: &str, pool: &PgPool) -> Result<Option<Uuid>, sqlx::Error> {
+pub async fn get_wallet_id_by_name(
+    name: &str,
+    pool: &PgPool,
+    user_id: &str,
+) -> Result<Option<Uuid>, sqlx::Error> {
     let result = sqlx::query!(
         r#"
         SELECT id
         FROM expenses.wallets
-        WHERE name = $1
+        WHERE name = $1 AND user_id = $2
         "#,
-        name
+        name,
+        user_id
     )
     .fetch_optional(pool)
     .await?;

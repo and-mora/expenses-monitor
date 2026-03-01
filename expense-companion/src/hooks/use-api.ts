@@ -55,6 +55,15 @@ export function usePayments(
   });
 }
 
+export function usePayment(id: string | undefined) {
+  return useQuery({
+    queryKey: [...queryKeys.payments, id],
+    queryFn: () => (id ? apiClient.getPayment(id) : Promise.reject('No ID provided')),
+    enabled: !!id,
+    staleTime: 60000, // 1 minute
+  });
+}
+
 export function useInfinitePayments(
   size = 50,
   filters?: {
