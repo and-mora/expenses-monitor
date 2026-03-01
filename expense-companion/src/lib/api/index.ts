@@ -45,6 +45,10 @@ class ApiClient {
     return this.paymentsApi.getRecentPayments(limit);
   }
 
+  getPayment(id: string) {
+    return this.paymentsApi.getPayment(id);
+  }
+
   getPayments(
     page = 0,
     size = 50,

@@ -104,6 +104,12 @@ describe('API Client', () => {
         expect(result).toBeUndefined(); // 204 No Content
       }
     });
+
+    it('should fetch a single payment by id', async () => {
+      const result = await apiClient.getPayment('abc-123');
+      expect(result).toHaveProperty('id');
+      expect(result).toHaveProperty('merchantName');
+    });
   });
 
   describe('Wallets', () => {

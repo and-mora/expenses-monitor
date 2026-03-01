@@ -11,6 +11,7 @@ import {
   useDeletePayment,
   useCreateWallet,
   useDeleteWallet,
+  usePayment,
 } from './use-api';
 import { apiClient } from '@/lib/api';
 
@@ -22,6 +23,7 @@ vi.mock('@/lib/api', () => ({
     getBalance: vi.fn(),
     getCategories: vi.fn(),
     getWallets: vi.fn(),
+    getPayment: vi.fn(),
     createPayment: vi.fn(),
     deletePayment: vi.fn(),
     createWallet: vi.fn(),
@@ -348,6 +350,43 @@ describe('API Hooks - Pagination', () => {
         expect(cacheKeys).toContainEqual(['payments', 'recent', 50]);
         expect(cacheKeys).toContainEqual(['payments', 'paged', 0, 50, undefined]);
       });
+    });
+  });
+
+  describe('usePayment', () => {
+    it('should fetch a single payment by id', async () => {
+      const mockPayment = {
+        id: 'abc-123',
+        merchantName: 'Test Payment',
+        amountInCents: -1000,
+        category: 'food',
+        accountingDate: '2026-01-31',
+        description: 'Test description',
+        wallet: 'Main',
+        tags: [],
+      };
+
+      vi.mocked(apiClient.getPayment).mockResolvedValue(mockPayment as any);
+
+      const { result } = renderHook(() => usePayment('abc-123'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(apiClient.getPayment).toHaveBeenCalledWith('abc-123');
+      expect(result.current.data).toEqual(mockPayment);
+    });
+
+    it('should not fetch if id is not provided', async () => {
+      const { result } = renderHook(() => usePayment(undefined), {
+        wrapper: createWrapper(),
+      });
+
+      expect(apiClient.getPayment).not.toHaveBeenCalled();
+      expect(result.current.isLoading).toBe(false);
     });
   });
 
