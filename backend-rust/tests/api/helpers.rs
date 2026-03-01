@@ -41,6 +41,7 @@ pub struct TestApp {
     pub address: String,
     pub db_pool: PgPool,
     pub auth_token: String,
+    pub auth_sub: String,
 }
 
 impl TestApp {
@@ -178,28 +179,10 @@ impl TestApp {
         self.create_wallet(body).await
     }
 
-    pub async fn get_wallets(&self) -> reqwest::Response {
-        reqwest::Client::new()
-            .get(format!("{}/api/wallets", &self.address))
-            .header("Authorization", format!("Bearer {}", self.auth_token))
-            .send()
-            .await
-            .expect("Failed to execute request.")
-    }
-
     pub async fn get_wallets_with_auth(&self, token: &str) -> reqwest::Response {
         reqwest::Client::new()
             .get(format!("{}/api/wallets", &self.address))
             .header("Authorization", format!("Bearer {}", token))
-            .send()
-            .await
-            .expect("Failed to execute request.")
-    }
-
-    pub async fn delete_wallet(&self, id: uuid::Uuid) -> reqwest::Response {
-        reqwest::Client::new()
-            .delete(format!("{}/api/wallets/{}", &self.address, id))
-            .header("Authorization", format!("Bearer {}", self.auth_token))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -337,6 +320,7 @@ pub async fn spawn_app() -> TestApp {
         address,
         db_pool: get_connection_pool(&configuration),
         auth_token: token,
+        auth_sub: sub,
     }
 }
 

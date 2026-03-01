@@ -169,10 +169,11 @@ async fn delete_payment_with_tags_succeeds() {
 
     // Create a tag for testing (using denormalized payments_tags table)
     sqlx::query!(
-        "INSERT INTO expenses.payments_tags (payment_id, key, value) VALUES ($1, $2, $3)",
+        "INSERT INTO expenses.payments_tags (payment_id, key, value, user_id) VALUES ($1, $2, $3, $4)",
         payment_id,
         "category",
-        "test-tag"
+        "test-tag",
+        app.auth_sub
     )
     .execute(&app.db_pool)
     .await

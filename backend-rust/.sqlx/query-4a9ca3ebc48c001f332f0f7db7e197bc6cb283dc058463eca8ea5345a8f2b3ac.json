@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM expenses.payments_tags WHERE payment_id = $1 AND user_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4a9ca3ebc48c001f332f0f7db7e197bc6cb283dc058463eca8ea5345a8f2b3ac"
+}
