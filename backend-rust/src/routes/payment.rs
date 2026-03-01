@@ -1101,7 +1101,7 @@ async fn get_payment_from_db(
                p.merchant_name,
                p.accounting_date,
                p.amount,
-               w.name as wallet_name,
+               w.name as "wallet_name!",
                COALESCE((SELECT json_agg(
                    json_build_object('id', pt.id, 'key', pt.key, 'value', pt.value)
                ) FROM expenses.payments_tags pt WHERE pt.payment_id = p.id), '[]'::json) as tags
@@ -1135,7 +1135,7 @@ async fn get_payment_from_db(
             category: record.category_name,
             category_id: Some(record.category_id),
             category_icon: record.category_icon,
-            wallet: record.wallet_name,
+            wallet: Some(record.wallet_name),
             tags,
         }))
     } else {

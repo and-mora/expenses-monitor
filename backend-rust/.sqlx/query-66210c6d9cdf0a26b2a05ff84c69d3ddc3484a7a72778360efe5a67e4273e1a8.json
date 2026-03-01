@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT p.amount, p.description, c.name as category_name FROM expenses.payments p JOIN expenses.categories c ON p.category_id = c.id WHERE c.name = 'food' AND p.amount = -300",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "amount",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "description",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "category_name",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "66210c6d9cdf0a26b2a05ff84c69d3ddc3484a7a72778360efe5a67e4273e1a8"
+}

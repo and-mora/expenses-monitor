@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT key, value FROM expenses.payments_tags WHERE payment_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "key",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "value",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "1f9611c703dbda07a8410f0c979877a68d96b33a966951c6a900e498628824a9"
+}

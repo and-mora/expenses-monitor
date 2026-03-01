@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n         SELECT p.id,\n             c.name AS category_name,\n             c.icon AS category_icon,\n             p.category_id,\n               p.description,\n               p.merchant_name,\n               p.accounting_date,\n               p.amount,\n               w.name as wallet_name,\n               COALESCE((SELECT json_agg(\n                   json_build_object('id', pt.id, 'key', pt.key, 'value', pt.value)\n               ) FROM expenses.payments_tags pt WHERE pt.payment_id = p.id), '[]'::json) as tags\n        FROM expenses.payments p\n        LEFT JOIN expenses.categories c ON p.category_id = c.id\n        LEFT JOIN expenses.wallets w ON p.wallet_id = w.id\n        WHERE p.id = $1 AND p.user_id = $2\n        ",
+  "query": "\n         SELECT p.id,\n             c.name AS category_name,\n             c.icon AS category_icon,\n             p.category_id,\n               p.description,\n               p.merchant_name,\n               p.accounting_date,\n               p.amount,\n               w.name as \"wallet_name!\",\n               COALESCE((SELECT json_agg(\n                   json_build_object('id', pt.id, 'key', pt.key, 'value', pt.value)\n               ) FROM expenses.payments_tags pt WHERE pt.payment_id = p.id), '[]'::json) as tags\n        FROM expenses.payments p\n        LEFT JOIN expenses.categories c ON p.category_id = c.id\n        LEFT JOIN expenses.wallets w ON p.wallet_id = w.id\n        WHERE p.id = $1 AND p.user_id = $2\n        ",
   "describe": {
     "columns": [
       {
@@ -45,7 +45,7 @@
       },
       {
         "ordinal": 8,
-        "name": "wallet_name",
+        "name": "wallet_name!",
         "type_info": "Varchar"
       },
       {
@@ -73,5 +73,5 @@
       null
     ]
   },
-  "hash": "7783878420ef5f8a625ab3bc3f5f236d7fac4243c2aaa36fe91a170751e0ad12"
+  "hash": "63a8f6aff5424680cee7c3c02ae1ed0d7ccd0257f5456ba476a3aa2de0bce398"
 }

@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT p.amount, c.name as category_name FROM expenses.payments p JOIN expenses.categories c ON p.category_id = c.id WHERE p.id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "amount",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "category_name",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true,
+      false
+    ]
+  },
+  "hash": "45500274202e259a736c5252773cceed186f9c1a925482e742f327dba6bb534a"
+}
