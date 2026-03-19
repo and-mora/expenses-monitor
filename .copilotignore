@@ -1,0 +1,19 @@
+# Generated and dependency output
+.gradle/
+build/
+backend-rust/target/
+backend-rust/.sqlx/
+expense-companion/node_modules/
+expense-companion/dist/
+expense-companion/coverage/
+
+# IDE and local editor state
+.idea/
+.vscode/
+**/.DS_Store
+
+# Legacy backend excluded from default AI context
+backend/
+
+# Historical prompt artifacts
+.github/prompts/
