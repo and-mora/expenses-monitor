@@ -1,4 +1,4 @@
-import { LayoutDashboard, Receipt, Settings } from 'lucide-react';
+import { LayoutDashboard, Receipt, Landmark, Settings } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
 
 export function MobileBottomNav() {
@@ -18,6 +18,12 @@ export function MobileBottomNav() {
           label="Transactions" 
           to="/transactions" 
           active={location.pathname === '/transactions'} 
+        />
+        <MobileNavItem 
+          icon={Landmark} 
+          label="Banking" 
+          to="/banking" 
+          active={location.pathname === '/banking'} 
         />
         <MobileNavItem 
           icon={Settings} 

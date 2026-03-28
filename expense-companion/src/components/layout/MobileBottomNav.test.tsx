@@ -18,6 +18,7 @@ describe('MobileBottomNav', () => {
     
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
     expect(screen.getByText('Transactions')).toBeInTheDocument();
+    expect(screen.getByText('Banking')).toBeInTheDocument();
     expect(screen.getByText('Settings')).toBeInTheDocument();
   });
 
@@ -42,15 +43,24 @@ describe('MobileBottomNav', () => {
     expect(settingsLink).toHaveClass('text-primary');
   });
 
+  it('marks Banking as active when on banking route', () => {
+    renderWithRouter('/banking');
+
+    const bankingLink = screen.getByText('Banking').closest('a');
+    expect(bankingLink).toHaveClass('text-primary');
+  });
+
   it('has correct navigation links', () => {
     renderWithRouter();
     
     const dashboardLink = screen.getByText('Dashboard').closest('a');
     const transactionsLink = screen.getByText('Transactions').closest('a');
+    const bankingLink = screen.getByText('Banking').closest('a');
     const settingsLink = screen.getByText('Settings').closest('a');
     
     expect(dashboardLink).toHaveAttribute('href', '/');
     expect(transactionsLink).toHaveAttribute('href', '/transactions');
+    expect(bankingLink).toHaveAttribute('href', '/banking');
     expect(settingsLink).toHaveAttribute('href', '/settings');
   });
 

@@ -105,3 +105,124 @@ export interface MonthlyStats {
   expenses: number;
   net: number;
 }
+
+export interface PaginatedResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements?: number;
+  totalPages?: number;
+}
+
+export interface BankingConnectRequest {
+  provider: string;
+  accountId?: string;
+  connectionLabel?: string;
+  redirectUri?: string;
+}
+
+export interface BankingConnectResponse {
+  connectionId: string;
+  provider: string;
+  authorizationUrl: string;
+  state: string;
+  expiresAt: string;
+}
+
+export interface BankingAccountSummary {
+  accountId: string;
+  accountLabel: string;
+  iban?: string | null;
+  currency: string;
+  balanceInCents?: number | null;
+}
+
+export type BankingConnectionStatus = 'pending' | 'connected' | 'syncing' | 'error' | 'disconnected';
+export type BankingSyncStatus = 'pending' | 'running' | 'success' | 'failed';
+
+export interface BankingConnectionSummary {
+  connectionId: string;
+  provider: string;
+  connectionLabel?: string | null;
+  accountId?: string | null;
+  accountLabel?: string | null;
+  status?: BankingConnectionStatus | null;
+  lastSyncAt?: string | null;
+  lastSyncStatus?: BankingSyncStatus | null;
+  lastSyncMessage?: string | null;
+  createdCount?: number | null;
+  updatedCount?: number | null;
+  duplicateCount?: number | null;
+  syncedAt?: string | null;
+  accounts?: BankingAccountSummary[];
+}
+
+export interface BankingSyncResponse {
+  connectionId: string;
+  provider: string;
+  connectionStatus: BankingConnectionStatus;
+  createdCount: number;
+  updatedCount: number;
+  duplicateCount: number;
+  syncedAt: string;
+}
+
+export interface BankingSyncStatusResponse {
+  connectionId: string;
+  provider: string;
+  connectionStatus: BankingConnectionStatus;
+  lastSyncAt?: string | null;
+  lastSyncStatus?: BankingSyncStatus | null;
+  createdCount?: number | null;
+  updatedCount?: number | null;
+  duplicateCount?: number | null;
+  lastError?: string | null;
+}
+
+export type StagingTransactionStatus = 'pending' | 'reviewed' | 'imported' | 'rejected';
+
+export interface StagingTransaction {
+  id: string;
+  connectionId: string;
+  provider: string;
+  bankTransactionId: string;
+  amountInCents: number;
+  currency: string;
+  bookingDate: string;
+  valueDate?: string | null;
+  creditorName?: string | null;
+  debtorName?: string | null;
+  remittanceInfo?: string | null;
+  suggestedCategory?: string | null;
+  suggestedMerchant?: string | null;
+  status: StagingTransactionStatus;
+  importedPaymentId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StagingTransactionUpdate {
+  suggestedCategory?: string;
+  suggestedMerchant?: string;
+  status?: StagingTransactionStatus;
+}
+
+export interface StagingTransactionFilters {
+  page?: number;
+  size?: number;
+  status?: StagingTransactionStatus | 'all';
+  dateFrom?: string;
+  dateTo?: string;
+  connectionId?: string;
+}
+
+export interface StagingImportRequest {
+  transactionIds?: string[];
+  defaultCategoryId?: string;
+}
+
+export interface StagingImportResponse {
+  importedCount: number;
+  skippedCount: number;
+  importedPaymentIds: string[];
+}

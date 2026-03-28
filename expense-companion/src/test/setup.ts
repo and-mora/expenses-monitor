@@ -41,6 +41,13 @@ Object.defineProperty(window, 'matchMedia', {
   }),
 });
 
+// Keep DOM event constructors aligned with JSDOM's window instance.
+// Radix FocusScope dispatches CustomEvent instances during mount/unmount,
+// and Vitest can otherwise pick up Node's global constructors, which JSDOM
+// does not accept in dispatchEvent.
+globalThis.Event = window.Event;
+globalThis.CustomEvent = window.CustomEvent;
+
 // Mock ResizeObserver for components that use it (like cmdk)
 global.ResizeObserver = class ResizeObserver {
   observe() {}

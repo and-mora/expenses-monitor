@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { apiClient } from '@/lib/api';
-import type { PaymentCreate, WalletCreate } from '@/types/api';
+import type {
+  PaymentCreate,
+  WalletCreate,
+  BankingConnectRequest,
+  StagingTransactionUpdate,
+} from '@/types/api';
 
 describe('API Client', () => {
   describe('Health Check', () => {
@@ -139,6 +144,66 @@ describe('API Client', () => {
         const result = await apiClient.deleteWallet(wallets[0].id);
         expect(result).toBeUndefined(); // 204 No Content
       }
+    });
+  });
+
+  describe('Banking', () => {
+    it('should fetch bank connections', async () => {
+      const connections = await apiClient.getBankConnections();
+      expect(Array.isArray(connections)).toBe(true);
+      expect(connections.length).toBeGreaterThan(0);
+      expect(connections[0]).toHaveProperty('connectionId');
+      expect(connections[0]).toHaveProperty('provider');
+    });
+
+    it('should create a banking connection and return authorization details', async () => {
+      const request: BankingConnectRequest = {
+        provider: 'mock',
+        connectionLabel: 'Test Banking Connection',
+        redirectUri: 'http://localhost:5173/banking',
+      };
+
+      const response = await apiClient.connectBankConnection(request);
+      expect(response.connectionId).toBeTruthy();
+      expect(response.provider).toBe('mock');
+      expect(response.authorizationUrl).toContain('http://localhost:5173/banking');
+    });
+
+    it('should sync a banking connection', async () => {
+      const connections = await apiClient.getBankConnections();
+      const response = await apiClient.syncBankConnection(connections[0].connectionId);
+      expect(response.connectionId).toBe(connections[0].connectionId);
+      expect(response).toHaveProperty('createdCount');
+      expect(response).toHaveProperty('syncedAt');
+    });
+
+    it('should fetch staging transactions with filters', async () => {
+      const result = await apiClient.getStagingTransactions({ status: 'pending', page: 0, size: 10 });
+      expect(result).toHaveProperty('content');
+      expect(result.content.length).toBeGreaterThan(0);
+      expect(result.content[0]).toHaveProperty('bankTransactionId');
+    });
+
+    it('should update a staging transaction', async () => {
+      const result = await apiClient.getStagingTransactions({ status: 'pending', page: 0, size: 10 });
+      const first = result.content[0];
+      const updated = await apiClient.updateStagingTransaction(first.id, {
+        suggestedMerchant: 'Updated Merchant',
+        status: 'reviewed',
+      } satisfies StagingTransactionUpdate);
+
+      expect(updated.id).toBe(first.id);
+      expect(updated.suggestedMerchant).toBe('Updated Merchant');
+      expect(updated.status).toBe('reviewed');
+    });
+
+    it('should import staging transactions', async () => {
+      const result = await apiClient.getStagingTransactions({ status: 'pending', page: 0, size: 10 });
+      const response = await apiClient.importStagingTransactions({
+        transactionIds: result.content.slice(0, 1).map((transaction) => transaction.id),
+      });
+      expect(response.importedCount).toBeGreaterThanOrEqual(0);
+      expect(Array.isArray(response.importedPaymentIds)).toBe(true);
     });
   });
 

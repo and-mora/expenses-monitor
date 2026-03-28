@@ -130,6 +130,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -137,5 +138,3 @@ export function useAuth() {
   }
   return context;
 }
-
-// eslint-disable-next-line react-refresh/only-export-components

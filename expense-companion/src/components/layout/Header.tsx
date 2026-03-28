@@ -1,4 +1,4 @@
-import { Wallet, LayoutDashboard, Receipt, Settings, LogOut } from 'lucide-react';
+import { Wallet, LayoutDashboard, Receipt, Landmark, Settings, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -38,6 +38,7 @@ export function Header({ className }: HeaderProps) {
         <nav className="hidden md:flex items-center gap-1">
           <NavItem icon={LayoutDashboard} label="Dashboard" to="/" active={location.pathname === '/'} />
           <NavItem icon={Receipt} label="Transactions" to="/transactions" active={location.pathname === '/transactions'} />
+          <NavItem icon={Landmark} label="Banking" to="/banking" active={location.pathname === '/banking'} />
           <NavItem icon={Settings} label="Settings" to="/settings" active={location.pathname === '/settings'} />
         </nav>
 

@@ -13,6 +13,13 @@ import {
   useCreateWallet,
   useDeleteWallet,
   usePayment,
+  useBankConnections,
+  useBankConnectionSyncStatus,
+  useStagingTransactions,
+  useConnectBankConnection,
+  useSyncBankConnection,
+  useUpdateStagingTransaction,
+  useImportStagingTransactions,
 } from './use-api';
 import { apiClient } from '@/lib/api';
 
@@ -29,6 +36,13 @@ vi.mock('@/lib/api', () => ({
     deletePayment: vi.fn(),
     createWallet: vi.fn(),
     deleteWallet: vi.fn(),
+    getBankConnections: vi.fn(),
+    getBankConnectionSyncStatus: vi.fn(),
+    getStagingTransactions: vi.fn(),
+    connectBankConnection: vi.fn(),
+    syncBankConnection: vi.fn(),
+    updateStagingTransaction: vi.fn(),
+    importStagingTransactions: vi.fn(),
   },
 }));
 
@@ -583,6 +597,176 @@ describe('API Hooks - Pagination', () => {
       await result.current.mutateAsync('wallet-123');
 
       expect(apiClient.deleteWallet).toHaveBeenCalledWith('wallet-123');
+    });
+  });
+
+  describe('Banking hooks', () => {
+    it('should fetch bank connections', async () => {
+      const mockConnections = [
+        {
+          connectionId: 'conn-1',
+          provider: 'mock',
+          status: 'connected',
+        },
+      ];
+
+      vi.mocked(apiClient.getBankConnections).mockResolvedValue(mockConnections as never);
+
+      const { result } = renderHook(() => useBankConnections(), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(apiClient.getBankConnections).toHaveBeenCalledTimes(1);
+      expect(result.current.data).toEqual(mockConnections);
+    });
+
+    it('should fetch connection sync status when id is present', async () => {
+      const mockStatus = {
+        connectionId: 'conn-1',
+        provider: 'mock',
+        connectionStatus: 'connected',
+      };
+
+      vi.mocked(apiClient.getBankConnectionSyncStatus).mockResolvedValue(mockStatus as never);
+
+      const { result } = renderHook(() => useBankConnectionSyncStatus('conn-1'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(apiClient.getBankConnectionSyncStatus).toHaveBeenCalledWith('conn-1');
+      expect(result.current.data).toEqual(mockStatus);
+    });
+
+    it('should fetch staging transactions with filters', async () => {
+      const mockResponse = {
+        content: [
+          {
+            id: 'stg-1',
+            connectionId: 'conn-1',
+            provider: 'mock',
+            bankTransactionId: 'bank-tx-1',
+            amountInCents: -1299,
+            currency: 'EUR',
+            bookingDate: '2026-03-25',
+            status: 'pending',
+            createdAt: '2026-03-25T10:00:00Z',
+            updatedAt: '2026-03-25T10:00:00Z',
+          },
+        ],
+        page: 0,
+        size: 10,
+      };
+
+      vi.mocked(apiClient.getStagingTransactions).mockResolvedValue(mockResponse as never);
+
+      const filters = { page: 0, size: 10, status: 'pending' as const };
+      const { result } = renderHook(() => useStagingTransactions(filters), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(apiClient.getStagingTransactions).toHaveBeenCalledWith(filters);
+      expect(result.current.data).toEqual(mockResponse);
+    });
+
+    it('should connect a bank connection and invalidate queries', async () => {
+      const mockResponse = {
+        connectionId: 'conn-99',
+        provider: 'mock',
+        authorizationUrl: 'https://mock-bank.example/oauth/authorize',
+        state: 'state-1',
+        expiresAt: '2026-03-27T12:00:00Z',
+      };
+
+      vi.mocked(apiClient.connectBankConnection).mockResolvedValue(mockResponse as never);
+
+      const { result } = renderHook(() => useConnectBankConnection(), {
+        wrapper: createWrapper(),
+      });
+
+      await result.current.mutateAsync({
+        provider: 'mock',
+        redirectUri: 'http://localhost:5173/banking',
+      });
+
+      expect(apiClient.connectBankConnection).toHaveBeenCalledWith({
+        provider: 'mock',
+        redirectUri: 'http://localhost:5173/banking',
+      });
+    });
+
+    it('should sync a bank connection', async () => {
+      vi.mocked(apiClient.syncBankConnection).mockResolvedValue({
+        connectionId: 'conn-1',
+        provider: 'mock',
+        connectionStatus: 'connected',
+        createdCount: 1,
+        updatedCount: 0,
+        duplicateCount: 0,
+        syncedAt: '2026-03-27T12:00:00Z',
+      } as never);
+
+      const { result } = renderHook(() => useSyncBankConnection(), {
+        wrapper: createWrapper(),
+      });
+
+      await result.current.mutateAsync('conn-1');
+      expect(apiClient.syncBankConnection).toHaveBeenCalledWith('conn-1');
+    });
+
+    it('should update a staging transaction', async () => {
+      vi.mocked(apiClient.updateStagingTransaction).mockResolvedValue({
+        id: 'stg-1',
+        suggestedMerchant: 'Updated Merchant',
+        status: 'reviewed',
+      } as never);
+
+      const { result } = renderHook(() => useUpdateStagingTransaction(), {
+        wrapper: createWrapper(),
+      });
+
+      await result.current.mutateAsync({
+        id: 'stg-1',
+        transaction: { suggestedMerchant: 'Updated Merchant', status: 'reviewed' },
+      });
+
+      expect(apiClient.updateStagingTransaction).toHaveBeenCalledWith('stg-1', {
+        suggestedMerchant: 'Updated Merchant',
+        status: 'reviewed',
+      });
+    });
+
+    it('should import staging transactions', async () => {
+      vi.mocked(apiClient.importStagingTransactions).mockResolvedValue({
+        importedCount: 1,
+        skippedCount: 0,
+        importedPaymentIds: ['payment-1'],
+      } as never);
+
+      const { result } = renderHook(() => useImportStagingTransactions(), {
+        wrapper: createWrapper(),
+      });
+
+      await result.current.mutateAsync({
+        transactionIds: ['stg-1'],
+        defaultCategoryId: 'food',
+      });
+
+      expect(apiClient.importStagingTransactions).toHaveBeenCalledWith({
+        transactionIds: ['stg-1'],
+        defaultCategoryId: 'food',
+      });
     });
   });
 });

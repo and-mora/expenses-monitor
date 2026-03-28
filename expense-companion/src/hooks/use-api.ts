@@ -1,6 +1,13 @@
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
-import type { PaymentCreate, WalletCreate } from '@/types/api';
+import type {
+  PaymentCreate,
+  WalletCreate,
+  BankingConnectRequest,
+  StagingImportRequest,
+  StagingTransactionFilters,
+  StagingTransactionUpdate,
+} from '@/types/api';
 
 // Query keys
 export const queryKeys = {
@@ -8,6 +15,8 @@ export const queryKeys = {
   payments: ['payments'] as const,
   wallets: ['wallets'] as const,
   categories: ['categories'] as const,
+  banking: ['banking'] as const,
+  staging: ['staging'] as const,
 };
 
 // Balance hooks
@@ -141,6 +150,81 @@ export function useDeleteWallet() {
     mutationFn: (id: string) => apiClient.deleteWallet(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.wallets });
+    },
+  });
+}
+
+// Banking hooks
+export function useBankConnections() {
+  return useQuery({
+    queryKey: [...queryKeys.banking, 'connections'],
+    queryFn: () => apiClient.getBankConnections(),
+    staleTime: 10_000,
+  });
+}
+
+export function useBankConnectionSyncStatus(connectionId: string | undefined) {
+  return useQuery({
+    queryKey: [...queryKeys.banking, 'sync-status', connectionId],
+    queryFn: () => (connectionId ? apiClient.getBankConnectionSyncStatus(connectionId) : Promise.reject(new Error('No connection id provided'))),
+    enabled: !!connectionId,
+    staleTime: 10_000,
+  });
+}
+
+export function useStagingTransactions(filters: StagingTransactionFilters) {
+  return useQuery({
+    queryKey: [...queryKeys.staging, 'transactions', filters],
+    queryFn: () => apiClient.getStagingTransactions(filters),
+    staleTime: 10_000,
+  });
+}
+
+export function useConnectBankConnection() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (request: BankingConnectRequest) => apiClient.connectBankConnection(request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.banking });
+    },
+  });
+}
+
+export function useSyncBankConnection() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (connectionId: string) => apiClient.syncBankConnection(connectionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.banking });
+      queryClient.invalidateQueries({ queryKey: queryKeys.staging });
+    },
+  });
+}
+
+export function useUpdateStagingTransaction() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, transaction }: { id: string; transaction: StagingTransactionUpdate }) =>
+      apiClient.updateStagingTransaction(id, transaction),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.staging });
+      queryClient.invalidateQueries({ queryKey: queryKeys.payments });
+    },
+  });
+}
+
+export function useImportStagingTransactions() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (request: StagingImportRequest) => apiClient.importStagingTransactions(request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.staging });
+      queryClient.invalidateQueries({ queryKey: queryKeys.payments });
+      queryClient.invalidateQueries({ queryKey: queryKeys.balance });
     },
   });
 }
