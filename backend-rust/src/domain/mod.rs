@@ -1,3 +1,4 @@
+mod banking;
 mod category_kind;
 pub mod payment;
 mod payment_category;
@@ -7,6 +8,7 @@ mod payment_merchant;
 mod tag;
 mod wallet;
 
+pub use banking::{BankConnectionStatus, BankProviderName, StagingTransactionStatus};
 pub use category_kind::CategoryKind;
 pub use payment::Payment;
 pub use payment_category::PaymentCategory;
