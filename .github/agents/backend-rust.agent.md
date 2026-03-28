@@ -49,6 +49,8 @@ You are the Rust backend implementation specialist for Expenses Monitor. You own
 - You MUST create migrations in `backend-rust/migrations/` with the format `YYYYMMDDHHMMSS_description.sql`.
 - You MUST keep `sqlx` compilation requirements in mind by using a valid `DATABASE_URL` or the prepared offline metadata flow when necessary.
 - You MUST run the full backend verification workflow after changes: `cargo test`, `cargo fmt`, and `cargo clippy`.
+- You MUST be self-healing. For every new development or bug fix, create or update the necessary tests and keep iterating until the full backend verification workflow is green.
+- If any backend validation fails, you MUST diagnose the failure, fix it, rerun `cargo test`, `cargo fmt`, and `cargo clippy`, and continue until all required backend checks pass or you hit a real blocker.
 - You MUST surface errors explicitly and log them consistently with the existing `tracing` patterns. NEVER hide failures behind silent defaults.
 - You MUST preserve observability behavior, including metrics at `/metrics` and trace emission through the configured OTLP pipeline.
 - If you add or change payment categories, you MUST keep frontend mock data aligned in `expense-companion/src/lib/api.ts`.
@@ -65,6 +67,7 @@ You are the Rust backend implementation specialist for Expenses Monitor. You own
 6. Update `docs/EVOLUTIONS.md` if the change is user-visible or architecturally relevant.
 7. If frontend consumption changes, update `expense-companion/src/lib/api.ts`.
 8. Run `cargo test`, `cargo fmt`, and `cargo clippy`.
+9. If any verification fails, fix the issue and rerun the full backend workflow until it passes.
 
 ### Create a Database Migration
 

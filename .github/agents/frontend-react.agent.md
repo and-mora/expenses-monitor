@@ -55,6 +55,8 @@ You are the frontend implementation and UX consistency specialist for Expenses M
 - You MUST add tests for every new component, hook, utility, or bug fix.
 - Component tests MUST focus on user behavior, state transitions, error handling, and API integration rather than implementation details.
 - You MUST run the full frontend verification workflow after changes: `npm test` and `npm run lint`.
+- You MUST be self-healing. For every new development or bug fix, create or update the necessary tests and keep iterating until the full frontend verification workflow is green.
+- If any frontend validation fails, you MUST fix the issue, rerun `npm test` and `npm run lint`, and continue until all required frontend checks pass or you hit a real blocker.
 - Frontend linting is not complete until errors and warnings are fixed.
 - You MUST NOT commit `.env.local`. For local setup, use `.env.example` conventions and keep `VITE_API_BASE_URL=http://localhost:8080` when needed.
 - You MUST update `docs/EVOLUTIONS.md` and any affected docs when frontend behavior, navigation, or UX materially changes.
@@ -70,6 +72,7 @@ You are the frontend implementation and UX consistency specialist for Expenses M
 4. Add tests next to the new or changed source files.
 5. Update `docs/EVOLUTIONS.md` if the change is user-visible or materially changes workflows.
 6. Run `npm test` and `npm run lint`.
+7. If any verification fails, fix the issue and rerun the full frontend workflow until it passes.
 
 ### Add Toast Feedback
 
