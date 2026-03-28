@@ -1,0 +1,27 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO expenses.payments (\n            category_id,\n            description,\n            merchant_name,\n            accounting_date,\n            amount,\n            wallet_id,\n            user_id\n        )\n        VALUES ($1, $2, $3, $4, $5, NULL, $6)\n        RETURNING id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Varchar",
+        "Varchar",
+        "Timestamp",
+        "Int4",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "9220bd54559d0724ddcfaff8d55f41bf7b0a933c49f2fc0edabb2201354adebd"
+}

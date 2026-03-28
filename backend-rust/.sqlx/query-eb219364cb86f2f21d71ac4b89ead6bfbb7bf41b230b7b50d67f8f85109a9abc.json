@@ -1,0 +1,112 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                id as \"id!\",\n                bank_connection_id as \"bank_connection_id!\",\n                bank_transaction_id as \"bank_transaction_id!\",\n                amount_in_cents as \"amount_in_cents!\",\n                currency as \"currency!\",\n                booking_date as \"booking_date!\",\n                value_date,\n                creditor_name,\n                debtor_name,\n                remittance_info,\n                suggested_category,\n                suggested_merchant,\n                status as \"status!\",\n                imported_payment_id,\n                created_at as \"created_at!\",\n                updated_at as \"updated_at!\"\n            FROM expenses.staging_transactions\n            WHERE user_id = $1 AND status = 'reviewed'\n            ORDER BY booking_date ASC, created_at ASC\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "bank_connection_id!",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "bank_transaction_id!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "amount_in_cents!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "currency!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "booking_date!",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 6,
+        "name": "value_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 7,
+        "name": "creditor_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 8,
+        "name": "debtor_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 9,
+        "name": "remittance_info",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 10,
+        "name": "suggested_category",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 11,
+        "name": "suggested_merchant",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 12,
+        "name": "status!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 13,
+        "name": "imported_payment_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 14,
+        "name": "created_at!",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 15,
+        "name": "updated_at!",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "eb219364cb86f2f21d71ac4b89ead6bfbb7bf41b230b7b50d67f8f85109a9abc"
+}

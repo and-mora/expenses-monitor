@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE expenses.bank_connections\n        SET last_sync_at = $1,\n            last_sync_status = 'success',\n            last_sync_created_count = $2,\n            last_sync_updated_count = $3,\n            last_sync_duplicate_count = $4,\n            last_sync_error = NULL,\n            updated_at = now()\n        WHERE id = $5 AND user_id = $6\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "33a82a8455d2cb6f957ac0895f2d54daef10a858b92f743260f2d2372a4fbb25"
+}

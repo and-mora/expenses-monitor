@@ -1,0 +1,84 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT\n            p.id as \"id!\",\n            c.name AS category_name,\n            c.icon AS category_icon,\n            p.category_id as \"category_id!\",\n            p.description,\n            p.merchant_name,\n            p.accounting_date,\n            p.amount,\n            w.name as wallet_name,\n            COALESCE((\n                SELECT json_agg(\n                    json_build_object('id', pt.id, 'key', pt.key, 'value', pt.value)\n                )\n                FROM expenses.payments_tags pt\n                WHERE pt.payment_id = p.id\n            ), '[]'::json) as \"tags!: SqlxJson<Vec<TagResponseDto>>\"\n        FROM expenses.payments p\n        LEFT JOIN expenses.categories c ON p.category_id = c.id\n        LEFT JOIN expenses.wallets w ON p.wallet_id = w.id\n        WHERE p.user_id = $1\n          AND ($4::text IS NULL OR DATE(p.accounting_date) >= CAST($4 AS date))\n          AND ($5::text IS NULL OR DATE(p.accounting_date) <= CAST($5 AS date))\n          AND (\n                ($6::uuid IS NOT NULL AND p.category_id = $6)\n                OR ($6::uuid IS NULL AND ($7::text IS NULL OR LOWER(c.name) = LOWER($7)))\n          )\n          AND ($8::text IS NULL OR w.name = $8)\n          AND (\n                $9::text IS NULL\n                OR LOWER(COALESCE(p.merchant_name, '')) LIKE $9\n                OR LOWER(COALESCE(p.description, '')) LIKE $9\n          )\n        ORDER BY p.accounting_date DESC\n        LIMIT $2 OFFSET $3\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "category_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "category_icon",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "category_id!",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 4,
+        "name": "description",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "merchant_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "accounting_date",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 7,
+        "name": "amount",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "wallet_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 9,
+        "name": "tags!: SqlxJson<Vec<TagResponseDto>>",
+        "type_info": "Json"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8",
+        "Int8",
+        "Text",
+        "Text",
+        "Uuid",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      null
+    ]
+  },
+  "hash": "59dc19990a125e10490e715e236220b3e0f5dd5292496941953ac2b98768601b"
+}

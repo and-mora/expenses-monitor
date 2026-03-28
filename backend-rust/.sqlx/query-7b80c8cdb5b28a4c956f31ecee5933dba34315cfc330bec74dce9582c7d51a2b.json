@@ -1,0 +1,83 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT\n            id as \"id!\",\n            amount_in_cents as \"amount_in_cents!\",\n            currency as \"currency!\",\n            booking_date as \"booking_date!\",\n            value_date,\n            creditor_name,\n            debtor_name,\n            remittance_info,\n            suggested_category,\n            suggested_merchant,\n            status as \"status!\"\n        FROM expenses.staging_transactions\n        WHERE user_id = $1 AND bank_transaction_id = $2\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "amount_in_cents!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "currency!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "booking_date!",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 4,
+        "name": "value_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 5,
+        "name": "creditor_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "debtor_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "remittance_info",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 8,
+        "name": "suggested_category",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 9,
+        "name": "suggested_merchant",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 10,
+        "name": "status!",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "7b80c8cdb5b28a4c956f31ecee5933dba34315cfc330bec74dce9582c7d51a2b"
+}

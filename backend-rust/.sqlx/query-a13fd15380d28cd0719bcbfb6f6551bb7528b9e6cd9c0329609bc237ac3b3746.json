@@ -1,0 +1,35 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT \n                    COALESCE(SUM(amount), 0)::INT as \"total!\",\n                    COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0)::INT as \"income!\",\n                    COALESCE(SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END), 0)::INT as \"expenses!\"\n                FROM expenses.payments\n                WHERE user_id = $2 AND accounting_date >= $1\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "total!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "income!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "expenses!",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamp",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "a13fd15380d28cd0719bcbfb6f6551bb7528b9e6cd9c0329609bc237ac3b3746"
+}

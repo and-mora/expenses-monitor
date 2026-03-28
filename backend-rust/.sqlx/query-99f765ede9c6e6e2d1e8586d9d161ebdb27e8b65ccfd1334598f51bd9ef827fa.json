@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE expenses.bank_connections\n                SET connection_status = 'error',\n                    last_sync_status = 'error',\n                    last_sync_error = $1,\n                    updated_at = now()\n                WHERE id = $2 AND user_id = $3\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "99f765ede9c6e6e2d1e8586d9d161ebdb27e8b65ccfd1334598f51bd9ef827fa"
+}

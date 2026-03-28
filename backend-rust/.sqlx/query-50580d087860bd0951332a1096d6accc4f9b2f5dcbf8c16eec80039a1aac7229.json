@@ -1,0 +1,71 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT\n            id as connection_id,\n            provider,\n            connection_status as \"connection_status!\",\n            last_sync_at,\n            last_sync_status as \"last_sync_status!\",\n            last_sync_created_count as \"last_sync_created_count!\",\n            last_sync_updated_count as \"last_sync_updated_count!\",\n            last_sync_duplicate_count as \"last_sync_duplicate_count!\",\n            last_sync_error\n        FROM expenses.bank_connections\n        WHERE id = $1 AND user_id = $2\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "connection_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "provider",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "connection_status!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "last_sync_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 4,
+        "name": "last_sync_status!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "last_sync_created_count!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "last_sync_updated_count!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "last_sync_duplicate_count!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "last_sync_error",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "50580d087860bd0951332a1096d6accc4f9b2f5dcbf8c16eec80039a1aac7229"
+}

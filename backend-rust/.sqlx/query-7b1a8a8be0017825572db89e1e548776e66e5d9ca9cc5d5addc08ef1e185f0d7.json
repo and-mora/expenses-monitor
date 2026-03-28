@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO expenses.bank_connections (\n            id,\n            user_id,\n            provider,\n            provider_account_id,\n            connection_label,\n            connection_status,\n            oauth_state,\n            oauth_state_expires_at,\n            scopes,\n            last_sync_status,\n            last_sync_created_count,\n            last_sync_updated_count,\n            last_sync_duplicate_count,\n            created_at,\n            updated_at\n        )\n        VALUES (\n            $1, $2, $3, $4, $5, 'pending', $6, $7, $8, 'never', 0, 0, 0, now(), now()\n        )\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Timestamptz",
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7b1a8a8be0017825572db89e1e548776e66e5d9ca9cc5d5addc08ef1e185f0d7"
+}

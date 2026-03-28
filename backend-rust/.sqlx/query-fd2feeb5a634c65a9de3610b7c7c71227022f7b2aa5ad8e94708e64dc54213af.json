@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE expenses.staging_transactions\n                SET amount_in_cents = $1,\n                    currency = $2,\n                    booking_date = $3,\n                    value_date = $4,\n                    creditor_name = $5,\n                    debtor_name = $6,\n                    remittance_info = $7,\n                    suggested_category = CASE WHEN $8 THEN suggested_category ELSE $9 END,\n                    suggested_merchant = CASE WHEN $8 THEN suggested_merchant ELSE $10 END,\n                    updated_at = $11\n                WHERE id = $12 AND user_id = $13\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Text",
+        "Date",
+        "Date",
+        "Text",
+        "Text",
+        "Text",
+        "Bool",
+        "Text",
+        "Text",
+        "Timestamptz",
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "fd2feeb5a634c65a9de3610b7c7c71227022f7b2aa5ad8e94708e64dc54213af"
+}

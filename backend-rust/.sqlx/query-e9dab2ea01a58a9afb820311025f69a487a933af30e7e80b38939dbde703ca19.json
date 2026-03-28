@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE expenses.bank_connections\n        SET connection_status = 'connected',\n            provider_account_id = COALESCE(provider_account_id, $1),\n            encrypted_refresh_token = $2,\n            oauth_state = NULL,\n            oauth_state_expires_at = NULL,\n            scopes = $3,\n            updated_at = now()\n        WHERE id = $4 AND user_id = $5\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Bytea",
+        "TextArray",
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e9dab2ea01a58a9afb820311025f69a487a933af30e7e80b38939dbde703ca19"
+}

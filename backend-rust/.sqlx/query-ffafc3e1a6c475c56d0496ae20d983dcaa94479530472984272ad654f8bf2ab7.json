@@ -1,0 +1,27 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                INSERT INTO expenses.staging_transactions (\n                    id,\n                    user_id,\n                    bank_connection_id,\n                    bank_transaction_id,\n                    amount_in_cents,\n                    currency,\n                    booking_date,\n                    value_date,\n                    creditor_name,\n                    debtor_name,\n                    remittance_info,\n                    suggested_category,\n                    suggested_merchant,\n                    status,\n                    imported_payment_id,\n                    created_at,\n                    updated_at\n                )\n                VALUES (\n                    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'pending', NULL, $14, $14\n                )\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Uuid",
+        "Text",
+        "Int4",
+        "Text",
+        "Date",
+        "Date",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ffafc3e1a6c475c56d0496ae20d983dcaa94479530472984272ad654f8bf2ab7"
+}
