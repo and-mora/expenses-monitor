@@ -39,6 +39,20 @@ spec:
                 secretKeyRef:
                   name: backend-db-credentials
                   key: postgres-username
+            # JWT validation settings are required by backend-rust at startup.
+            # The backend discovers JWKS signing keys from the configured issuer.
+            # Only the AES key is supplied via Kubernetes Secret material.
+            - name: APP_AUTHENTICATION__JWT_ISSUER
+              value: "https://auth.expmonitor.freeddns.org/realms/expenses-monitor"
+            - name: APP_AUTHENTICATION__JWT_AUDIENCE
+              value: "frontend"
+            - name: APP_AUTHENTICATION__JWT_CLOCK_SKEW_SECONDS
+              value: "30"
+            - name: APP_BANKING__TOKEN_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backend-rust-psd2-secrets
+                  key: token-encryption-key
             - name: APP_OTLP__GRPC_ENDPOINT
               valueFrom:
                 configMapKeyRef:
