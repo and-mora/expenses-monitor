@@ -19,6 +19,19 @@ otlp:
   service_name: backend-rust  # Ensure this matches your container name
   grpc_endpoint: "http://localhost:4317"  # OpenTelemetry collector endpoint
 
+authentication:
+  jwt_issuer: "https://keycloak.example/realms/expenses"
+  # Expected Keycloak client identifier. The backend accepts tokens where this
+  # value appears in `aud`, or in Keycloak's `azp` claim for SPA-style tokens.
+  jwt_audience: "frontend"
+  # The backend discovers the signing keys from:
+  #   <jwt_issuer>/.well-known/openid-configuration
+  # and then follows the returned jwks_uri.
+  jwt_clock_skew_seconds: 30
+
+banking:
+  token_encryption_key: "REPLACE_WITH_BASE64_32_BYTE_AES_KEY"
+
 # Production: Use environment variables instead
 # Example:
 #   export APP_DATABASE__HOST=prod-db-host
