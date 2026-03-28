@@ -6,6 +6,8 @@ pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
     pub otlp: TelemetrySettings,
+    pub authentication: AuthenticationSettings,
+    pub banking: BankingSettings,
 }
 
 #[derive(Deserialize, Clone)]
@@ -33,6 +35,23 @@ pub struct DatabaseSettings {
     pub port: u16,
     pub host: String,
     pub database_name: String,
+}
+
+#[derive(Deserialize, Clone)]
+pub struct AuthenticationSettings {
+    pub jwt_issuer: String,
+    pub jwt_audience: String,
+    #[serde(default = "default_jwt_clock_skew_seconds")]
+    pub jwt_clock_skew_seconds: u64,
+}
+
+#[derive(Deserialize, Clone)]
+pub struct BankingSettings {
+    pub token_encryption_key: SecretString,
+}
+
+fn default_jwt_clock_skew_seconds() -> u64 {
+    30
 }
 
 impl DatabaseSettings {

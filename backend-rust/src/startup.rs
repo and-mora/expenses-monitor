@@ -1,7 +1,10 @@
+use crate::auth::AuthenticationService;
 use crate::configuration::Settings;
 use crate::routes::{
+    banking_accounts, banking_callback, banking_connect, banking_sync, banking_sync_status,
     create_payment, create_wallet, delete_payment, delete_wallet, get_balance, get_categories,
-    get_payment, get_recent_payments, get_wallets, greet, health_check, metrics, update_payment,
+    get_payment, get_recent_payments, get_staging_transactions, get_wallets, greet, health_check,
+    import_staging_transactions, metrics, update_payment, update_staging_transaction,
 };
 use crate::telemetry::init_meter;
 use actix_cors::Cors;
@@ -30,8 +33,19 @@ impl Application {
 
         // database configuration
         let connection_pool = get_connection_pool(&configuration);
+        let auth_service = web::Data::new(
+            AuthenticationService::build(configuration.authentication.clone())
+                .map_err(std::io::Error::other)?,
+        );
+        let banking_settings = web::Data::new(configuration.banking.clone());
 
-        let server = run(listener, connection_pool, metrics_registry)?;
+        let server = run(
+            listener,
+            connection_pool,
+            metrics_registry,
+            auth_service,
+            banking_settings,
+        )?;
 
         Ok(Self { port, server })
     }
@@ -59,6 +73,8 @@ pub fn run(
     listener: TcpListener,
     connection_pool: PgPool,
     metrics_registry: Registry,
+    auth_service: web::Data<AuthenticationService>,
+    banking_settings: web::Data<crate::configuration::BankingSettings>,
 ) -> Result<Server, std::io::Error> {
     let connection_pool = web::Data::new(connection_pool);
     let metrics_registry = web::Data::new(metrics_registry);
@@ -100,8 +116,33 @@ pub fn run(
             .route("/api/wallets", web::get().to(get_wallets))
             .route("/api/wallets", web::post().to(create_wallet))
             .route("/api/wallets/{id}", web::delete().to(delete_wallet))
+            .route("/banking/connect", web::post().to(banking_connect))
+            .route("/banking/callback", web::get().to(banking_callback))
+            .route("/banking/accounts", web::get().to(banking_accounts))
+            .route(
+                "/banking/sync/{connection_id}",
+                web::post().to(banking_sync),
+            )
+            .route(
+                "/banking/sync/{connection_id}/status",
+                web::get().to(banking_sync_status),
+            )
+            .route(
+                "/staging/transactions",
+                web::get().to(get_staging_transactions),
+            )
+            .route(
+                "/staging/transactions/{id}",
+                web::put().to(update_staging_transaction),
+            )
+            .route(
+                "/staging/import",
+                web::post().to(import_staging_transactions),
+            )
             .app_data(metrics_registry.clone())
             .app_data(connection_pool.clone())
+            .app_data(auth_service.clone())
+            .app_data(banking_settings.clone())
     })
     .listen(listener)?
     .run();
