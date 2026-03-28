@@ -22,12 +22,26 @@ pub struct BalanceResponse {
     pub expenses_in_cents: i32,
 }
 
+struct BalanceSummaryRow {
+    total: i32,
+    income: i32,
+    expenses: i32,
+}
+
 #[tracing::instrument(name = "Retrieve overall balance", skip(connection_pool, query))]
 pub async fn get_balance(
     query: web::Query<BalanceQuery>,
+    user: crate::auth::AuthenticatedUser,
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
-    match get_balance_from_db(connection_pool.deref(), query.start_date, query.end_date).await {
+    match get_balance_from_db(
+        connection_pool.deref(),
+        &user.sub,
+        query.start_date,
+        query.end_date,
+    )
+    .await
+    {
         Ok(balance) => HttpResponse::Ok().json(balance),
         Err(e) => {
             tracing::error!("Failed to execute query: {:?}", e);
@@ -43,110 +57,100 @@ pub async fn get_balance(
 )]
 async fn get_balance_from_db(
     connection_pool: &PgPool,
+    user_id: &str,
     start_date: Option<NaiveDate>,
     end_date: Option<NaiveDate>,
 ) -> Result<BalanceResponse, sqlx::Error> {
-    let (total, income, expenses) = match (start_date, end_date) {
+    let summary = match (start_date, end_date) {
         (Some(start), Some(end)) => {
-            let result = sqlx::query!(
+            sqlx::query_as!(
+                BalanceSummaryRow,
                 r#"
                 SELECT 
-                    COALESCE(SUM(amount), 0) as total,
-                    COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) as income,
-                    COALESCE(SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END), 0) as expenses
+                    COALESCE(SUM(amount), 0)::INT as "total!",
+                    COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0)::INT as "income!",
+                    COALESCE(SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END), 0)::INT as "expenses!"
                 FROM expenses.payments
-                WHERE accounting_date >= $1 AND accounting_date <= $2
+                WHERE user_id = $3 AND accounting_date >= $1 AND accounting_date <= $2
                 "#,
                 start as NaiveDate,
-                end as NaiveDate
+                end as NaiveDate,
+                user_id
             )
             .fetch_one(connection_pool)
             .await
             .map_err(|e| {
                 tracing::error!("Failed to execute query: {:?}", e);
                 e
-            })?;
-            (
-                result.total.unwrap_or(0),
-                result.income.unwrap_or(0),
-                result.expenses.unwrap_or(0),
-            )
+            })?
         }
         (Some(start), None) => {
-            let result = sqlx::query!(
+            sqlx::query_as!(
+                BalanceSummaryRow,
                 r#"
                 SELECT 
-                    COALESCE(SUM(amount), 0) as total,
-                    COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) as income,
-                    COALESCE(SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END), 0) as expenses
+                    COALESCE(SUM(amount), 0)::INT as "total!",
+                    COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0)::INT as "income!",
+                    COALESCE(SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END), 0)::INT as "expenses!"
                 FROM expenses.payments
-                WHERE accounting_date >= $1
+                WHERE user_id = $2 AND accounting_date >= $1
                 "#,
-                start as NaiveDate
+                start as NaiveDate,
+                user_id
             )
             .fetch_one(connection_pool)
             .await
             .map_err(|e| {
                 tracing::error!("Failed to execute query: {:?}", e);
                 e
-            })?;
-            (
-                result.total.unwrap_or(0),
-                result.income.unwrap_or(0),
-                result.expenses.unwrap_or(0),
-            )
+            })?
         }
         (None, Some(end)) => {
-            let result = sqlx::query!(
+            sqlx::query_as!(
+                BalanceSummaryRow,
                 r#"
                 SELECT 
-                    COALESCE(SUM(amount), 0) as total,
-                    COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) as income,
-                    COALESCE(SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END), 0) as expenses
+                    COALESCE(SUM(amount), 0)::INT as "total!",
+                    COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0)::INT as "income!",
+                    COALESCE(SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END), 0)::INT as "expenses!"
                 FROM expenses.payments
-                WHERE accounting_date <= $1
+                WHERE user_id = $2 AND accounting_date <= $1
                 "#,
-                end as NaiveDate
+                end as NaiveDate,
+                user_id
             )
             .fetch_one(connection_pool)
             .await
             .map_err(|e| {
                 tracing::error!("Failed to execute query: {:?}", e);
                 e
-            })?;
-            (
-                result.total.unwrap_or(0),
-                result.income.unwrap_or(0),
-                result.expenses.unwrap_or(0),
-            )
+            })?
         }
         (None, None) => {
-            let result = sqlx::query!(
+            sqlx::query_as!(
+                BalanceSummaryRow,
                 r#"
                 SELECT 
-                    COALESCE(SUM(amount), 0) as total,
-                    COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) as income,
-                    COALESCE(SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END), 0) as expenses
+                    COALESCE(SUM(amount), 0)::INT as "total!",
+                    COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0)::INT as "income!",
+                    COALESCE(SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END), 0)::INT as "expenses!"
                 FROM expenses.payments
-                "#
+                WHERE user_id = $1
+                "#,
+                user_id
             )
             .fetch_one(connection_pool)
             .await
             .map_err(|e| {
                 tracing::error!("Failed to execute query: {:?}", e);
                 e
-            })?;
-            (
-                result.total.unwrap_or(0),
-                result.income.unwrap_or(0),
-                result.expenses.unwrap_or(0),
-            )
+            })?
         }
     };
 
     Ok(BalanceResponse {
-        total_in_cents: total as i32,
-        income_in_cents: income as i32,
-        expenses_in_cents: expenses as i32,
+        total_in_cents: summary.total,
+        income_in_cents: summary.income,
+        expenses_in_cents: summary.expenses,
     })
 }

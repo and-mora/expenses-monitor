@@ -1,11 +1,11 @@
-use crate::domain::{Payment, PaymentDescription, PaymentMerchant};
+use crate::auth::AuthenticatedUser;
+use crate::domain::{Payment, PaymentCategory, PaymentDescription, PaymentMerchant};
 use crate::routes::wallet::get_wallet_id_by_name;
 use actix_web::web::Json;
 use actix_web::{web, HttpResponse, Responder};
 use chrono::NaiveDateTime;
-use serde::Deserialize;
-use serde_json;
-use sqlx::{Error, PgPool, Row};
+use serde::{Deserialize, Serialize};
+use sqlx::{types::Json as SqlxJson, Error, PgPool};
 use std::ops::Deref;
 use uuid::Uuid;
 
@@ -78,6 +78,19 @@ impl TryFrom<Json<PaymentDto>> for Payment {
     }
 }
 
+struct PaymentRecord {
+    id: Uuid,
+    category_name: Option<String>,
+    category_icon: Option<String>,
+    category_id: Uuid,
+    description: Option<String>,
+    merchant_name: Option<String>,
+    accounting_date: Option<NaiveDateTime>,
+    amount: Option<i32>,
+    wallet_name: Option<String>,
+    tags: SqlxJson<Vec<TagResponseDto>>,
+}
+
 #[tracing::instrument(
     name = "Creating a new payment",
     skip(payload, connection_pool),
@@ -88,7 +101,7 @@ impl TryFrom<Json<PaymentDto>> for Payment {
 )]
 pub async fn create_payment(
     payload: Json<PaymentDto>,
-    user: crate::auth::AuthenticatedUser,
+    user: AuthenticatedUser,
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
     let user_id = user.sub;
@@ -115,80 +128,16 @@ pub async fn create_payment(
     // Create payment: accept either canonical `categoryId` (UUID) or legacy category name
     let payment_data = payload.0;
 
-    // Resolve category identifier to canonical UUID
-    let resolved_category_id: Uuid = match payment_data.category_id.clone() {
-        CategoryIdentifier::Uid(uid) => uid,
-        CategoryIdentifier::Name(name) => {
-            match sqlx::query_scalar!(
-                "SELECT id FROM expenses.categories WHERE LOWER(name) = LOWER($1)",
-                name
-            )
-            .fetch_optional(connection_pool.get_ref())
-            .await
-            {
-                Ok(Some(id)) => id,
-                Ok(None) => {
-                    // Category not found: create it (safe due to unique index on lower(name)).
-                    match sqlx::query_scalar!(
-                        "INSERT INTO expenses.categories (name) VALUES ($1) RETURNING id",
-                        name
-                    )
-                    .fetch_one(connection_pool.get_ref())
-                    .await
-                    {
-                        Ok(new_id) => new_id,
-                        Err(insert_err) => {
-                            tracing::warn!(
-                                "Failed to insert category (maybe concurrent): {:?}",
-                                insert_err
-                            );
-                            // Try to select again in case another request inserted it concurrently
-                            match sqlx::query_scalar!(
-                                "SELECT id FROM expenses.categories WHERE LOWER(name) = LOWER($1)",
-                                name
-                            )
-                            .fetch_optional(connection_pool.get_ref())
-                            .await
-                            {
-                                Ok(Some(id)) => id,
-                                Ok(None) => {
-                                    tracing::error!(
-                                        "Failed to create category and it does not exist: {}",
-                                        name
-                                    );
-                                    return HttpResponse::InternalServerError().finish();
-                                }
-                                Err(e) => {
-                                    tracing::error!("Failed to lookup category by name after insert error: {:?}", e);
-                                    return HttpResponse::InternalServerError().finish();
-                                }
-                            }
-                        }
-                    }
-                }
-                Err(e) => {
-                    tracing::error!("Failed to lookup category by name: {:?}", e);
-                    return HttpResponse::InternalServerError().finish();
-                }
-            }
-        }
-    };
-
-    // Validate category exists when UUID was provided by client
-    match sqlx::query_scalar!(
-        "SELECT id FROM expenses.categories WHERE id = $1",
-        resolved_category_id
+    let resolved_category_id = match resolve_category_identifier(
+        connection_pool.get_ref(),
+        &user_id,
+        payment_data.category_id.clone(),
     )
-    .fetch_optional(connection_pool.get_ref())
     .await
     {
-        Ok(Some(_)) => {}
-        Ok(None) => return HttpResponse::BadRequest().body("categoryId not found"),
-        Err(e) => {
-            tracing::error!("Failed to validate category: {:?}", e);
-            return HttpResponse::InternalServerError().finish();
-        }
-    }
+        Ok(category_id) => category_id,
+        Err(response) => return response,
+    };
 
     let payment = match Payment::try_from_dto(
         payment_data,
@@ -283,24 +232,23 @@ pub async fn create_payment(
     skip(payment, connection_pool)
 )]
 async fn insert_payment(payment: &Payment, connection_pool: &PgPool) -> Result<Uuid, Error> {
-    let row = sqlx::query(
+    let payment_id = sqlx::query_scalar!(
         "insert into expenses.payments (category_id, description, merchant_name, accounting_date, amount, wallet_id, user_id) values ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
+        payment.category_id,
+        payment.description.as_ref().map(|d| d.as_ref()),
+        payment.merchant_name.as_ref(),
+        payment.accounting_date,
+        payment.amount_in_cents,
+        payment.wallet_id,
+        payment.user_id.as_str()
     )
-    .bind(payment.category_id)
-    .bind(payment.description.as_ref().map(|d| d.as_ref()))
-    .bind(payment.merchant_name.as_ref())
-    .bind(payment.accounting_date)
-    .bind(payment.amount_in_cents)
-    .bind(payment.wallet_id)
-    .bind(payment.user_id.as_str())
     .fetch_one(connection_pool)
     .await
     .map_err(|e| {
         tracing::error!("Failed to execute query: {:?}", e);
         e
     })?;
-    let id: Uuid = row.try_get("id")?;
-    Ok(id)
+    Ok(payment_id)
 }
 
 #[tracing::instrument(
@@ -376,7 +324,7 @@ async fn delete_payment_query(
 pub async fn update_payment(
     path: web::Path<Uuid>,
     payload: Json<PaymentDto>,
-    user: crate::auth::AuthenticatedUser,
+    user: AuthenticatedUser,
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
     let payment_id = path.into_inner();
@@ -407,78 +355,15 @@ pub async fn update_payment(
     // Create payment with resolved wallet_id
     let payment_data = payload.0;
 
-    // Resolve category identifier to canonical UUID
-    let resolved_category_id: Uuid = match payment_data.category_id.clone() {
-        CategoryIdentifier::Uid(uid) => uid,
-        CategoryIdentifier::Name(name) => {
-            match sqlx::query_scalar!(
-                "SELECT id FROM expenses.categories WHERE LOWER(name) = LOWER($1)",
-                name
-            )
-            .fetch_optional(connection_pool.get_ref())
-            .await
-            {
-                Ok(Some(id)) => id,
-                Ok(None) => {
-                    // Category not found: create it and return new id
-                    match sqlx::query_scalar!(
-                        "INSERT INTO expenses.categories (name) VALUES ($1) RETURNING id",
-                        name
-                    )
-                    .fetch_one(connection_pool.get_ref())
-                    .await
-                    {
-                        Ok(new_id) => new_id,
-                        Err(insert_err) => {
-                            tracing::warn!(
-                                "Failed to insert category (maybe concurrent): {:?}",
-                                insert_err
-                            );
-                            match sqlx::query_scalar!(
-                                "SELECT id FROM expenses.categories WHERE LOWER(name) = LOWER($1)",
-                                name
-                            )
-                            .fetch_optional(connection_pool.get_ref())
-                            .await
-                            {
-                                Ok(Some(id)) => id,
-                                Ok(None) => {
-                                    tracing::error!(
-                                        "Failed to create category and it does not exist: {}",
-                                        name
-                                    );
-                                    return HttpResponse::InternalServerError().finish();
-                                }
-                                Err(e) => {
-                                    tracing::error!("Failed to lookup category by name after insert error: {:?}", e);
-                                    return HttpResponse::InternalServerError().finish();
-                                }
-                            }
-                        }
-                    }
-                }
-                Err(e) => {
-                    tracing::error!("Failed to lookup category by name: {:?}", e);
-                    return HttpResponse::InternalServerError().finish();
-                }
-            }
-        }
-    };
-
-    // Validate category exists when UUID was provided by client
-    match sqlx::query_scalar!(
-        "SELECT id FROM expenses.categories WHERE id = $1",
-        resolved_category_id
+    let resolved_category_id = match resolve_category_identifier(
+        connection_pool.get_ref(),
+        &user_id,
+        payment_data.category_id.clone(),
     )
-    .fetch_optional(connection_pool.get_ref())
     .await
     {
-        Ok(Some(_)) => {}
-        Ok(None) => return HttpResponse::BadRequest().body("categoryId not found"),
-        Err(e) => {
-            tracing::error!("Failed to validate category: {:?}", e);
-            return HttpResponse::InternalServerError().finish();
-        }
+        Ok(category_id) => category_id,
+        Err(response) => return response,
     };
 
     let payment = match Payment::try_from_dto(
@@ -581,7 +466,7 @@ async fn update_payment_query(
     payment_id: Uuid,
     connection_pool: &PgPool,
 ) -> Result<(), Error> {
-    sqlx::query(
+    sqlx::query!(
         r#"
         UPDATE expenses.payments
         SET category_id = $1,
@@ -592,15 +477,15 @@ async fn update_payment_query(
                 wallet_id = $6
             WHERE id = $7 AND user_id = $8
         "#,
+        payment.category_id,
+        payment.description.as_ref().map(|d| d.as_ref()),
+        payment.merchant_name.as_ref(),
+        payment.accounting_date,
+        payment.amount_in_cents,
+        payment.wallet_id,
+        payment_id,
+        payment.user_id.as_str()
     )
-    .bind(payment.category_id)
-    .bind(payment.description.as_ref().map(|d| d.as_ref()))
-    .bind(payment.merchant_name.as_ref())
-    .bind(payment.accounting_date)
-    .bind(payment.amount_in_cents)
-    .bind(payment.wallet_id)
-    .bind(payment_id)
-    .bind(payment.user_id.as_str())
     .execute(connection_pool)
     .await
     .map_err(|e| {
@@ -639,9 +524,7 @@ pub struct CategoryQuery {
     category_type: Option<String>,
 }
 
-use serde::Serialize as SerSerialize;
-
-#[derive(SerSerialize)]
+#[derive(Serialize)]
 pub struct CategoryDto {
     #[serde(rename = "id")]
     pub id: Uuid,
@@ -653,9 +536,16 @@ pub struct CategoryDto {
 #[tracing::instrument(name = "Retrieve all categories", skip(connection_pool))]
 pub async fn get_categories(
     connection_pool: web::Data<PgPool>,
+    user: AuthenticatedUser,
     query: web::Query<CategoryQuery>,
 ) -> impl Responder {
-    match get_categories_from_db(connection_pool.get_ref(), query.category_type.as_deref()).await {
+    match get_categories_from_db(
+        connection_pool.get_ref(),
+        &user.sub,
+        query.category_type.as_deref(),
+    )
+    .await
+    {
         Ok(categories) => HttpResponse::Ok().json(categories),
         Err(e) => {
             tracing::error!("Failed to execute query: {:?}", e);
@@ -670,31 +560,159 @@ pub async fn get_categories(
 )]
 async fn get_categories_from_db(
     connection_pool: &PgPool,
+    user_id: &str,
     category_type: Option<&str>,
 ) -> Result<Vec<CategoryDto>, Error> {
-    // Build query to return category name and optional icon
-    let query = match category_type {
-        Some("expense") => {
-            "select c.id, c.name, c.icon from expenses.categories c where c.kind = 'expense'"
-        }
-        Some("income") => {
-            "select c.id, c.name, c.icon from expenses.categories c where c.kind = 'income'"
-        }
-        _ => "select c.id, c.name, c.icon from expenses.categories c",
-    };
-
-    let rows = sqlx::query_as::<_, (Uuid, String, Option<String>)>(query)
+    match category_type {
+        Some("expense") => sqlx::query_as!(
+            CategoryDto,
+            r#"
+            SELECT id as "id!", name as "name!", icon
+            FROM expenses.categories
+            WHERE user_id = $1 AND kind = 'expense'
+            "#,
+            user_id
+        )
         .fetch_all(connection_pool)
         .await
         .map_err(|e| {
             tracing::error!("Failed to execute query: {:?}", e);
             e
-        })?;
-    let categories = rows
-        .into_iter()
-        .map(|(id, name, icon)| CategoryDto { id, name, icon })
-        .collect();
-    Ok(categories)
+        }),
+        Some("income") => sqlx::query_as!(
+            CategoryDto,
+            r#"
+            SELECT id as "id!", name as "name!", icon
+            FROM expenses.categories
+            WHERE user_id = $1 AND kind = 'income'
+            "#,
+            user_id
+        )
+        .fetch_all(connection_pool)
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to execute query: {:?}", e);
+            e
+        }),
+        _ => sqlx::query_as!(
+            CategoryDto,
+            r#"
+            SELECT id as "id!", name as "name!", icon
+            FROM expenses.categories
+            WHERE user_id = $1
+            "#,
+            user_id
+        )
+        .fetch_all(connection_pool)
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to execute query: {:?}", e);
+            e
+        }),
+    }
+}
+
+async fn resolve_category_identifier(
+    connection_pool: &PgPool,
+    user_id: &str,
+    category_identifier: CategoryIdentifier,
+) -> Result<Uuid, HttpResponse> {
+    match category_identifier {
+        CategoryIdentifier::Uid(category_id) => {
+            let owned_category = sqlx::query_scalar!(
+                r#"
+                SELECT id
+                FROM expenses.categories
+                WHERE id = $1 AND user_id = $2
+                "#,
+                category_id,
+                user_id
+            )
+            .fetch_optional(connection_pool)
+            .await
+            .map_err(|err| {
+                tracing::error!("Failed to validate category ownership: {:?}", err);
+                HttpResponse::InternalServerError().finish()
+            })?;
+
+            owned_category.ok_or_else(|| HttpResponse::BadRequest().body("categoryId not found"))
+        }
+        CategoryIdentifier::Name(name) => {
+            let parsed_name = match PaymentCategory::parse(name) {
+                Ok(parsed) => parsed,
+                Err(_) => return Err(HttpResponse::BadRequest().body("invalid category")),
+            };
+
+            let category_name = parsed_name.as_ref().trim().to_string();
+            let existing = sqlx::query_scalar!(
+                r#"
+                SELECT id
+                FROM expenses.categories
+                WHERE lower(name) = lower($1)
+                  AND user_id = $2
+                "#,
+                &category_name,
+                user_id
+            )
+            .fetch_optional(connection_pool)
+            .await
+            .map_err(|err| {
+                tracing::error!("Failed to look up category by name: {:?}", err);
+                HttpResponse::InternalServerError().finish()
+            })?;
+
+            if let Some(category_id) = existing {
+                return Ok(category_id);
+            }
+
+            let inserted = sqlx::query_scalar!(
+                r#"
+                INSERT INTO expenses.categories (name, user_id)
+                VALUES ($1, $2)
+                ON CONFLICT DO NOTHING
+                RETURNING id
+                "#,
+                &category_name,
+                user_id
+            )
+            .fetch_optional(connection_pool)
+            .await
+            .map_err(|err| {
+                tracing::error!("Failed to insert category: {:?}", err);
+                HttpResponse::InternalServerError().finish()
+            })?;
+
+            if let Some(category_id) = inserted {
+                return Ok(category_id);
+            }
+
+            let category_id = sqlx::query_scalar!(
+                r#"
+                SELECT id
+                FROM expenses.categories
+                WHERE lower(name) = lower($1)
+                  AND user_id = $2
+                "#,
+                &category_name,
+                user_id
+            )
+            .fetch_optional(connection_pool)
+            .await
+            .map_err(|err| {
+                tracing::error!("Failed to reload category after insert race: {:?}", err);
+                HttpResponse::InternalServerError().finish()
+            })?;
+
+            category_id.ok_or_else(|| {
+                tracing::error!(
+                    "Category resolution failed after insert race for user {} and category {}",
+                    user_id,
+                    category_name
+                );
+                HttpResponse::InternalServerError().finish()
+            })
+        }
+    }
 }
 
 /*
@@ -741,8 +759,6 @@ fn default_size() -> i64 {
     10
 }
 
-use serde::Serialize;
-
 #[derive(Serialize, Deserialize)]
 pub struct TagResponseDto {
     id: Uuid,
@@ -783,12 +799,20 @@ pub struct PagedResponse<T> {
 #[tracing::instrument(name = "Retrieve recent payments", skip(connection_pool, params))]
 pub async fn get_recent_payments(
     params: web::Query<PaginationParams>,
+    user: crate::auth::AuthenticatedUser,
     connection_pool: web::Data<PgPool>,
 ) -> impl Responder {
     let offset = params.page * params.size;
     let filters = PaymentFilters::from(params.deref());
 
-    match get_recent_payments_from_db(connection_pool.get_ref(), params.size, offset, filters).await
+    match get_recent_payments_from_db(
+        connection_pool.get_ref(),
+        &user.sub,
+        params.size,
+        offset,
+        filters,
+    )
+    .await
     {
         Ok(payments) => {
             let response = PagedResponse {
@@ -811,175 +835,96 @@ pub async fn get_recent_payments(
 )]
 async fn get_recent_payments_from_db(
     connection_pool: &PgPool,
+    user_id: &str,
     limit: i64,
     offset: i64,
     filters: PaymentFilters,
 ) -> Result<Vec<PaymentResponseDto>, Error> {
-    // Build dynamic WHERE clause conditions with proper parameter indexing
-    let mut conditions = Vec::new();
-    let mut param_index = 3; // Start after limit ($1) and offset ($2)
-
-    let date_from_param_idx = if filters.date_from.is_some() {
-        let idx = param_index;
-        conditions.push(format!("DATE(p.accounting_date) >= ${}::date", idx));
-        param_index += 1;
-        Some(idx)
-    } else {
+    let category_uuid = filters
+        .category
+        .as_deref()
+        .and_then(|category| category.parse::<Uuid>().ok());
+    let category_name = if category_uuid.is_some() {
         None
-    };
-
-    let date_to_param_idx = if filters.date_to.is_some() {
-        let idx = param_index;
-        conditions.push(format!("DATE(p.accounting_date) <= ${}::date", idx));
-        param_index += 1;
-        Some(idx)
     } else {
-        None
+        filters.category.as_deref()
     };
+    let search_pattern = filters
+        .search
+        .as_ref()
+        .map(|search| format!("%{}%", search.to_lowercase()));
 
-    let category_param_idx = if filters.category.is_some() {
-        let idx = param_index;
-        // If the provided category filter is a UUID, filter by category_id, otherwise filter by category name
-        if filters
-            .category
-            .as_ref()
-            .and_then(|s| s.parse::<Uuid>().ok())
-            .is_some()
-        {
-            conditions.push(format!("p.category_id = ${}", idx));
-        } else {
-            conditions.push(format!("LOWER(c.name) = LOWER(${})", idx));
-        }
-        param_index += 1;
-        Some(idx)
-    } else {
-        None
-    };
-
-    let wallet_param_idx = if filters.wallet.is_some() {
-        let idx = param_index;
-        conditions.push(format!("w.name = ${}", idx));
-        param_index += 1;
-        Some(idx)
-    } else {
-        None
-    };
-
-    let search_param_idx = if filters.search.is_some() {
-        let idx = param_index;
-        conditions.push(format!(
-            "(LOWER(p.merchant_name) LIKE ${} OR LOWER(p.description) LIKE ${})",
-            idx, idx
-        ));
-        Some(idx)
-    } else {
-        None
-    };
-
-    let where_clause = if conditions.is_empty() {
-        String::new()
-    } else {
-        format!("WHERE {}", conditions.join(" AND "))
-    };
-
-    let query_str = format!(
+    let records = sqlx::query_as!(
+        PaymentRecord,
         r#"
-         SELECT p.id,
-             c.name AS category_name,
-             c.icon AS category_icon,
-             p.category_id,
-               p.description,
-               p.merchant_name,
-               p.accounting_date,
-               p.amount,
-               w.name as wallet_name,
-               COALESCE((SELECT json_agg(
-                   json_build_object('id', pt.id, 'key', pt.key, 'value', pt.value)
-               ) FROM expenses.payments_tags pt WHERE pt.payment_id = p.id), '[]'::json) as tags
+        SELECT
+            p.id as "id!",
+            c.name AS category_name,
+            c.icon AS category_icon,
+            p.category_id as "category_id!",
+            p.description,
+            p.merchant_name,
+            p.accounting_date,
+            p.amount,
+            w.name as wallet_name,
+            COALESCE((
+                SELECT json_agg(
+                    json_build_object('id', pt.id, 'key', pt.key, 'value', pt.value)
+                )
+                FROM expenses.payments_tags pt
+                WHERE pt.payment_id = p.id
+            ), '[]'::json) as "tags!: SqlxJson<Vec<TagResponseDto>>"
         FROM expenses.payments p
         LEFT JOIN expenses.categories c ON p.category_id = c.id
         LEFT JOIN expenses.wallets w ON p.wallet_id = w.id
-        {}
+        WHERE p.user_id = $1
+          AND ($4::text IS NULL OR DATE(p.accounting_date) >= CAST($4 AS date))
+          AND ($5::text IS NULL OR DATE(p.accounting_date) <= CAST($5 AS date))
+          AND (
+                ($6::uuid IS NOT NULL AND p.category_id = $6)
+                OR ($6::uuid IS NULL AND ($7::text IS NULL OR LOWER(c.name) = LOWER($7)))
+          )
+          AND ($8::text IS NULL OR w.name = $8)
+          AND (
+                $9::text IS NULL
+                OR LOWER(COALESCE(p.merchant_name, '')) LIKE $9
+                OR LOWER(COALESCE(p.description, '')) LIKE $9
+          )
         ORDER BY p.accounting_date DESC
-        LIMIT $1 OFFSET $2
+        LIMIT $2 OFFSET $3
         "#,
-        where_clause
-    );
-
-    // Build query with proper parameters in order
-    let mut query = sqlx::query_as::<
-        _,
-        (
-            Uuid,
-            Option<String>, // category_name
-            Option<String>, // category_icon (from categories.icon)
-            Option<Uuid>,   // category_id
-            Option<String>, // description
-            Option<String>, // merchant_name
-            Option<NaiveDateTime>,
-            Option<i32>,
-            Option<String>,    // wallet_name
-            serde_json::Value, // tags as JSON array
-        ),
-    >(&query_str)
-    .bind(limit)
-    .bind(offset);
-
-    if let (Some(_), Some(df)) = (date_from_param_idx, &filters.date_from) {
-        query = query.bind(df);
-    }
-    if let (Some(_), Some(dt)) = (date_to_param_idx, &filters.date_to) {
-        query = query.bind(dt);
-    }
-    if let (Some(_), Some(cat)) = (category_param_idx, &filters.category) {
-        // Bind as UUID when possible, otherwise bind as string
-        if let Ok(uid) = cat.parse::<Uuid>() {
-            query = query.bind(uid);
-        } else {
-            query = query.bind(cat.clone());
-        }
-    }
-    if let (Some(_), Some(wal)) = (wallet_param_idx, &filters.wallet) {
-        query = query.bind(wal);
-    }
-    if let (Some(_), Some(s)) = (search_param_idx, &filters.search) {
-        let search_pattern = format!("%{}%", s.to_lowercase());
-        query = query.bind(search_pattern);
-    }
-
-    let records = query.fetch_all(connection_pool).await.map_err(|e| {
+        user_id,
+        limit,
+        offset,
+        filters.date_from.as_deref(),
+        filters.date_to.as_deref(),
+        category_uuid,
+        category_name,
+        filters.wallet.as_deref(),
+        search_pattern.as_deref()
+    )
+    .fetch_all(connection_pool)
+    .await
+    .map_err(|e| {
         tracing::error!("Failed to execute query: {:?}", e);
         e
     })?;
 
-    let mut result = Vec::new();
-    for record in records {
-        let payment_id = record.0;
-        let tags_json = record.9;
-
-        let tags: Vec<TagResponseDto> = match serde_json::from_value(tags_json) {
-            Ok(tags) => tags,
-            Err(e) => {
-                tracing::error!("Failed to parse tags for payment {}: {:?}", payment_id, e);
-                Vec::new()
-            }
-        };
-
-        result.push(PaymentResponseDto {
-            id: payment_id,
-            description: record.4,
-            amount_in_cents: record.7.unwrap_or(0),
-            merchant_name: record.5.unwrap_or_default(),
-            accounting_date: record.6.unwrap_or_default(),
-            category: record.1.unwrap_or_default(),
-            category_id: record.3,
-            category_icon: record.2,
-            wallet: record.8,
-            tags,
-        });
-    }
-
-    Ok(result)
+    Ok(records
+        .into_iter()
+        .map(|record| PaymentResponseDto {
+            id: record.id,
+            description: record.description,
+            amount_in_cents: record.amount.unwrap_or(0),
+            merchant_name: record.merchant_name.unwrap_or_default(),
+            accounting_date: record.accounting_date.unwrap_or_default(),
+            category: record.category_name.unwrap_or_default(),
+            category_id: Some(record.category_id),
+            category_icon: record.category_icon,
+            wallet: record.wallet_name,
+            tags: record.tags.0,
+        })
+        .collect())
 }
 
 /*
@@ -1091,20 +1036,21 @@ async fn get_payment_from_db(
     payment_id: Uuid,
     user_id: &str,
 ) -> Result<Option<PaymentResponseDto>, Error> {
-    let row = sqlx::query!(
+    let row = sqlx::query_as!(
+        PaymentRecord,
         r#"
-         SELECT p.id,
+         SELECT p.id as "id!",
              c.name AS category_name,
              c.icon AS category_icon,
-             p.category_id,
-               p.description,
-               p.merchant_name,
-               p.accounting_date,
-               p.amount,
-               w.name as "wallet_name!",
-               COALESCE((SELECT json_agg(
-                   json_build_object('id', pt.id, 'key', pt.key, 'value', pt.value)
-               ) FROM expenses.payments_tags pt WHERE pt.payment_id = p.id), '[]'::json) as tags
+             p.category_id as "category_id!",
+             p.description,
+             p.merchant_name,
+             p.accounting_date,
+             p.amount,
+             w.name as wallet_name,
+             COALESCE((SELECT json_agg(
+                    json_build_object('id', pt.id, 'key', pt.key, 'value', pt.value)
+                ) FROM expenses.payments_tags pt WHERE pt.payment_id = p.id), '[]'::json) as "tags!: SqlxJson<Vec<TagResponseDto>>"
         FROM expenses.payments p
         LEFT JOIN expenses.categories c ON p.category_id = c.id
         LEFT JOIN expenses.wallets w ON p.wallet_id = w.id
@@ -1117,26 +1063,17 @@ async fn get_payment_from_db(
     .await?;
 
     if let Some(record) = row {
-        let tags: Vec<TagResponseDto> =
-            match serde_json::from_value(record.tags.unwrap_or_default()) {
-                Ok(tags) => tags,
-                Err(e) => {
-                    tracing::error!("Failed to parse tags for payment {}: {:?}", payment_id, e);
-                    Vec::new()
-                }
-            };
-
         Ok(Some(PaymentResponseDto {
             id: record.id,
             description: record.description,
             amount_in_cents: record.amount.unwrap_or(0),
             merchant_name: record.merchant_name.unwrap_or_default(),
             accounting_date: record.accounting_date.unwrap_or_default(),
-            category: record.category_name,
+            category: record.category_name.unwrap_or_default(),
             category_id: Some(record.category_id),
             category_icon: record.category_icon,
-            wallet: Some(record.wallet_name),
-            tags,
+            wallet: record.wallet_name,
+            tags: record.tags.0,
         }))
     } else {
         Ok(None)
