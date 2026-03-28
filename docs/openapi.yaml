@@ -4,7 +4,7 @@ info:
   description: |
     REST API for personal expense tracking and financial management.
     
-    **Authentication:** All endpoints (except `/greet` and `/health_check`) require Bearer token authentication via Keycloak OAuth2.
+    **Authentication:** All endpoints (except `/greet` and `/health`) require Bearer token authentication via Keycloak OAuth2.
     
     **Base URL:** Configurable via environment variable (e.g., `https://api.expenses-monitor.com`)
   version: 1.0.0
@@ -29,12 +29,16 @@ tags:
     description: Payment/transaction management
   - name: Wallets
     description: Wallet management operations
+  - name: Banking
+    description: PSD2 bank connection and sync operations
+  - name: Staging
+    description: Staging transaction review and import operations
 
 security:
   - bearerAuth: []
 
 paths:
-  /health_check:
+  /health:
     get:
       tags:
         - Health
@@ -408,6 +412,350 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
+  /banking/connect:
+    post:
+      tags:
+        - Banking
+      summary: Create a bank connection and start authorization
+      description: |
+        Creates a per-user bank connection record and returns an authorization URL for the provider flow.
+
+        Current backend support is limited to the `mock` provider. Other provider values return `400`.
+        The connection is owned by the authenticated user (`sub` claim from Keycloak) and the pending
+        OAuth state expires after 15 minutes.
+      operationId: bankingConnect
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BankingConnectRequest'
+      responses:
+        '200':
+          description: Connection created and authorization URL returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankingConnectResponse'
+        '400':
+          description: Unsupported provider or invalid request payload
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                unsupportedProvider:
+                  value: unsupported provider
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /banking/callback:
+    get:
+      tags:
+        - Banking
+      summary: Complete the provider authorization callback
+      description: |
+        Completes the OAuth callback for an authenticated user, validates the `state`, encrypts the refresh token
+        at rest with AES-GCM, and marks the connection as `connected`.
+
+        The callback is currently implemented for the `mock` provider. On success the endpoint returns the same
+        authorization payload shape used by `POST /banking/connect`.
+      operationId: bankingCallback
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Authorization code returned by the provider
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Opaque state value created during connection setup
+        - name: provider
+          in: query
+          required: false
+          schema:
+            type: string
+            default: mock
+          description: Provider name; only `mock` is currently supported by the backend
+      responses:
+        '200':
+          description: Callback processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankingConnectResponse'
+        '400':
+          description: Invalid state, expired state, or provider authorization failure
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                expiredState:
+                  value: bank connection state expired
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Pending bank connection not found for the authenticated user and state
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /banking/accounts:
+    get:
+      tags:
+        - Banking
+      summary: List bank connections for the authenticated user
+      description: |
+        Returns the user-owned banking connection summaries, including sync metadata and the latest sync result.
+      operationId: listBankConnections
+      responses:
+        '200':
+          description: List of bank connections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BankingAccountSummary'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /banking/sync/{connectionId}:
+    post:
+      tags:
+        - Banking
+      summary: Trigger a manual sync for a bank connection
+      description: |
+        Fetches transactions for the specified bank connection, upserts them into `expenses.staging_transactions`,
+        and preserves user-reviewed/rejected/imported state when a matching bank transaction already exists.
+
+        The connection must belong to the authenticated user and must be in `connected` status.
+      operationId: syncBankConnection
+      parameters:
+        - name: connectionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Bank connection UUID
+      responses:
+        '200':
+          description: Sync summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankingSyncResponse'
+        '400':
+          description: Connection is not connected or refresh token is missing
+          content:
+            text/plain:
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Connection not found for the authenticated user
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /banking/sync/{connectionId}/status:
+    get:
+      tags:
+        - Banking
+      summary: Get the last sync status for a bank connection
+      description: Returns the persisted sync status and counters for the specified connection.
+      operationId: getBankConnectionSyncStatus
+      parameters:
+        - name: connectionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Bank connection UUID
+      responses:
+        '200':
+          description: Sync status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankingSyncStatusResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Connection not found for the authenticated user
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /staging/transactions:
+    get:
+      tags:
+        - Staging
+      summary: List staging transactions
+      description: |
+        Returns staging transactions owned by the authenticated user.
+        Supports pagination, status filtering, date filtering, and optional filtering by bank connection.
+      operationId: getStagingTransactions
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+          description: Zero-based page index
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+          description: Number of rows per page
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - pending
+              - reviewed
+              - imported
+              - rejected
+          description: Filter by staging transaction status
+        - name: dateFrom
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filter rows booked on or after this date
+        - name: dateTo
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filter rows booked on or before this date
+        - name: connectionId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Filter rows belonging to a specific bank connection
+      responses:
+        '200':
+          description: Paginated staging transactions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedStagingTransactionResponse'
+        '400':
+          description: Invalid status value
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                invalidStatus:
+                  value: invalid status
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /staging/transactions/{id}:
+    put:
+      tags:
+        - Staging
+      summary: Update a staging transaction
+      description: |
+        Updates the suggested merchant, suggested category, and review status for a staging transaction owned by
+        the authenticated user. The `imported` status cannot be set directly; it is reserved for the bulk import flow.
+      operationId: updateStagingTransaction
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Staging transaction UUID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StagingTransactionUpdate'
+      responses:
+        '200':
+          description: Updated staging transaction
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StagingUpdateResponse'
+        '400':
+          description: Invalid status or imported status supplied
+          content:
+            text/plain:
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Staging transaction not found for the authenticated user
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /staging/import:
+    post:
+      tags:
+        - Staging
+      summary: Import reviewed staging transactions into payments
+      description: |
+        Imports reviewed staging transactions into `expenses.payments` for the authenticated user.
+
+        If `transactionIds` is omitted or empty, the backend imports all reviewed rows for that user.
+        The response includes the number selected, imported, and skipped, plus the created payment IDs.
+      operationId: importStagingTransactions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StagingImportRequest'
+      responses:
+        '200':
+          description: Import summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StagingImportResponse'
+        '400':
+          description: Missing category information or invalid default category
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                missingCategory:
+                  value: missing category for import
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   /api/wallets:
     get:
       tags:
@@ -514,6 +862,11 @@ components:
       bearerFormat: JWT
       description: |
         OAuth2 Bearer token from Keycloak.
+        
+        The backend validates the token signature, issuer, expiration, and expected Keycloak client identifier
+        against the configured issuer metadata and JWKS signing keys discovered from the OpenID configuration
+        endpoint. Recipient matching accepts either the configured value in `aud`, or Keycloak's `azp` claim for
+        SPA-issued tokens.
         
         Include the token in the Authorization header:
         ```
@@ -727,6 +1080,296 @@ components:
           description: Optional key-value metadata tags (replaces existing tags)
           items:
             $ref: '#/components/schemas/Tag'
+
+    BankingConnectRequest:
+      type: object
+      properties:
+        provider:
+          type: string
+          default: mock
+          description: Provider name; currently only `mock` is supported by the backend
+          example: mock
+        accountId:
+          type: string
+          nullable: true
+          description: Optional provider account identifier
+          example: acc-001
+        connectionLabel:
+          type: string
+          nullable: true
+          description: Optional human-friendly label for the connection
+          example: Household Checking
+        redirectUri:
+          type: string
+          format: uri
+          nullable: true
+          description: Optional frontend redirect URI to embed in the authorization URL
+          example: https://app.example.com/banking
+
+    BankingConnectResponse:
+      type: object
+      required:
+        - connectionId
+        - provider
+        - authorizationUrl
+        - state
+        - expiresAt
+      properties:
+        connectionId:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        provider:
+          type: string
+          example: mock
+        authorizationUrl:
+          type: string
+          format: uri
+          example: https://mock.local/oauth/authorize?state=...
+        state:
+          type: string
+          example: 9a4d2c2d-9d72-4e52-8f0f-8d7b6e5b1d6f
+        expiresAt:
+          type: string
+          format: date-time
+          example: "2026-03-27T12:00:00Z"
+
+    BankingAccountSummary:
+      type: object
+      required:
+        - connectionId
+        - provider
+        - connectionStatus
+        - lastSyncStatus
+        - lastSyncCreatedCount
+        - lastSyncUpdatedCount
+        - lastSyncDuplicateCount
+      properties:
+        connectionId:
+          type: string
+          format: uuid
+        provider:
+          type: string
+        providerAccountId:
+          type: string
+          nullable: true
+        connectionLabel:
+          type: string
+          nullable: true
+        connectionStatus:
+          type: string
+          enum: [pending, connected, error, revoked]
+        lastSyncAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastSyncStatus:
+          type: string
+        lastSyncCreatedCount:
+          type: integer
+        lastSyncUpdatedCount:
+          type: integer
+        lastSyncDuplicateCount:
+          type: integer
+        lastSyncError:
+          type: string
+          nullable: true
+
+    BankingSyncResponse:
+      type: object
+      required:
+        - connectionId
+        - provider
+        - connectionStatus
+        - createdCount
+        - updatedCount
+        - duplicateCount
+        - syncedAt
+      properties:
+        connectionId:
+          type: string
+          format: uuid
+        provider:
+          type: string
+        connectionStatus:
+          type: string
+          enum: [pending, connected, error, revoked]
+        createdCount:
+          type: integer
+        updatedCount:
+          type: integer
+        duplicateCount:
+          type: integer
+        syncedAt:
+          type: string
+          format: date-time
+
+    BankingSyncStatusResponse:
+      type: object
+      required:
+        - connectionId
+        - provider
+        - connectionStatus
+        - lastSyncStatus
+        - lastSyncCreatedCount
+        - lastSyncUpdatedCount
+        - lastSyncDuplicateCount
+      properties:
+        connectionId:
+          type: string
+          format: uuid
+        provider:
+          type: string
+        connectionStatus:
+          type: string
+          enum: [pending, connected, error, revoked]
+        lastSyncAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastSyncStatus:
+          type: string
+        lastSyncCreatedCount:
+          type: integer
+        lastSyncUpdatedCount:
+          type: integer
+        lastSyncDuplicateCount:
+          type: integer
+        lastSyncError:
+          type: string
+          nullable: true
+
+    StagingTransaction:
+      type: object
+      required:
+        - id
+        - bankConnectionId
+        - bankTransactionId
+        - amountInCents
+        - currency
+        - bookingDate
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        bankConnectionId:
+          type: string
+          format: uuid
+        bankTransactionId:
+          type: string
+        amountInCents:
+          type: integer
+        currency:
+          type: string
+        bookingDate:
+          type: string
+          format: date
+        valueDate:
+          type: string
+          format: date
+          nullable: true
+        creditorName:
+          type: string
+          nullable: true
+        debtorName:
+          type: string
+          nullable: true
+        remittanceInfo:
+          type: string
+          nullable: true
+        suggestedCategory:
+          type: string
+          nullable: true
+        suggestedMerchant:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [pending, reviewed, imported, rejected]
+        importedPaymentId:
+          type: string
+          format: uuid
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    PagedStagingTransactionResponse:
+      type: object
+      required:
+        - content
+        - page
+        - size
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/StagingTransaction'
+        page:
+          type: integer
+        size:
+          type: integer
+
+    StagingTransactionUpdate:
+      type: object
+      properties:
+        suggestedCategory:
+          type: string
+          nullable: true
+        suggestedMerchant:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [pending, reviewed, imported, rejected]
+
+    StagingUpdateResponse:
+      type: object
+      required:
+        - transaction
+      properties:
+        transaction:
+          $ref: '#/components/schemas/StagingTransaction'
+
+    StagingImportRequest:
+      type: object
+      properties:
+        transactionIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          default: []
+        defaultCategoryId:
+          type: string
+          format: uuid
+          nullable: true
+
+    StagingImportResponse:
+      type: object
+      required:
+        - selectedCount
+        - importedCount
+        - skippedCount
+        - importedPaymentIds
+      properties:
+        selectedCount:
+          type: integer
+        importedCount:
+          type: integer
+        skippedCount:
+          type: integer
+        importedPaymentIds:
+          type: array
+          items:
+            type: string
+            format: uuid
 
     Wallet:
       type: object

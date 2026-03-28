@@ -1,10 +1,10 @@
 # Design Review — PSD2 / Bank Integration (Staging Import)
 
-Status: Draft
+Status: Implemented in working tree; rollout blocked on AES key provisioning and real-provider activation
 Date: 2026-02-26
 
 ## Summary
-This design review defines the PSD2 / bank integration feature scoped to importing bank transactions into a staging table for user review and eventual import. It assumes the application will already enforce per-user ownership (see the Multi-user Design Review). This document covers architecture, schema, API, security, token storage, sync behavior, tests, and rollout guidance.
+This design review defines the PSD2 / bank integration feature scoped to importing bank transactions into a staging table for user review and eventual import. The current working tree has implemented the flow in `backend-rust/` and `expense-companion/`, with the remaining rollout blocked on secret provisioning and a real provider rollout. It assumes the application will already enforce per-user ownership (see the Multi-user Design Review). This document covers architecture, schema, API, security, token storage, sync behavior, tests, and rollout guidance.
 
 ## Scope
 - Bank OAuth2 connection management per user
@@ -16,8 +16,9 @@ This design review defines the PSD2 / bank integration feature scoped to importi
 ## Key Decisions / Assumptions
 - Each bank connection and staging row is owned by `user_id` (use Keycloak `sub` claim).
 - Refresh tokens are encrypted with AES-GCM using a key stored in a Kubernetes Secret for initial rollout. Future improvements may use KMS/Vault.
-- Backend will validate JWT tokens (Keycloak) and derive `user_id` from `sub`.
+- Backend will validate JWT tokens using Keycloak issuer discovery (`/.well-known/openid-configuration`) and JWKS, then derive `user_id` from `sub`.
 - All endpoints require Bearer tokens; CORS must be restricted to authorized frontends.
+- Current backend provider support is mock-only; the UI still exposes provider selection for future rollout.
 
 ## Database Schema (proposed)
 Staging table (from EVOLUTIONS.md):
@@ -73,7 +74,7 @@ Notes:
 - `GET  /banking/callback?code=...` — OAuth callback: exchange code for tokens, store `bank_connections` row with encrypted refresh token for the authenticated `user_id`.
 - `GET  /banking/accounts` — List connected bank accounts (owner-only).
 - `POST /banking/sync/{connectionId}` — Trigger manual sync; validates ownership and schedules/executes sync immediately.
-- `POST /banking/sync/{connectionId}/status` — Optional: return last sync status and statistics.
+- `GET /banking/sync/{connectionId}/status` — Return last sync status and statistics.
 - `GET  /staging/transactions` — Paginated list for authenticated `user_id`, filter by status/date.
 - `PUT  /staging/transactions/{id}` — Update suggested category/merchant/status (owner-only).
 - `POST /staging/import` — Bulk import approved staging rows into `expenses.payments` with `user_id` set and set `status='imported'`.
@@ -81,7 +82,7 @@ Notes:
 Security: all endpoints require `Authorization: Bearer <token>`; OpenAPI spec must mark endpoints as protected.
 
 ## OAuth Flow
-1. User requests connection; backend returns provider auth URL with `state` and `nonce` tied to authenticated `user_id`.
+1. User requests connection; backend returns provider auth URL with `state` tied to authenticated `user_id`.
 2. User authorizes at bank provider; provider calls our `/banking/callback` with `code`.
 3. Backend exchanges `code` for access/refresh tokens, encrypts refresh token, stores `bank_connections(user_id)`.
 4. Backend initiates initial sync or schedules it.
@@ -122,11 +123,9 @@ Security notes:
 - Logs: redact tokens and PIIs; log sync errors and provider responses (masked) for troubleshooting.
 
 ## Rollout & Migration Notes
-- This feature requires the multi-user schema to be in place (see Multi-user Design Review). Ensure `user_id` column exists on `payments` before enabling import.
-- Migrations:
-  - Add `bank_connections` and `staging_transactions` migrations.
-  - Backfill not needed for new tables, but ensure indexes are created.
-- Feature flag: release PSD2/staging feature behind a feature flag until auth+encryption validated.
+- This feature requires the multi-user schema to be in place (see Multi-user Design Review). The current tree already scopes categories and banking rows by `user_id`.
+- Migrations for `bank_connections`, `staging_transactions`, and category scoping are present in the working tree.
+- Feature flag / rollout gating remains necessary until the cluster secret (`backend-rust-psd2-secrets`) provides the AES key and a real provider is provisioned.
 
 ## Security Checklist
 - No secrets committed. AES key in Kubernetes Secret.
@@ -135,17 +134,15 @@ Security notes:
 - Ensure RBAC and K8s secret access controls limit who can read encryption keys.
 
 ## Open Questions
-- Which providers to support first (Nordigen recommended for EU)?
+- Which provider should replace the mock-only backend path first?
 - How to surface provider errors and quota issues to users (UI and notifications)?
 - Long-term token management: migrate to KMS/Vault for key management?
 
 ## Next Steps
-1. Add migrations for `bank_connections` and `staging_transactions`.
-2. Implement token encryption helpers and key retrieval from `configuration.yaml` / env.
-3. Implement OAuth callback handler and `banking/connect` flow.
-4. Implement sync worker and manual sync endpoint.
-5. Add staging review UI and import flow in the frontend.
-6. Add integration tests and run full test suites.
+1. Provision `backend-rust-psd2-secrets` in the cluster secret-management path with `token-encryption-key`.
+2. Wire a real PSD2 provider behind the current mock-backed flow.
+3. Re-run backend integration tests against reachable PostgreSQL.
+4. Decide whether the mock provider remains available in production UI.
 
 ---
 

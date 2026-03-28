@@ -68,7 +68,8 @@ Il backend deve accettare richieste dall'origin di Lovable.
 
 File: `backend-rust/src/startup.rs`
 
-Aggiungi/modifica la configurazione CORS:
+La configurazione attuale usa una allowlist esplicita, non un `allow_any_origin()`.
+Se devi testare da un origin diverso, aggiungilo in modo esplicito:
 
 ```rust
 use actix_cors::Cors;
@@ -77,9 +78,15 @@ use actix_cors::Cors;
 let app = App::new()
     .wrap(
         Cors::default()
-            .allow_any_origin()  // Per testing - permetti tutti
-            .allow_any_method()
-            .allow_any_header()
+            .allowed_origin("http://localhost:5173")
+            .allowed_origin("http://127.0.0.1:5173")
+            .allowed_origin("https://expenses.expmonitor.freeddns.org")
+            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+            .allowed_headers(vec![
+                http::header::AUTHORIZATION,
+                http::header::ACCEPT,
+                http::header::CONTENT_TYPE,
+            ])
             .max_age(3600)
     )
     // ... rest of config
@@ -156,12 +163,12 @@ let app = App::new()
     .wrap(
         Cors::default()
             .allowed_origin("http://localhost:5173")
-            .allowed_methods(vec!["GET", "POST", "DELETE"])
-            .allowed_headers(vec![
-                http::header::AUTHORIZATION,
-                http::header::ACCEPT,
-                http::header::CONTENT_TYPE,
-            ])
+            .allowed_origin("http://localhost:5174")
+            .allowed_origin("http://127.0.0.1:5173")
+            .allowed_origin("http://127.0.0.1:5174")
+            .allowed_origin("https://expenses.expmonitor.freeddns.org")
+            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+            .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT, http::header::CONTENT_TYPE])
             .max_age(3600)
     )
     // ... rest
@@ -318,6 +325,23 @@ fetch('https://your-ngrok-url.ngrok.io/api/balance', {
 - [ ] No errori CORS nella console
 - [ ] Preflight requests (OPTIONS) funzionano
 
+### 6. PSD2 / Banking
+- [ ] `POST /banking/connect` returns an authorization URL for the `mock` provider
+- [ ] `GET /banking/callback` stores the encrypted refresh token and marks the connection connected
+- [ ] `POST /banking/sync/{connectionId}` creates or updates staging rows
+- [ ] `GET /staging/transactions` filters by status/date/connection as expected
+- [ ] `PUT /staging/transactions/{id}` preserves reviewed/rejected/imported decisions
+- [ ] `POST /staging/import` imports reviewed rows and returns imported payment IDs
+
+---
+
+## ✅ Current validation status
+
+- Frontend validation passed: `npm run lint`, `npm test`
+- Platform YAML validation passed
+- Backend validation passed: `cargo fmt --all --check`, `cargo clippy --all-targets --all-features -- -D warnings`, `cargo test`
+- Rollout remains blocked until `backend-rust-psd2-secrets` is provisioned with `token-encryption-key` and the runtime can reach the Keycloak discovery/JWKS endpoints
+
 ---
 
 ## 🐛 Troubleshooting
@@ -336,8 +360,9 @@ fetch('https://your-ngrok-url.ngrok.io/api/balance', {
 ### Errore 401 Unauthorized
 
 **Soluzione:**
-- Temporaneamente disabilita l'autenticazione nel backend per test
-- O configura un token di test fisso
+- Usa un Bearer token valido emesso da Keycloak
+- Verifica `jwt-issuer`, `jwt-audience` (client ID expected in `aud` or `azp`) e che il backend possa raggiungere `/.well-known/openid-configuration` e il `jwks_uri` restituito da Keycloak
+- Controlla che il client invii sempre `Authorization: Bearer <token>`
 
 ### ngrok URL cambia sempre
 

@@ -4,70 +4,60 @@ Based on the architectural and functional analysis of the current system, severa
 
 ---
 
-## 🎯 NEXT PRIORITY: PSD2 Bank Account Integration
+## 🎯 PSD2 Bank Account Integration
+
+### Status
+Implemented in the current working tree across `backend-rust/` and `expense-companion/`, with rollout still blocked by cluster provisioning of the AES-GCM token-encryption key and real-provider activation.
 
 ### Problem Statement
-Users must manually enter each expense, which is time-consuming and error-prone. To achieve "zero manual entry", we need to automatically import transactions from bank accounts while maintaining user control over categorization and validation.
+Users must manually enter each expense, which is time-consuming and error-prone. To achieve "zero manual entry", the product now stages bank transactions for review while keeping user control over categorization and validation.
 
-### Chosen Solution: Open Banking Integration with Staging Table
+### Implemented Architecture
+- **Backend routes**: `backend-rust/src/routes/banking.rs` and `backend-rust/src/routes/staging.rs`
+- **Frontend surface**: `expense-companion/src/pages/Banking.tsx`, `expense-companion/src/components/banking/*`
+- **Data flow**: connect → callback → sync → staging review → import
+- **Security**: Keycloak-backed JWT validation via issuer discovery + JWKS, per-user ownership via `sub`, AES-GCM encrypted refresh tokens, no raw token logging
 
-#### Architecture Overview
-- **Provider Selection**: Use **Nordigen** (reliable EU-based Open Banking aggregator) or **GoCardless** for developer-friendly APIs
-- **Data Flow**: K8s CronJob → Bank API → Staging Table → User Review → Import
-- **Security**: OAuth2 consent flow, encrypted storage, no permanent bank credentials
+### Data Model
+- `expenses.bank_connections` stores the user-owned connection, OAuth state, connection status, refresh-token ciphertext, sync counters, and timestamps.
+- `expenses.staging_transactions` stores imported bank rows, keyed by `user_id` and `bank_transaction_id`, with a foreign key to `bank_connections`.
+- `expenses.categories` is now user-scoped for PSD2 import/payment flows.
+- Sync is idempotent and preserves user-reviewed/rejected/imported state plus edited merchant/category suggestions.
 
-#### Database Schema
-```sql
--- Staging table for imported transactions
-CREATE TABLE expenses.staging_transactions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id TEXT NOT NULL,                           -- From Keycloak
-    bank_transaction_id TEXT UNIQUE NOT NULL,        -- Bank's unique ID
-    amount_in_cents BIGINT NOT NULL,                 -- Always in cents
-    currency TEXT NOT NULL DEFAULT 'EUR',
-    booking_date DATE NOT NULL,
-    value_date DATE,
-    creditor_name TEXT,                              -- Merchant/payee
-    debtor_name TEXT,                                -- For income transactions
-    remittance_info TEXT,                            -- Transaction description
-    suggested_category TEXT,                         -- AI/ML suggestion (future)
-    suggested_merchant TEXT,                         -- Normalized merchant name
-    status TEXT NOT NULL DEFAULT 'pending'           -- pending/reviewed/imported/rejected
-        CHECK (status IN ('pending', 'reviewed', 'imported', 'rejected')),
-    imported_payment_id UUID REFERENCES expenses.payments(id),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
+### Security Notes
+- `user_id` is derived from the Keycloak `sub` claim.
+- Refresh tokens are encrypted at rest using AES-GCM.
+- `POST /banking/connect`, `GET /banking/callback`, `GET /banking/accounts`, `POST /banking/sync/{connectionId}`, `GET /banking/sync/{connectionId}/status`, `GET /staging/transactions`, `PUT /staging/transactions/{id}`, and `POST /staging/import` are bearer-protected.
+- The backend currently accepts the `mock` provider only; the `nordigen` UI option is present but not yet supported server-side.
 
--- Index for performance
-CREATE INDEX idx_staging_user_status ON expenses.staging_transactions(user_id, status);
-CREATE INDEX idx_staging_booking_date ON expenses.staging_transactions(booking_date);
-```
-
-#### API Changes
+### API Changes
 
 **New Endpoints:**
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `POST /banking/connect` | POST | Initiate bank connection (OAuth2 flow) |
-| `GET /banking/accounts` | GET | List connected bank accounts |
-| `POST /banking/sync/{accountId}` | POST | Trigger manual sync for account |
-| `GET /staging/transactions` | GET | List staging transactions with pagination |
-| `PUT /staging/transactions/{id}` | PUT | Update staging transaction (category, merchant, status) |
-| `POST /staging/import` | POST | Bulk import approved staging transactions |
+| `POST /banking/connect` | POST | Create a user-owned bank connection and return an authorization URL |
+| `GET /banking/callback` | GET | Complete OAuth callback, encrypt refresh token, mark connection connected |
+| `GET /banking/accounts` | GET | List the authenticated user's bank connections and sync metadata |
+| `POST /banking/sync/{connectionId}` | POST | Trigger manual sync for a connection |
+| `GET /banking/sync/{connectionId}/status` | GET | Read last sync status and counters |
+| `GET /staging/transactions` | GET | List staging transactions with pagination and filters |
+| `PUT /staging/transactions/{id}` | PUT | Update staging transaction merchant/category/status |
+| `POST /staging/import` | POST | Bulk import reviewed staging transactions into payments |
 
 **Bank Connection Flow:**
-1. User clicks "Connect Bank" → Redirect to Nordigen/GoCardless OAuth2
-2. User selects bank and consents to data access
-3. Backend receives access token, stores encrypted refresh token
-4. K8s CronJob runs daily to fetch new transactions
+1. User opens `/banking` and submits the connection sheet.
+2. Backend creates a pending `expenses.bank_connections` row and returns an authorization URL.
+3. User completes provider authorization.
+4. Backend callback encrypts the refresh token and marks the connection `connected`.
+5. Manual sync fetches bank transactions and upserts `expenses.staging_transactions`.
+6. User reviews staged rows and imports selected/reviewed items into `expenses.payments`.
 
-#### Frontend Changes
+### Frontend Changes
 
-1. **Banking Settings Page**: 
-   - Connect/disconnect bank accounts
-   - View connected accounts and last sync status
-   - Manual sync button
+1. **Banking Page**: 
+    - Connect bank accounts
+    - View connected accounts and last sync status
+    - Manual sync button
 
 2. **Staging Review UI**:
    - List pending transactions with smart suggestions
@@ -76,18 +66,15 @@ CREATE INDEX idx_staging_booking_date ON expenses.staging_transactions(booking_d
    - Auto-import rules (future: "always import from this merchant as category X")
 
 3. **Transaction Matching**:
-   - Fuzzy matching against existing payments to avoid duplicates
-   - Confidence scoring for auto-import candidates
+    - Stable bank transaction identifier deduplication
+    - Preservation of reviewed/rejected/imported decisions and edited suggestions on resync
 
-#### Implementation Steps
-1. Choose Open Banking provider (Nordigen recommended for EU compliance)
-2. Create staging_transactions table migration
-3. Implement OAuth2 connection flow in backend
-4. Add K8s CronJob for automated sync
-5. Create staging API endpoints
-6. Build frontend banking settings and staging review UI
-7. Add transaction deduplication logic
-8. Update OpenAPI spec and test integration
+### Remaining rollout items
+1. Provision `backend-rust-psd2-secrets` in the cluster secret-management path with:
+   - `token-encryption-key`
+2. Wire a real PSD2 provider behind the current backend provider abstraction.
+3. Re-run backend integration tests against reachable PostgreSQL in the local/CI environment.
+4. Decide whether to keep or remove the mock-only provider option in production UI.
 
 ---
 
@@ -116,9 +103,9 @@ Allow users to customize icons and colors for their categories.
 Drastically reduce the time spent on data entry.
 
 *   **Bank Account Integration (PSD2)**:
-    *   Use an Open Banking provider (e.g., **GoCardless** or **Nordigen**) that offers developer-friendly APIs.
-    *   The Rust backend, via a Kubernetes-scheduled job, periodically queries the bank API to download new transactions.
-    *   Transactions are saved into a "staging" table to be reviewed or auto-imported when recognized.
+    *   The current Rust implementation already covers connect/callback/sync/staging review/import with per-user ownership.
+    *   The backend provider path is mock-only for now; a real PSD2 provider (e.g., **Nordigen** or **GoCardless**) can be wired behind the same abstraction.
+    *   Transactions are saved into a staging table and deduplicated by stable bank transaction identifier before review/import.
 
 *   **Smart CSV Import**:
     *   Implement an endpoint for uploading statements (CSV/XLSX).
@@ -187,14 +174,14 @@ Leverage the existing Kubernetes infrastructure to add value.
 | Phase | Focus Area | Features | Effort |
 |-------|------------|----------|--------|
 | **1** | **Category Icons** ✅ | Categories table, icon picker, auto-creation | 1-2 days |
-| **2** | PSD2 Integration | Open Banking, staging table, auto-import | 5-10 days |
+| **2** | PSD2 Integration ✅ | Banking connect/callback/sync/staging review implemented; rollout blocked on secrets | completed in code |
 | **3** | Reporting | In-app "Spend by category", "Top merchants" views | 1-2 days |
 | **4** | Budgets | Monthly budgets per category, threshold warnings | 2-3 days |
 | **5** | Recurring Payments | K8s CronJobs, templates, skip/pause | 2-3 days |
 | **6** | CSV Import | Upload wizard, column mapping, dedup, reconciliation | 3-5 days |
 | **7** | Data Ownership | user_id in model, Keycloak integration, audit log | 3-5 days |
 | **8** | Mobile/PWA | Installable app, offline mode, quick actions | 3-5 days |
-| **9** | PSD2 Integration | Open Banking, staging table, auto-import | 5-10 days |
+| **9** | PSD2 Rollout | Secret provisioning, provider activation, post-deploy validation | blocked |
 | **10** | AI Features | Smart categorization, receipt OCR | 5-10 days |
 
 ---
@@ -216,3 +203,4 @@ Leverage the existing Kubernetes infrastructure to add value.
 | Observability Stack | ✅ | Prometheus, Loki, Tempo, Grafana |
 | DB Migrations Automation | ✅ | K8s Job with ArgoCD PreSync hook, sqlx-cli |
 | Category Icons | ✅ | Categories table with icons and colors, icon picker UI, auto-creation |
+| PSD2 Banking Integration | ✅ | `bank_connections`, `staging_transactions`, AES-GCM refresh-token storage, staging review/import UI |

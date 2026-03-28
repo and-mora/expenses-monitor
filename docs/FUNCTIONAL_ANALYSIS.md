@@ -81,12 +81,21 @@ The system delegates business intelligence to Grafana, which queries data source
 *   **Theme Switching**: Dark/Light mode toggle.
 *   **Layout Persistence**: Transaction view layout saved in localStorage.
 
+### 3.9 Banking / PSD2 Staging Review ✅ Implemented in the primary stack
+The bank-integration flow is now present in the Rust backend and React frontend.
+*   **Bank Connection Flow**: `POST /banking/connect` creates a per-user connection owned by the Keycloak `sub` claim and returns an authorization URL.
+*   **Callback Handling**: `GET /banking/callback` validates the state, encrypts the refresh token at rest with AES-GCM, and marks the connection connected.
+*   **Sync**: `POST /banking/sync/{connectionId}` fetches provider transactions, upserts `expenses.staging_transactions`, and preserves user-reviewed/rejected/imported decisions plus edited merchant/category suggestions.
+*   **Staging Review**: `GET /staging/transactions`, `PUT /staging/transactions/{id}`, and `POST /staging/import` support staged review and import into `expenses.payments`.
+*   **Categories**: PSD2 import and payment flows now use user-scoped categories in the backend.
+*   **Current provider support**: the backend currently accepts the `mock` provider only; the `nordigen` option in the UI is a placeholder for a later rollout.
+
 ## 4. Data Flow
 
-1.  **Input**: Users enter data via React UI (expense-companion).
-2.  **Auth**: JWT token from Keycloak included in all API requests.
-3.  **Processing**: Rust backend (Actix-web) validates and persists to PostgreSQL.
-4.  **Storage**: PostgreSQL schema `expenses` (wallets, payments, tags, payment_tags).
+1.  **Input**: Users enter data via React UI (expense-companion), including the `/banking` PSD2 page.
+2.  **Auth**: JWT token from Keycloak included in all API requests; backend derives the internal `user_id` from the `sub` claim.
+3.  **Processing**: Rust backend (Actix-web) validates and persists to PostgreSQL, including banking/staging tables.
+4.  **Storage**: PostgreSQL schema `expenses` (wallets, payments, tags, payment_tags, bank_connections, staging_transactions).
 5.  **Analytics**: Grafana connects via direct SQL queries for dashboards.
 6.  **Observability**: Traces via OpenTelemetry → Tempo, Logs → Loki, Metrics → Prometheus.
 
@@ -96,10 +105,13 @@ The system delegates business intelligence to Grafana, which queries data source
 |-----------|----------|-------------|
 | Dashboard | `/` | Balance, wallets, spending chart, recent transactions |
 | Transactions | `/transactions` | Full list with filters, pagination, infinite scroll |
+| Banking | `/banking` | PSD2 connection, sync, staging review, and import |
 | PaymentDetail | `/payments/:id` | Payment info, tags, edit/delete actions |
 | Settings | `/settings` | Theme toggle |
 | AddPaymentDialog | Dashboard | Modal for creating payments |
 | EditPaymentDialog | Transaction list | Sheet for editing payments |
+| BankConnectionSheet | Banking page | Start a PSD2 connection and receive an authorization URL |
+| StagingTransactionSheet | Banking page | Edit staging merchant/category/status before import |
 | TransactionFilters | Transactions page | Filter controls |
 | CategoryCombobox | Payment forms | Category selection with autocomplete |
 | TagInput | Payment forms | Tag entry with suggestions |
@@ -115,6 +127,14 @@ The system delegates business intelligence to Grafana, which queries data source
 | `/payments` | GET/POST | List/Create payments (with pagination/filters) |
 | `/payments/{id}` | GET/PUT/DELETE | Get/Update/Delete payment |
 | `/categories` | GET | Get distinct categories (optional type filter) |
+| `/banking/connect` | POST | Create a bank connection and return an authorization URL |
+| `/banking/callback` | GET | Complete the provider callback and store encrypted refresh tokens |
+| `/banking/accounts` | GET | List bank connections for the authenticated user |
+| `/banking/sync/{connectionId}` | POST | Trigger a manual bank sync |
+| `/banking/sync/{connectionId}/status` | GET | Read the last sync summary for a connection |
+| `/staging/transactions` | GET | List staging transactions with filters and pagination |
+| `/staging/transactions/{id}` | PUT | Update staging transaction merchant/category/status |
+| `/staging/import` | POST | Import reviewed staging transactions into payments |
 | `/metrics` | GET | Prometheus metrics |
 
 ## 7. What's Missing (See EVOLUTIONS.md for Roadmap)
@@ -125,16 +145,19 @@ The system delegates business intelligence to Grafana, which queries data source
 - ❌ **Alerts/Notifications**: No threshold warnings
 - ❌ **Recurring Payments**: No automation for subscriptions
 - ❌ **Import/Export**: No CSV import or export
-- ❌ **Multi-user/Ownership**: No user_id in data model
 - ❌ **PWA/Mobile**: Not installable as app
 - ❌ **Merchant Normalization**: No deduplication
+- ❌ **Bank Disconnect / Revocation**: No user-facing disconnect flow yet
+- ⚠️ **Live PSD2 Provider Rollout**: backend still runs on the mock provider path until the secret rollout is completed
 
 ### 7.2 Partially Implemented
 - ⚠️ **In-App Reporting**: Basic spending chart exists, but no detailed breakdowns
 - ⚠️ **Search**: Free-text search implemented but could be enhanced
+- ⚠️ **Banking Provider Coverage**: UI exposes provider selection, but only the mock provider is currently accepted by the backend
 
 ## 8. Technical Aspects
 *   **Backend Rust**: Migration from Java completed. All endpoints functional.
 *   **Infrastructure**: Kubernetes deployment via ArgoCD, Helm charts in `manifest/`.
 *   **CI/CD**: GitHub Actions with semantic versioning per module.
+*   **Security**: Strict JWT validation, explicit CORS allowlists, and no raw token logging in bank flows.
 *   **Observability**: Full stack (Prometheus, Grafana, Loki, Tempo).
