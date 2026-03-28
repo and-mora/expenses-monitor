@@ -1,6 +1,4 @@
 use crate::helpers::spawn_app;
-use base64::Engine;
-use rstest::rstest;
 use uuid::Uuid;
 
 #[tokio::test]
@@ -14,11 +12,7 @@ async fn wallets_are_scoped_by_user() {
 
     // Build a token for user B
     let sub_b = Uuid::new_v4().to_string();
-    let header = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(r#"{"alg":"none"}"#);
-    let payload = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(
-        serde_json::json!({ "sub": sub_b, "exp": (chrono::Utc::now().timestamp() + 60) }).to_string(),
-    );
-    let token_b = format!("{}.{}.", header, payload);
+    let token_b = app.auth_token_for_sub(&sub_b);
 
     // User B should see no wallets
     let get_resp = app.get_wallets_with_auth(&token_b).await;
@@ -46,11 +40,7 @@ async fn payments_are_scoped_by_user() {
 
     // Build token for user B
     let sub_b = Uuid::new_v4().to_string();
-    let header = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(r#"{"alg":"none"}"#);
-    let payload = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(
-        serde_json::json!({ "sub": sub_b, "exp": (chrono::Utc::now().timestamp() + 60) }).to_string(),
-    );
-    let token_b = format!("{}.{}.", header, payload);
+    let token_b = app.auth_token_for_sub(&sub_b);
 
     // User B should not see user A's payments
     let resp = app.get_payments_with_auth("?page=0&size=10", &token_b).await;

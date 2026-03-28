@@ -22,14 +22,15 @@ async fn create_payment_returns_a_200() {
     // Assert
     assert_eq!(200, response.status().as_u16());
     let saved = sqlx::query!(
-        "SELECT p.amount, c.name as category_name FROM expenses.payments p JOIN expenses.categories c ON p.category_id = c.id WHERE c.name = 'test'",
+        "SELECT p.amount, c.name as category_name FROM expenses.payments p JOIN expenses.categories c ON p.category_id = c.id WHERE c.name = 'test' AND c.user_id = $1",
+        &app.auth_sub
     )
     .fetch_one(&app.db_pool)
     .await
     .expect("The query should retrieve the saved payment.");
 
     assert_eq!(saved.category_name, "test");
-    assert_eq!(saved.amount.unwrap(), -100);
+    assert_eq!(saved.amount, Some(-100));
 }
 
 #[rstest]
@@ -173,7 +174,7 @@ async fn delete_payment_with_tags_succeeds() {
         payment_id,
         "category",
         "test-tag",
-        app.auth_sub
+        &app.auth_sub
     )
     .execute(&app.db_pool)
     .await
@@ -437,9 +438,10 @@ async fn create_payment_auto_creates_category() {
 
     // Ensure category does not exist
     let category_name = "AutoCreatedCategory";
-    let check_before = sqlx::query!(
-        "SELECT id FROM expenses.categories WHERE lower(name) = lower($1)",
-        category_name
+    let check_before = sqlx::query_scalar!(
+        "SELECT id FROM expenses.categories WHERE lower(name) = lower($1) AND user_id = $2",
+        category_name,
+        &app.auth_sub
     )
     .fetch_optional(&app.db_pool)
     .await
@@ -464,9 +466,10 @@ async fn create_payment_auto_creates_category() {
     assert_eq!(200, response.status().as_u16());
 
     // Assert that category has been created and payment references it
-    let created = sqlx::query!(
-        "SELECT id FROM expenses.categories WHERE lower(name) = lower($1)",
-        category_name
+    let created = sqlx::query_scalar!(
+        "SELECT id FROM expenses.categories WHERE lower(name) = lower($1) AND user_id = $2",
+        category_name,
+        &app.auth_sub
     )
     .fetch_one(&app.db_pool)
     .await
@@ -481,7 +484,139 @@ async fn create_payment_auto_creates_category() {
     .expect("Payment should exist");
 
     // `category_id` is non-nullable in the schema; compare directly
-    assert_eq!(payment_row.category_id, created.id);
+    assert_eq!(payment_row.category_id, created);
+}
+
+#[tokio::test]
+async fn category_ownership_is_scoped_per_user() {
+    let app = spawn_app().await;
+    let category_name = "ScopedCategory";
+
+    let create_response = app
+        .post_payment(&format!(
+            r#"{{
+                "description": "user-a payment",
+                "category": "{}",
+                "amountInCents": -111,
+                "merchantName": "User A",
+                "accountingDate": "2024-01-01T00:00:00.000"
+            }}"#,
+            category_name
+        ))
+        .await;
+    assert_eq!(200, create_response.status().as_u16());
+
+    let other_sub = uuid::Uuid::new_v4().to_string();
+    let other_token = app.auth_token_for_sub(&other_sub);
+    let other_client = reqwest::Client::new();
+    let other_response = other_client
+        .post(format!("{}/api/payments", &app.address))
+        .header("Content-Type", "application/json")
+        .header("Authorization", format!("Bearer {}", other_token))
+        .body(format!(
+            r#"{{
+                    "description": "user-b payment",
+                    "categoryId": "{}",
+                    "amountInCents": -222,
+                    "merchantName": "User B",
+                    "accountingDate": "2024-01-02T00:00:00.000"
+                }}"#,
+            category_name
+        ))
+        .send()
+        .await
+        .expect("request should complete");
+    assert_eq!(200, other_response.status().as_u16());
+
+    let category_a = sqlx::query!(
+        "SELECT id, user_id FROM expenses.categories WHERE lower(name) = lower($1) AND user_id = $2",
+        category_name,
+        &app.auth_sub
+    )
+    .fetch_one(&app.db_pool)
+    .await
+    .expect("category for user A should exist");
+
+    let category_b = sqlx::query!(
+        "SELECT id, user_id FROM expenses.categories WHERE lower(name) = lower($1) AND user_id = $2",
+        category_name,
+        &other_sub
+    )
+    .fetch_one(&app.db_pool)
+    .await
+    .expect("category for user B should exist");
+
+    assert_ne!(category_a.id, category_b.id);
+    assert_eq!(category_a.user_id.as_deref(), Some(app.auth_sub.as_str()));
+    assert_eq!(category_b.user_id, Some(other_sub));
+
+    let categories_a_resp = app.get_categories().await;
+    assert_eq!(200, categories_a_resp.status().as_u16());
+    let categories_a: serde_json::Value = categories_a_resp.json().await.unwrap();
+    assert_eq!(1, categories_a.as_array().unwrap().len());
+    assert_eq!(categories_a[0]["id"], category_a.id.to_string());
+
+    let categories_b_resp = other_client
+        .get(format!("{}/api/payments/categories", &app.address))
+        .header("Authorization", format!("Bearer {}", other_token))
+        .send()
+        .await
+        .expect("request should complete");
+    assert_eq!(200, categories_b_resp.status().as_u16());
+    let categories_b: serde_json::Value = categories_b_resp.json().await.unwrap();
+    assert_eq!(1, categories_b.as_array().unwrap().len());
+    assert_eq!(categories_b[0]["id"], category_b.id.to_string());
+}
+
+#[tokio::test]
+async fn create_payment_rejects_foreign_category_uuid() {
+    let app = spawn_app().await;
+
+    let category_name = "ForeignCategory";
+    let create_response = app
+        .post_payment(&format!(
+            r#"{{
+                "description": "owner payment",
+                "category": "{}",
+                "amountInCents": -100,
+                "merchantName": "Owner",
+                "accountingDate": "2024-02-01T00:00:00.000"
+            }}"#,
+            category_name
+        ))
+        .await;
+    assert_eq!(200, create_response.status().as_u16());
+
+    let category = sqlx::query_scalar!(
+        "SELECT id FROM expenses.categories WHERE lower(name) = lower($1) AND user_id = $2",
+        category_name,
+        &app.auth_sub
+    )
+    .fetch_one(&app.db_pool)
+    .await
+    .expect("category should exist");
+
+    let other_sub = uuid::Uuid::new_v4().to_string();
+    let other_token = app.auth_token_for_sub(&other_sub);
+    let response = reqwest::Client::new()
+        .post(format!("{}/api/payments", &app.address))
+        .header("Content-Type", "application/json")
+        .header("Authorization", format!("Bearer {}", other_token))
+        .body(format!(
+            r#"{{
+                "description": "foreign category",
+                "categoryId": "{}",
+                "amountInCents": -200,
+                "merchantName": "Other",
+                "accountingDate": "2024-02-02T00:00:00.000"
+            }}"#,
+            category
+        ))
+        .send()
+        .await
+        .expect("request should complete");
+
+    assert_eq!(400, response.status().as_u16());
 }
 #[tokio::test]
 async fn update_payment_returns_200() {
