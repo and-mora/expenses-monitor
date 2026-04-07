@@ -1,14 +1,13 @@
 ---
-# Gateway for expenses-monitor namespace
-# Handles HTTPS termination for: backend-rust, backend (legacy), frontend-companion, frontend (legacy)
-# cert-manager gateway-shim auto-creates Certificate resources from the annotation
+# Gateway for public expenses-monitor endpoints.
+# TLS Secrets are declared explicitly in certificates.yaml.
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: expenses-monitor
   namespace: expenses-monitor
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt
+    argocd.argoproj.io/sync-wave: "-1"
 spec:
   gatewayClassName: traefik
   listeners:
@@ -21,6 +20,18 @@ spec:
         mode: Terminate
         certificateRefs:
           - name: backend-rust-tls
+      allowedRoutes:
+        namespaces:
+          from: Same
+
+    - name: api-legacy-https
+      hostname: api.expmonitor.freeddns.org
+      port: 8443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: backend-tls
       allowedRoutes:
         namespaces:
           from: Same
@@ -49,9 +60,9 @@ spec:
         namespaces:
           from: Same
 
-    # --- HTTP listener (for redirect to HTTPS) ---
+    # --- HTTP listener (for redirect to HTTPS and ACME HTTP-01) ---
     - name: http
-      port: 8080
+      port: 80
       protocol: HTTP
       allowedRoutes:
         namespaces:

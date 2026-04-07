@@ -1,0 +1,91 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: backend-rust-tls
+  namespace: expenses-monitor
+spec:
+  secretName: backend-rust-tls
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+  dnsNames:
+    - api-rust.expmonitor.freeddns.org
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: backend-tls
+  namespace: expenses-monitor
+spec:
+  secretName: backend-tls
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+  dnsNames:
+    - api.expmonitor.freeddns.org
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: frontend-companion-tls
+  namespace: expenses-monitor
+spec:
+  secretName: frontend-companion-tls
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+  dnsNames:
+    - expenses.expmonitor.freeddns.org
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: frontend-tls
+  namespace: expenses-monitor
+spec:
+  secretName: frontend-tls
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+  dnsNames:
+    - expmonitor.freeddns.org
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: keycloak-tls
+  namespace: default
+spec:
+  secretName: keycloak-tls
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+  dnsNames:
+    - auth.expmonitor.freeddns.org
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: argocd-server-tls
+  namespace: argocd
+spec:
+  secretName: argocd-server-tls
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+  dnsNames:
+    - argocd.expmonitor.freeddns.org
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: grafana-tls
+  namespace: monitoring
+spec:
+  secretName: grafana-tls
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+  dnsNames:
+    - grafana.expmonitor.freeddns.org

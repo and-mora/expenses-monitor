@@ -11,7 +11,7 @@ Replace all 8 `networking.k8s.io/v1 Ingress` resources with **Kubernetes Gateway
 | **Standard** | Proprietary Traefik | Kubernetes standard (GA) |
 | **Vendor lock-in** | Yes — only Traefik | No — portable to Envoy, NGINX, Istio, etc. |
 | **Separation of concerns** | No | Yes — `Gateway` (infra) / `HTTPRoute` (app team) |
-| **cert-manager integration** | Manual `Certificate` CRDs only | Gateway-shim: auto-generates certs from annotations |
+| **cert-manager integration** | Manual `Certificate` CRDs only | Explicit `ClusterIssuer` + `Certificate` CRDs (GitOps-friendly) |
 | **HTTP→HTTPS redirect** | Custom Middleware required | Built-in `RequestRedirect` filter |
 | **Traefik support** | Native | Native since Traefik v3.0+ |
 
@@ -50,7 +50,7 @@ This plan accounts for the MicroK8s environment with addons:
 |--------|---------|------------------------|
 | API | `networking.k8s.io/v1` | `gateway.networking.k8s.io/v1` |
 | Architecture | Flat (one resource) | Layered: `GatewayClass` → `Gateway` → `HTTPRoute` |
-| TLS via cert-manager | Annotation on Ingress | Annotation on Gateway (gateway-shim) — **same auto-renewal** |
+| TLS via cert-manager | Annotation on Ingress | Explicit `Certificate` CRDs referencing a `ClusterIssuer` |
 | Middleware / Filters | Vendor annotations | Standard filters + `ExtensionRef` for vendor extensions |
 | Path matching | `pathType: Prefix\|Exact` | `type: PathPrefix\|Exact` in `matches` |
 | HTTP→HTTPS redirect | Vendor-specific | Built-in `RequestRedirect` filter |
@@ -58,11 +58,15 @@ This plan accounts for the MicroK8s environment with addons:
 
 ### cert-manager: Auto-Renewal is Preserved
 
-Whether using Ingress annotations, Gateway annotations, or explicit `Certificate` CRDs, cert-manager uses the **same renewal mechanism**: it monitors Certificate resources and renews 30 days before expiry.
+Whether using Ingress annotations, Gateway annotations, or explicit `Certificate` CRDs, cert-manager uses the **same renewal mechanism**: it monitors Certificate resources and renews before expiry.
 
-- **Ingress-shim**: `cert-manager.io/cluster-issuer` annotation on Ingress → auto-creates Certificate (current setup)
-- **Gateway-shim**: `cert-manager.io/cluster-issuer` annotation on Gateway → auto-creates Certificate (**proposed setup**)
-- Both produce the same TLS Secret, same renewal lifecycle. Zero impact on auto-renewal.
+For this repository, the durable GitOps source of truth is now:
+
+- `manifest/gateway-api/clusterissuer-letsencrypt.yaml`
+- `manifest/gateway-api/certificates.yaml`
+- Gateway resources that reference those TLS Secrets
+
+This avoids relying on gateway-shim state surviving a cert-manager reinstall.
 
 ---
 
@@ -140,11 +144,16 @@ spec:
 
 ---
 
-### Phase 1: Create Gateway Resources (with cert-manager auto-TLS)
+### Phase 1: Create Gateway and cert-manager Resources
 
-The Gateway resource replaces TLS configuration that was previously on each Ingress. cert-manager's **gateway-shim** reads the `cert-manager.io/cluster-issuer` annotation and **auto-creates Certificate resources** for each listener hostname — same mechanism as Ingress annotations.
+The Gateway resource replaces TLS configuration that was previously on each Ingress, but the TLS lifecycle should remain explicit in Git.
 
-> **No explicit Certificate CRDs needed!** cert-manager handles it automatically, including renewal.
+Commit both:
+
+- the shared `ClusterIssuer`
+- per-host `Certificate` resources for every Gateway TLS Secret
+
+This is especially important on MicroK8s addon-managed cert-manager installs, where reinstalling cert-manager can otherwise drop the shim-generated resources.
 
 #### 1a. Gateway for expenses-monitor namespace
 
@@ -154,11 +163,11 @@ The Gateway resource replaces TLS configuration that was previously on each Ingr
 
 #### 1b. Gateway for Keycloak (default namespace)
 
-**File**: `manifest/keycloak/gateway.yaml` — 1 HTTPS listener (auth) + 1 HTTP redirect listener.
+**File**: `manifest/gateway-api/keycloak-gateway.yaml` — 1 HTTPS listener (auth) + 1 HTTP redirect listener.
 
 #### 1c. Gateway for ArgoCD namespace
 
-**File**: `manifest/argocd/helm/templates/gateway.yaml` (Helm template)
+**File**: `manifest/gateway-api/argocd-gateway.yaml`
 ```yaml
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
@@ -166,13 +175,13 @@ metadata:
   name: argocd
   namespace: argocd
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt
+    argocd.argoproj.io/sync-wave: "-1"
 spec:
   gatewayClassName: traefik
   listeners:
     - name: https
       hostname: argocd.expmonitor.freeddns.org
-      port: 443
+      port: 8443
       protocol: HTTPS
       tls:
         mode: Terminate
@@ -181,7 +190,7 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
-    - name: http-redirect
+    - name: http
       port: 80
       protocol: HTTP
       allowedRoutes:
@@ -191,7 +200,7 @@ spec:
 
 #### 1d. Gateway for Monitoring namespace
 
-**File**: `manifest/monitoring/templates/gateway.yaml` (Helm template)
+**File**: `manifest/gateway-api/grafana-gateway.yaml`
 
 ---
 
@@ -219,7 +228,7 @@ Deploy HTTPRoutes **alongside** existing Ingresses. Traefik handles both simulta
 
 #### 2e. frontend (legacy Angular)
 
-**File**: `manifest/frontend/httproute.yaml`
+No committed `HTTPRoute` currently exists for the legacy `expmonitor.freeddns.org` host. The shared Gateway still reserves the TLS Secret and listener, but routing that host requires a separate product decision.
 
 ---
 
@@ -310,9 +319,9 @@ Since ArgoCD manages all deployments via GitOps:
 
 | Step | Action | Risk | Downtime |
 |------|--------|------|----------|
-| 0 | Pre-flight checks (CRDs, cert-manager gateway-shim, backup) | None | None |
+| 0 | Pre-flight checks (CRDs, cert-manager Gateway API support, backup) | None | None |
 | 1 | Install Gateway API CRDs + create GatewayClass | None | None |
-| 2 | Deploy Gateway resources (per namespace) | None (cert-manager auto-issues certs) | None |
+| 2 | Deploy Gateway resources, ClusterIssuer, and Certificates | None | None |
 | 3 | Deploy HTTPRoutes **alongside** existing Ingresses | Low (Traefik handles both) | None |
 | 4 | Deploy HTTP→HTTPS redirect HTTPRoutes | Low | None |
 | 5 | Test all endpoints | None | None |
@@ -342,7 +351,7 @@ microk8s kubectl describe gateway keycloak -n default
 microk8s kubectl get httproute -A
 microk8s kubectl describe httproute backend-rust-api -n expenses-monitor
 
-# Verify cert-manager auto-created Certificates from Gateway
+# Verify the declared Certificates reconcile successfully
 microk8s kubectl get certificates -n expenses-monitor
 microk8s kubectl get certificates -n default
 microk8s kubectl get certificates -n argocd
@@ -380,17 +389,17 @@ microk8s kubectl get ingress -A
 | `manifest/gateway-api/gateway.yaml` | Gateway for expenses-monitor ns (4 HTTPS + 1 HTTP listener) |
 | `manifest/gateway-api/http-redirect.yaml` | HTTP→HTTPS redirect for expenses-monitor |
 | `manifest/backend-rust/httproutes.yaml` | 2 HTTPRoutes (public + protected with jwt-auth) |
-| `manifest/keycloak/gateway.yaml` | Gateway for default/keycloak ns (1 HTTPS + 1 HTTP listener) |
+| `manifest/gateway-api/keycloak-gateway.yaml` | Gateway for default/keycloak ns (1 HTTPS + 1 HTTP listener) |
 | `manifest/keycloak/httproute.yaml` | HTTPRoute for Keycloak |
-| `manifest/keycloak/http-redirect.yaml` | HTTP→HTTPS redirect for Keycloak |
+| `manifest/gateway-api/keycloak-http-redirect.yaml` | HTTP→HTTPS redirect for Keycloak |
 | `manifest/backend/httproute.yaml` | HTTPRoute for legacy Java backend |
 | `manifest/frontend-companion/httproute.yaml` | HTTPRoute for React frontend |
-| `manifest/frontend/httproute.yaml` | HTTPRoute for legacy Angular frontend |
-| `manifest/argocd/helm/templates/gateway.yaml` | Gateway for ArgoCD ns (Helm template) |
-| `manifest/argocd/helm/templates/http-redirect.yaml` | HTTP→HTTPS redirect for ArgoCD (Helm template) |
-| `manifest/monitoring/templates/gateway.yaml` | Gateway for monitoring ns (Helm template) |
+| `manifest/gateway-api/gateway.yaml` | Shared Gateway listener for the legacy `expmonitor.freeddns.org` TLS secret |
+| `manifest/gateway-api/argocd-gateway.yaml` | Gateway for ArgoCD ns |
+| `manifest/gateway-api/argocd-http-redirect.yaml` | HTTP→HTTPS redirect for ArgoCD |
+| `manifest/gateway-api/grafana-gateway.yaml` | Gateway for monitoring ns |
 | `manifest/monitoring/templates/grafana-httproute.yaml` | HTTPRoute for Grafana (Helm template) |
-| `manifest/monitoring/templates/http-redirect.yaml` | HTTP→HTTPS redirect for monitoring (Helm template) |
+| `manifest/gateway-api/grafana-http-redirect.yaml` | HTTP→HTTPS redirect for monitoring |
 
 ### Modified Files (already done)
 

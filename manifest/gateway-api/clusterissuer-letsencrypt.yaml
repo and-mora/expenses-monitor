@@ -1,0 +1,55 @@
+---
+# cert-manager source of truth for public ACME issuance.
+# Requires cert-manager Gateway API support to be enabled on the cluster.
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+spec:
+  acme:
+    email: and.morabito@gmail.com
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-account-key
+    solvers:
+      - selector:
+          dnsNames:
+            - api-rust.expmonitor.freeddns.org
+            - api.expmonitor.freeddns.org
+            - expenses.expmonitor.freeddns.org
+            - expmonitor.freeddns.org
+        http01:
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: expenses-monitor
+                namespace: expenses-monitor
+                kind: Gateway
+      - selector:
+          dnsNames:
+            - auth.expmonitor.freeddns.org
+        http01:
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: keycloak
+                namespace: default
+                kind: Gateway
+      - selector:
+          dnsNames:
+            - argocd.expmonitor.freeddns.org
+        http01:
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: argocd
+                namespace: argocd
+                kind: Gateway
+      - selector:
+          dnsNames:
+            - grafana.expmonitor.freeddns.org
+        http01:
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: monitoring
+                namespace: monitoring
+                kind: Gateway
