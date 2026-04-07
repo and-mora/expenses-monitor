@@ -215,4 +215,5 @@ Leverage the existing Kubernetes infrastructure to add value.
 | Kubernetes Deployment | ✅ | ArgoCD GitOps |
 | Observability Stack | ✅ | Prometheus, Loki, Tempo, Grafana |
 | DB Migrations Automation | ✅ | K8s Job with ArgoCD PreSync hook, sqlx-cli |
+| Declarative TLS Management | ✅ | `ClusterIssuer` + explicit `Certificate` CRDs under `manifest/gateway-api` for Gateway TLS renewal |
 | Category Icons | ✅ | Categories table with icons and colors, icon picker UI, auto-creation |
