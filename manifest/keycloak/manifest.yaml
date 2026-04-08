@@ -95,7 +95,6 @@ spec:
             capabilities:
               drop:
                 - ALL
-          automountServiceAccountToken: false
           resources:
             requests:
               memory: "1000Mi"
@@ -103,3 +102,4 @@ spec:
             limits:
               memory: "1500Mi"
               cpu: "400m"
+      automountServiceAccountToken: false
