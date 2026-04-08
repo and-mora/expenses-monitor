@@ -216,4 +216,5 @@ Leverage the existing Kubernetes infrastructure to add value.
 | Observability Stack | ✅ | Prometheus, Loki, Tempo, Grafana |
 | DB Migrations Automation | ✅ | K8s Job with ArgoCD PreSync hook, sqlx-cli |
 | Declarative TLS Management | ✅ | `ClusterIssuer` + explicit `Certificate` CRDs under `manifest/gateway-api` for Gateway TLS renewal |
+| GitOps Edge Controllers | ✅ | Traefik and cert-manager are Argo-managed from `manifest/traefik` and `manifest/cert-manager`, with ordered sync before `gateway-api` |
 | Category Icons | ✅ | Categories table with icons and colors, icon picker UI, auto-creation |

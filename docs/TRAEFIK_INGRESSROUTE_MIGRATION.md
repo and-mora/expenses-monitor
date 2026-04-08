@@ -15,12 +15,14 @@ Replace all 8 `networking.k8s.io/v1 Ingress` resources with **Kubernetes Gateway
 | **HTTP→HTTPS redirect** | Custom Middleware required | Built-in `RequestRedirect` filter |
 | **Traefik support** | Native | Native since Traefik v3.0+ |
 
-### Infrastructure: MicroK8s
+### Infrastructure: MicroK8s + ArgoCD
 
-This plan accounts for the MicroK8s environment with addons:
-- `microk8s enable cert-manager` — manages TLS certificates
-- `microk8s enable ingress` — current ingress controller (will be superseded)
-- **Traefik** — installed as API Gateway (handles both Ingress and Gateway API)
+This repository now treats the edge controllers as GitOps-managed infrastructure:
+- `manifest/traefik/` — Traefik controller, Gateway API provider, GatewayClass, and LoadBalancer service
+- `manifest/cert-manager/` — cert-manager controller with `config.enableGatewayAPI: true`
+- `manifest/gateway-api/` — shared Gateways, `ClusterIssuer`, and explicit `Certificate` resources
+
+MicroK8s remains the cluster runtime, but addon state is no longer the source of truth for Traefik or cert-manager.
 
 ## Current State Inventory
 
@@ -72,16 +74,15 @@ This avoids relying on gateway-shim state surviving a cert-manager reinstall.
 
 ## Pre-Migration Checklist
 
-### 1. Install Gateway API CRDs on MicroK8s
+### 1. Bootstrap the Traefik controller app
+
+Sync the Argo-managed `traefik` application first. The pinned chart installs the Traefik CRDs, the standard Gateway API CRDs, and the `GatewayClass/traefik`.
 
 ```bash
-# Install the standard Gateway API CRDs (v1.2.1 or latest)
-microk8s kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml
-
-# Verify CRDs are installed
 microk8s kubectl get crd gatewayclasses.gateway.networking.k8s.io
 microk8s kubectl get crd gateways.gateway.networking.k8s.io
 microk8s kubectl get crd httproutes.gateway.networking.k8s.io
+microk8s kubectl get gatewayclass traefik
 ```
 
 ### 2. Verify Traefik Gateway API Provider
@@ -97,16 +98,12 @@ microk8s kubectl get gatewayclass
 # Expected: NAME=traefik  CONTROLLER=traefik.io/gateway-controller
 ```
 
-### 3. Verify cert-manager Gateway-Shim Support
+### 3. Verify cert-manager Gateway API Support
 
 ```bash
-# cert-manager v1.15+ has Gateway API support GA
-# For older versions, check if feature gate is enabled:
+# cert-manager is configured from manifest/cert-manager/values.yaml
+# and must run with enableGatewayAPI: true
 microk8s kubectl get deployment -n cert-manager cert-manager -o yaml | grep -i gateway
-
-# If not enabled, patch cert-manager:
-# microk8s kubectl -n cert-manager edit deployment cert-manager
-# Add arg: --feature-gates=ExperimentalGatewayAPISupport=true
 ```
 
 ### 4. General Checks
@@ -114,33 +111,17 @@ microk8s kubectl get deployment -n cert-manager cert-manager -o yaml | grep -i g
 - [ ] **Verify cert-manager is running**: `microk8s kubectl get pods -n cert-manager`
 - [ ] **Verify current TLS secrets exist**: `microk8s kubectl get secrets -n expenses-monitor | grep tls`
 - [ ] **Backup current Ingress resources**: `microk8s kubectl get ingress -A -o yaml > ingress-backup.yaml`
-- [ ] **Check Traefik entrypoints**: confirm `web` (port 80) and `websecure` (port 443) are configured
+- [ ] **Check Traefik entrypoints**: confirm `web` (port 80) and `websecure` (port 8443, exposed as 443) are configured
 
 ---
 
 ## Migration Steps
 
-### Phase 0: Install Gateway API CRDs and Create GatewayClass
+### Phase 0: Sync the controller applications
 
-#### 0a. Install Gateway API CRDs
-
-```bash
-microk8s kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml
-```
-
-#### 0b. Create GatewayClass
-
-If Traefik doesn't auto-create it, define it explicitly.
-
-**Create file**: `manifest/gateway-api/gatewayclass.yaml`
-```yaml
-apiVersion: gateway.networking.k8s.io/v1
-kind: GatewayClass
-metadata:
-  name: traefik
-spec:
-  controllerName: traefik.io/gateway-controller
-```
+1. Sync `traefik` from `manifest/traefik/`
+2. Sync `cert-manager` from `manifest/cert-manager/`
+3. Confirm `GatewayClass/traefik` exists before syncing `manifest/gateway-api/`
 
 ---
 
@@ -153,7 +134,7 @@ Commit both:
 - the shared `ClusterIssuer`
 - per-host `Certificate` resources for every Gateway TLS Secret
 
-This is especially important on MicroK8s addon-managed cert-manager installs, where reinstalling cert-manager can otherwise drop the shim-generated resources.
+This keeps TLS durable across controller reinstall or cluster recovery and avoids relying on addon-managed shim state.
 
 #### 1a. Gateway for expenses-monitor namespace
 
@@ -385,7 +366,10 @@ microk8s kubectl get ingress -A
 
 | File | Description |
 |------|-------------|
-| `manifest/gateway-api/gatewayclass.yaml` | GatewayClass for Traefik |
+| `manifest/traefik/Chart.yaml` | Argo-managed Traefik Helm wrapper |
+| `manifest/traefik/values.yaml` | Traefik Gateway API configuration and listener port mapping |
+| `manifest/cert-manager/Chart.yaml` | Argo-managed cert-manager Helm wrapper |
+| `manifest/cert-manager/values.yaml` | cert-manager controller configuration with Gateway API enabled |
 | `manifest/gateway-api/gateway.yaml` | Gateway for expenses-monitor ns (4 HTTPS + 1 HTTP listener) |
 | `manifest/gateway-api/http-redirect.yaml` | HTTP→HTTPS redirect for expenses-monitor |
 | `manifest/backend-rust/httproutes.yaml` | 2 HTTPRoutes (public + protected with jwt-auth) |
@@ -405,7 +389,7 @@ microk8s kubectl get ingress -A
 
 | File | Change |
 |------|--------|
-| `manifest/argocd-apps/helm/values.yaml` | Added `gateway-api` ArgoCD Application |
+| `manifest/argocd-apps/helm/values.yaml` | Added ordered ArgoCD Applications for `traefik`, `cert-manager`, and `gateway-api` |
 | `manifest/argocd/helm/values.yaml` | Added `server.httproute` (native chart support) for ArgoCD HTTPRoute |
 
 ### Changes Pending (Phase 5 — after testing)

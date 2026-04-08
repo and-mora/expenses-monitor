@@ -6,8 +6,6 @@ kind: Gateway
 metadata:
   name: expenses-monitor
   namespace: expenses-monitor
-  annotations:
-    argocd.argoproj.io/sync-wave: "-1"
 spec:
   gatewayClassName: traefik
   listeners:

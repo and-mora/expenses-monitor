@@ -1,6 +1,5 @@
 ---
 # HTTP → HTTPS redirect for Keycloak
-type: HTTPRoute
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:

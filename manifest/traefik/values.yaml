@@ -1,0 +1,47 @@
+traefik:
+  providers:
+    kubernetesCRD:
+      enabled: true
+    kubernetesGateway:
+      enabled: true
+      statusAddress:
+        service:
+          enabled: true
+    kubernetesIngress:
+      enabled: false
+
+  ingressClass:
+    enabled: false
+
+  gateway:
+    enabled: false
+
+  gatewayClass:
+    enabled: true
+    name: traefik
+
+  ports:
+    web:
+      port: 80
+      expose:
+        default: true
+      exposedPort: 80
+    websecure:
+      port: 8443
+      expose:
+        default: true
+      exposedPort: 443
+
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+      add:
+        - NET_BIND_SERVICE
+    readOnlyRootFilesystem: true
+
+  service:
+    enabled: true
+    spec:
+      type: LoadBalancer

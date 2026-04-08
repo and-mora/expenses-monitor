@@ -1,13 +1,30 @@
-name: Deploy Gateway API via ArgoCD
+name: Deploy Gateway Stack via ArgoCD
 
 on:
-  workflow_call:
   workflow_dispatch:
+    inputs:
+      enabled:
+        required: false
+        type: string
+        default: 'true'
+        description: True if the gateway platform applications should be synced
+  workflow_call:
+    inputs:
+      enabled:
+        required: true
+        type: string
+        default: 'false'
+    secrets:
+      ARGOCD_SERVER:
+        required: true
+      ARGOCD_AUTH_TOKEN:
+        required: true
 
 jobs:
   DeployViaArgoCD:
-    name: Sync Gateway API with ArgoCD
+    name: Sync Traefik, cert-manager, and gateway-api
     runs-on: ubuntu-latest
+    if: inputs.enabled == 'true'
     environment: prod
     steps:
       - name: Install ArgoCD CLI
@@ -15,34 +32,61 @@ jobs:
           curl -sSL -o /tmp/argocd https://github.com/argoproj/argo-cd/releases/download/v2.12.4/argocd-linux-amd64
           sudo install -m 555 /tmp/argocd /usr/local/bin/argocd
           argocd version --client
-      - name: Sync Application
+
+      - name: Sync platform applications in dependency order
+        timeout-minutes: 20
         env:
-          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
           ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
-        run: |
-          argocd app sync gateway-api \
-            --server $ARGOCD_SERVER \
-            --auth-token $ARGOCD_AUTH_TOKEN \
-            --insecure \
-            --grpc-web
-          echo "✅ Sync initiated for gateway-api"
-      - name: Wait for Sync Completion
-        timeout-minutes: 5
-        env:
-          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
-          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
-        run: |
-          argocd app wait gateway-api \
-            --server $ARGOCD_SERVER \
-            --auth-token $ARGOCD_AUTH_TOKEN \
-            --insecure \
-            --health \
-            --timeout 300 \
-            --grpc-web
-          echo "✅ Application gateway-api is Synced and Healthy"
-      - name: Verify Deployment
-        env:
           ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
         run: |
-          echo "Gateway API deployed successfully via ArgoCD"
-          echo "Check status: https://$ARGOCD_SERVER/applications/gateway-api"
+          wait_for_app() {
+            app_name="$1"
+
+            for attempt in $(seq 1 30); do
+              if argocd app get "$app_name" \
+                --server "$ARGOCD_SERVER" \
+                --auth-token "$ARGOCD_AUTH_TOKEN" \
+                --insecure \
+                --grpc-web >/dev/null 2>&1; then
+                echo "Application $app_name is available in ArgoCD"
+                return 0
+              fi
+
+              echo "Waiting for ArgoCD application $app_name (${attempt}/30)"
+              sleep 10
+            done
+
+            echo "Application $app_name was not registered in ArgoCD in time"
+            return 1
+          }
+
+          sync_app() {
+            app_name="$1"
+            timeout_seconds="$2"
+
+            echo "Syncing $app_name"
+            argocd app sync "$app_name" \
+              --server "$ARGOCD_SERVER" \
+              --auth-token "$ARGOCD_AUTH_TOKEN" \
+              --insecure \
+              --grpc-web
+
+            argocd app wait "$app_name" \
+              --server "$ARGOCD_SERVER" \
+              --auth-token "$ARGOCD_AUTH_TOKEN" \
+              --insecure \
+              --grpc-web \
+              --sync \
+              --health \
+              --timeout "$timeout_seconds"
+
+            echo "$app_name is synced and healthy"
+          }
+
+          wait_for_app traefik
+          wait_for_app cert-manager
+          wait_for_app gateway-api
+
+          sync_app traefik 600
+          sync_app cert-manager 600
+          sync_app gateway-api 900

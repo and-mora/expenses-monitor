@@ -1,6 +1,38 @@
 argocd-apps:
   applications:
+    traefik:
+      additionalAnnotations:
+        argocd.argoproj.io/sync-wave: "-30"
+      project: default
+      source:
+        repoURL: https://github.com/and-mora/expenses-monitor.git
+        path: manifest/traefik
+        targetRevision: HEAD
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: ingress
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+    cert-manager:
+      additionalAnnotations:
+        argocd.argoproj.io/sync-wave: "-20"
+      project: default
+      source:
+        repoURL: https://github.com/and-mora/expenses-monitor.git
+        path: manifest/cert-manager
+        targetRevision: HEAD
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: cert-manager
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
     gateway-api:
+      additionalAnnotations:
+        argocd.argoproj.io/sync-wave: "-10"
       project: default
       source:
         repoURL: https://github.com/and-mora/expenses-monitor.git
@@ -12,6 +44,7 @@ argocd-apps:
       syncPolicy:
         syncOptions:
           - CreateNamespace=false
+          - SkipDryRunOnMissingResource=true
     backend:
       project: default
       source:
