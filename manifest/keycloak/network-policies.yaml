@@ -20,14 +20,17 @@ spec:
     - from:
       - namespaceSelector:
           matchLabels:
-            name: ingress
+            kubernetes.io/metadata.name: ingress
       ports:
         - protocol: TCP
           port: 8080
     
     # Allow from oauth2-proxy (JWKS/token validation)
     - from:
-      - podSelector:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: expenses-monitor
+        podSelector:
           matchLabels:
             app: oauth2-proxy
       ports:
@@ -54,3 +57,15 @@ spec:
       ports:
         - protocol: TCP
           port: 5432
+
+    # Allow connection to OTEL collector
+    - to:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: monitoring
+        podSelector:
+          matchLabels:
+            app: opentelemetry-collector
+      ports:
+        - protocol: TCP
+          port: 4317
