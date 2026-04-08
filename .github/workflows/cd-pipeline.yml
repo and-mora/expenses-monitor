@@ -29,6 +29,9 @@ jobs:
       keycloak_version_tag: ${{ steps.keycloak-versioning.outputs.version_tag }}
       argocd_changed: ${{ steps.argocd-versioning.outputs.changed }}
       argocd_apps_changed: ${{ steps.argocd-apps-versioning.outputs.changed }}
+      cert_manager_changed: ${{ steps.cert-manager-versioning.outputs.changed }}
+      traefik_changed: ${{ steps.traefik-versioning.outputs.changed }}
+      gateway_api_changed: ${{ steps.gateway-api-versioning.outputs.changed }}
     steps:
       - name: Checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.7
@@ -104,6 +107,24 @@ jobs:
         with:
           change_path: "manifest/argocd-apps"
           namespace: argocd
+          major_pattern: "breaking"
+          minor_pattern: "feat"
+
+      - name: cert-manager Version
+        id: cert-manager-versioning
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
+        with:
+          change_path: "manifest/cert-manager"
+          namespace: cert-manager
+          major_pattern: "breaking"
+          minor_pattern: "feat"
+
+      - name: Traefik Version
+        id: traefik-versioning
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3 #v5.4.0
+        with:
+          change_path: "manifest/traefik"
+          namespace: traefik
           major_pattern: "breaking"
           minor_pattern: "feat"
 
@@ -243,6 +264,12 @@ jobs:
     secrets: inherit
 
   GatewayApiDeploy:
-    needs: SemanticVersioning
+    needs: [ SemanticVersioning, ArgoCDAppsDeploy ]
     uses: ./.github/workflows/deploy_gateway_api.yml
+    if: |
+      always() &&
+      !cancelled() &&
+      (needs.ArgoCDAppsDeploy.result == 'success' || needs.ArgoCDAppsDeploy.result == 'skipped')
+    with:
+      enabled: ${{ needs.SemanticVersioning.outputs.argocd_apps_changed == 'true' || needs.SemanticVersioning.outputs.cert_manager_changed == 'true' || needs.SemanticVersioning.outputs.traefik_changed == 'true' || needs.SemanticVersioning.outputs.gateway_api_changed == 'true' }}
     secrets: inherit
