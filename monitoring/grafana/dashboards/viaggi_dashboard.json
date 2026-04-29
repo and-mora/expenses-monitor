@@ -270,7 +270,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "select accounting_date as time, category, sum(abs(amount))::float/100 as spesa\nfrom expenses.payments p\njoin expenses.payments_tags pt on p.id = pt.payment_id \nwhere pt.value = $viaggi and p.amount < 0\ngroup by accounting_date, category\norder by time",
+          "rawSql": "select accounting_date as time, c.name, sum(abs(amount))::float/100 as spesa\nfrom expenses.payments p\njoin expenses.payments_tags pt on p.id = pt.payment_id \njoin expenses.categories c on p.category_id = c.id\nwhere pt.value = $viaggi and p.amount < 0\ngroup by accounting_date, c.name\norder by time",
           "refId": "A",
           "sql": {
             "columns": [
@@ -336,6 +336,6 @@
   "timezone": "browser",
   "title": "Viaggi",
   "uid": "fe02zmq0m9jb4f",
-  "version": 4,
+  "version": 5,
   "weekStart": ""
 }
