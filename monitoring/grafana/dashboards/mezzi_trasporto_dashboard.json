@@ -18,7 +18,6 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 72,
   "links": [],
   "panels": [
     {
@@ -555,7 +554,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "select accounting_date as time, category, sum(abs(amount))::float/100 as spesa\nfrom expenses.payments p\njoin expenses.payments_tags pt on p.id = pt.payment_id \nwhere pt.value = $mezzo and p.amount < 0\ngroup by accounting_date, category\norder by time",
+          "rawSql": "select accounting_date as time, c.name, sum(abs(amount))::float/100 as spesa\nfrom expenses.payments p\njoin expenses.payments_tags pt on p.id = pt.payment_id \njoin expenses.categories c on p.category_id = c.id\nwhere pt.value = $mezzo and p.amount < 0\ngroup by accounting_date, c.name\norder by time",
           "refId": "A",
           "sql": {
             "columns": [
@@ -643,7 +642,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select p.accounting_date, p.merchant_name,  p.category, abs(amount)::float/100 as spesa, p.description\nfrom expenses.payments_tags pt\njoin expenses.payments p on p.id = pt.payment_id \nwhere pt.key = 'mezzo' and pt.value = $mezzo and p.amount < 0\norder by accounting_date desc\n",
+          "rawSql": "select p.accounting_date, p.merchant_name,  c.name, abs(amount)::float/100 as spesa, p.description\nfrom expenses.payments_tags pt\njoin expenses.payments p on p.id = pt.payment_id\njoin expenses.categories c on p.category_id = c.id\nwhere pt.key = 'mezzo' and pt.value = $mezzo and p.amount < 0\norder by accounting_date desc\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -706,6 +705,6 @@
   "timezone": "browser",
   "title": "Mezzi di trasporto",
   "uid": "cee0qqvlff9c0c",
-  "version": 8,
+  "version": 9,
   "weekStart": ""
 }

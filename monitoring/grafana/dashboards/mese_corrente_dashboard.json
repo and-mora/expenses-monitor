@@ -316,7 +316,7 @@
     },
     {
       "datasource": {
-        "type": "postgres",
+        "type": "grafana-postgresql-datasource",
         "uid": "c8fbcbf5-8f4f-4640-8d37-887b135a905e"
       },
       "fieldConfig": {
@@ -378,7 +378,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "select time, sum(spese) * 100 / sum(entrate) as spese_fisse_stipendio from (\nselect DATE_TRUNC('month', accounting_date) as time, abs(sum(amount)/100)::float as spese, NULL as entrate\nFROM payments\nwhere category in ('affitto', 'bolletta', 'condominio') and $__timeFilter(accounting_date)\ngroup by DATE_TRUNC('month', accounting_date)\nunion\nselect DATE_TRUNC('month', accounting_date) as time, NULL as spese, abs(sum(amount)/100)::float as entrate\nFROM payments\nwhere category in ('stipendio') and $__timeFilter(accounting_date)\ngroup by DATE_TRUNC('month', accounting_date)\n) p\ngroup by time",
+          "rawSql": "select time, sum(spese) * 100 / sum(entrate) as spese_fisse_stipendio from (\nselect DATE_TRUNC('month', accounting_date) as time, abs(sum(amount)/100)::float as spese, NULL as entrate\nFROM payments p\njoin expenses.categories c on p.category_id = c.id\nwhere c.name in ('affitto', 'bolletta', 'condominio') and $__timeFilter(accounting_date)\ngroup by DATE_TRUNC('month', accounting_date)\nunion\nselect DATE_TRUNC('month', accounting_date) as time, NULL as spese, abs(sum(amount)/100)::float as entrate\nFROM payments p\njoin expenses.categories c on p.category_id = c.id\nwhere c.name in ('stipendio') and $__timeFilter(accounting_date)\ngroup by DATE_TRUNC('month', accounting_date)\n) p\ngroup by time",
           "refId": "A",
           "sql": {
             "columns": [
@@ -491,7 +491,7 @@
           "format": "table",
           "hide": false,
           "rawQuery": true,
-          "rawSql": "select category,\n  abs(sum(amount))/100 as spesa\nFrom\n  payments\nwhere amount < 0 and $__timeFilter(accounting_date)\ngroup by category\norder by spesa desc\n",
+          "rawSql": "select c.name,\n  abs(sum(amount))/100 as spesa\nFrom\n  payments p\njoin expenses.categories c on p.category_id = c.id\nwhere amount < 0 and $__timeFilter(accounting_date)\ngroup by c.name\norder by spesa desc\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -603,7 +603,7 @@
           "format": "table",
           "hide": false,
           "rawQuery": true,
-          "rawSql": "select category,\n  sum(abs(amount))/100 as entrata\nFrom\n  payments\nwhere amount > 0 and $__timeFilter(accounting_date)\ngroup by category\norder by entrata desc",
+          "rawSql": "select c.name,\n  sum(abs(amount))/100 as entrata\nFrom\n  payments p\njoin expenses.categories c on p.category_id = c.id\nwhere amount > 0 and $__timeFilter(accounting_date)\ngroup by c.name\norder by entrata desc",
           "refId": "A",
           "sql": {
             "columns": [
@@ -752,7 +752,7 @@
           "format": "table",
           "hide": false,
           "rawQuery": true,
-          "rawSql": "select category,\r\n  abs(sum(amount))/100 as spesa_previous_month\r\nFrom\r\n  payments\r\nwhere amount < 0 and accounting_date > timestamp ${__from:date:'YYYY-MM-DD'} - interval '1 month' and accounting_date < timestamp ${__to:date:'YYYY-MM-DD'} - interval '1 month' + interval '1 day'\r\ngroup by category\r\n",
+          "rawSql": "select c.name,\r\n  abs(sum(amount))/100 as spesa_previous_month\r\nFrom\r\n  payments p\r\njoin expenses.categories c on p.category_id = c.id\r\nwhere amount < 0 and accounting_date > timestamp ${__from:date:'YYYY-MM-DD'} - interval '1 month' and accounting_date < timestamp ${__to:date:'YYYY-MM-DD'} - interval '1 month' + interval '1 day'\r\ngroup by c.name\r\n",
           "refId": "B",
           "sql": {
             "columns": [
@@ -781,7 +781,7 @@
           "format": "table",
           "hide": false,
           "rawQuery": true,
-          "rawSql": "select category,\r\n  abs(sum(amount))/100/3 as spesa_media_previous_3_months\r\nFrom\r\n  payments\r\nwhere amount < 0 and accounting_date > timestamp ${__from:date:'YYYY-MM-DD'} - interval '3 month' and accounting_date < timestamp ${__to:date:'YYYY-MM-DD'} - interval '1 month' + interval '1 day'\r\ngroup by category\r\n",
+          "rawSql": "select c.name,\r\n  abs(sum(amount))/100/3 as spesa_media_previous_3_months\r\nFrom\r\n  payments p\r\njoin expenses.categories c on p.category_id = c.id\r\nwhere amount < 0 and accounting_date > timestamp ${__from:date:'YYYY-MM-DD'} - interval '3 month' and accounting_date < timestamp ${__to:date:'YYYY-MM-DD'} - interval '1 month' + interval '1 day'\r\ngroup by c.name\r\n",
           "refId": "C",
           "sql": {
             "columns": [
@@ -810,7 +810,7 @@
           "format": "table",
           "hide": false,
           "rawQuery": true,
-          "rawSql": "select category,\r\n  abs(sum(amount))/100/12 as spesa_media_last_year\r\nFrom\r\n  payments\r\nwhere amount < 0 and accounting_date > timestamp ${__from:date:'YYYY-MM-DD'} - interval '1 year' and accounting_date < timestamp ${__to:date:'YYYY-MM-DD'} - interval '1 month' + interval '1 day'\r\ngroup by category\r\n",
+          "rawSql": "select c.name,\r\n  abs(sum(amount))/100/12 as spesa_media_last_year\r\nFrom\r\n  payments p\r\njoin expenses.categories c on p.category_id = c.id\r\nwhere amount < 0 and accounting_date > timestamp ${__from:date:'YYYY-MM-DD'} - interval '1 year' and accounting_date < timestamp ${__to:date:'YYYY-MM-DD'} - interval '1 month' + interval '1 day'\r\ngroup by c.name\r\n",
           "refId": "D",
           "sql": {
             "columns": [
@@ -839,7 +839,7 @@
           "format": "table",
           "hide": false,
           "rawQuery": true,
-          "rawSql": "select category,\n  abs(sum(amount))/100 as spesa_current\nFrom\n  payments\nwhere amount < 0 and $__timeFilter(accounting_date) \ngroup by category\norder by spesa_current desc\nlimit 10\n",
+          "rawSql": "select c.name,\n  abs(sum(amount))/100 as spesa_current\nFrom\n  payments p\njoin expenses.categories c on p.category_id = c.id\nwhere amount < 0 and $__timeFilter(accounting_date) \ngroup by c.name\norder by spesa_current desc\nlimit 10\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1192,7 +1192,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select p.id, accounting_date, merchant_name, amount /100.0 as amount, category, w.name as wallet, description\r\nfrom payments p\r\njoin wallets w on p.wallet_id = w.id\r\nWHERE $__timeFilter(accounting_date) \r\nORDER BY accounting_date asc\r\n",
+          "rawSql": "select p.id, accounting_date, merchant_name, amount /100.0 as amount, c.name, w.name as wallet, description\r\nfrom payments p\r\njoin wallets w on p.wallet_id = w.id\r\njoin expenses.categories c on p.category_id = c.id\r\nWHERE $__timeFilter(accounting_date) \r\nORDER BY accounting_date asc\r\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1233,6 +1233,6 @@
   "timezone": "",
   "title": "Monitoraggio mese corrente",
   "uid": "d0a30598-95a5-4098-89cc-435d965df315",
-  "version": 6,
+  "version": 7,
   "weekStart": "monday"
 }
