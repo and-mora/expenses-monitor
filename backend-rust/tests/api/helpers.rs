@@ -329,6 +329,21 @@ pub async fn configure_database(config: &DatabaseSettings) -> PgPool {
         .await
         .expect("failed to connect db.");
 
+    connection
+        .execute(
+            r#"
+            DO $$
+            BEGIN
+              CREATE ROLE read_only;
+            EXCEPTION
+              WHEN duplicate_object THEN NULL;
+            END
+            $$;
+            "#,
+        )
+        .await
+        .expect("failed to ensure read_only role exists");
+
     // Validate database name to prevent SQL injection
     let db_name = &config.database_name;
     if !db_name

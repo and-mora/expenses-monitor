@@ -1,0 +1,2 @@
+GRANT SELECT ON TABLE expenses.categories TO read_only;
+ALTER DEFAULT PRIVILEGES IN SCHEMA expenses GRANT SELECT ON TABLES TO read_only;
