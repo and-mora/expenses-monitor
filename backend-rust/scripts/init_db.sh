@@ -50,6 +50,15 @@ done
 DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
 export DATABASE_URL
 cargo sqlx database create
+psql -v ON_ERROR_STOP=1 -h "${DB_HOST}" -U "${DB_USER}" -p "${DB_PORT}" -d "${DB_NAME}" -c "
+DO \$\$
+BEGIN
+  CREATE ROLE read_only;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END
+\$\$;
+"
 cargo sqlx migrate run
 
 >&2 echo "Postgres has been migrated, ready to go!"
