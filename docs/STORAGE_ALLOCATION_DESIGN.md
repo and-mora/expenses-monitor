@@ -14,13 +14,33 @@ failure.
 This document is a proposed design. It is not a migration runbook to execute
 without testing the staging and rollback steps below.
 
+### Selected Always Free path
+
+Do not use OCI Object Storage for telemetry at this time. The 20 GB combined
+Always Free allowance cannot safely accommodate Loki's current 26 GiB local
+dataset, Tempo, PostgreSQL backup capacity, lifecycle headroom, and unknown
+compressed growth. Keep telemetry on local Block Volume storage with explicitly
+bounded retention and capacity alerts.
+
+Object Storage remains a future **Tempo-only** option only after a private,
+least-privilege trial proves that the measured compressed growth fits a
+reserved budget. A 30-day Loki or Tempo target requires paid Object Storage
+approval and a monthly cost guardrail.
+
+The verified Task 0 inventory in
+[STORAGE_MIGRATION_EVIDENCE.md](STORAGE_MIGRATION_EVIDENCE.md) supersedes any
+conflicting capacity or recovery assumptions in this design. In particular,
+the 30-day Object Storage target and hourly Block Volume recovery point are
+not approved because the Always Free budget and backup quota do not support
+them.
+
 ## Measured state
 
 Measurements were captured from the production Oracle VM on 2026-08-11.
 
 | Resource | Size | Used | Free | Finding |
 | --- | ---: | ---: | ---: | --- |
-| `/dev/sda1` mounted at `/` | 45 GiB | 38 GiB (83%) | 7.8 GiB | Critical OS/runtime capacity risk |
+| `/dev/sda1` mounted at `/` | 45 GiB | 38 GiB (84%) | 7.7 GiB | Critical OS/runtime capacity risk |
 | `/dev/sdb` mounted at `/extended-volume` | 49 GiB | 27 GiB (57%) | 21 GiB | Shared persistence volume |
 | Root filesystem inodes | 6.0 M | 6% | 94% | Capacity, not inode, constrained |
 | Extended filesystem inodes | 3.3 M | 6% | 94% | Capacity, not inode, constrained |
@@ -41,12 +61,18 @@ The extended volume currently contains:
 | PostgreSQL | 159 MiB | 8 GiB | Correctly stored on the extended volume but shares its failure domain |
 | Grafana | 162 MiB | 10 GiB | Correctly stored on the extended volume but shares its failure domain |
 | Tempo | 20 KiB | 10 GiB | Local trace storage is not currently carrying material data |
-| Prometheus | no live PVC | configured for 20 GiB | Live state and repository configuration diverge; its actual storage must be verified before cutover |
+| Prometheus | no live PVC | no request | Uses a 10 GiB, unbounded `emptyDir` TSDB and WAL on the root-backed MicroK8s storage; a pod loss discards it |
 
 Both `extended-hostpath` and `microk8s-hostpath` are marked as default in the
 live cluster. A cluster must have only one default StorageClass. All stateful
 workloads in this design use an explicit StorageClass, so neither should be
-selected accidentally.
+selected accidentally. Both currently use `Delete` reclaim policies and do not
+allow volume expansion.
+
+The OCI Console reports a 47 GB boot volume and a 50 GB attached Block Volume,
+for 97 GB of the 200 GB Always Free pool before accounting for any other
+volumes. Monthly OCI Block Volume backups have failed for months due to quota
+exhaustion, so they are not a valid current recovery mechanism.
 
 ## Target architecture
 

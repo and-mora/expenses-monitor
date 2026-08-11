@@ -26,7 +26,7 @@ backups. Those assumptions must be adjusted to the OCI Always Free budget.
 
 | OCI Always Free resource | Limit | Implementation consequence |
 | --- | ---: | --- |
-| Boot and Block Volumes combined | 200 GB in the home region | The current 45 GiB boot filesystem and 49 GiB data filesystem are about 101 GB decimal combined, leaving roughly 99 GB only if no other volumes consume the tenancy allocation. This must be verified in OCI. |
+| Boot and Block Volumes combined | 200 GB in the home region | The verified boot volume is 47 GB and the attached data Block Volume is 50 GB, totalling 97 GB. This leaves a theoretical 103 GB only if no other volumes consume the tenancy allocation. |
 | Additional Block Volumes | Permitted within the same 200 GB total | A new 50 GB database volume is a viable alternative to expanding the existing data volume if at least 50 GB remains. It creates a clean persistence boundary but does not add free capacity beyond the 200 GB pool. |
 | Object Storage | 20 GB combined Always Free allocation | Do not commit 30-day Loki and Tempo retention until measured compressed object growth fits the actual available budget. Current Loki use alone is 26 GiB for seven local days, so 30 days of logs cannot be assumed to fit. |
 | Volume backups | Five total free backups | Hourly Block Volume backups are incompatible with the free tier. Do not claim an hourly RPO based on volume backups. |
@@ -95,6 +95,23 @@ the eventual PR-1 evidence document.
 entries are labelled **verified live**, **repository-derived**, or
 **requires decision**.
 
+### Task 0 result
+
+Task 0 completed on 2026-08-11. Its redacted inventory and unresolved decision
+gates are recorded in
+[STORAGE_MIGRATION_EVIDENCE.md](STORAGE_MIGRATION_EVIDENCE.md). In particular,
+the existing OCI Block Volume backup path is failing due to quota exhaustion,
+PostgreSQL recovery has not been restore-tested, and no Object Storage trial
+bucket exists.
+
+**Selected Object Storage outcome: no telemetry object store.** Loki's current
+26 GiB local dataset already exceeds the combined 20 GB Always Free allowance,
+before Tempo, PostgreSQL backup capacity, lifecycle headroom, or measured
+compressed growth. Retain bounded telemetry locally. A future Tempo-only pilot
+requires a private trial bucket, least-privilege credentials, and evidence that
+its compressed growth fits a reserved budget. A 30-day Loki or Tempo target
+requires paid Object Storage approval.
+
 ## Iterative delivery backlog
 
 ### PR-1 — Record the evidence and make the design free-tier aware
@@ -119,6 +136,10 @@ The PR must explicitly choose one of these object-storage outcomes:
    20 GB budget does not fit.
 3. **Paid Object Storage approved:** retain the 30-day Loki and Tempo target
    and record a monthly cost guardrail.
+
+**Selected outcome:** **No telemetry object store.** The Tempo pilot and Loki
+object-store work are deferred unless a later capacity decision changes this
+outcome.
 
 ### Window A — Recover safe root-volume headroom
 
