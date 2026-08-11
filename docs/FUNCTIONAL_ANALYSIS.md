@@ -10,7 +10,7 @@ The current architecture includes:
 - **Backend Legacy**: Java Spring Boot (backend) - deprecated
 - **Database**: PostgreSQL with schema `expenses`
 - **Auth**: Keycloak (OAuth2/OIDC)
-- **Observability**: Prometheus, Grafana, Loki, Tempo
+- **Observability**: Prometheus, Grafana, Loki, Tempo. The optional Loki chunks cache is disabled to preserve capacity for core services on the single 12 GiB Kubernetes node.
 - **Deployment**: Kubernetes via ArgoCD GitOps
 
 ## 2. Actors and User Personas

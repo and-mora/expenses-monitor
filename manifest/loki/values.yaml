@@ -17,6 +17,10 @@ loki:
           schema: v13
   singleBinary:
     replicas: 1
+  # The chunks cache is optional. Disable its 8 GiB default allocation so
+  # essential workloads fit on the single 12 GiB node.
+  chunksCache:
+    enabled: false
   read:
     replicas: 0
   backend:
