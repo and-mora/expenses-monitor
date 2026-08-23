@@ -585,7 +585,7 @@
           "displayMode": "table",
           "placement": "right",
           "showLegend": true,
-          "sortBy": "StdDev",
+          "sortBy": "Mean",
           "sortDesc": true
         },
         "tooltip": {
@@ -778,7 +778,7 @@
                 "value": null
               },
               {
-                "color": "red",
+                "color": "orange",
                 "value": 0
               },
               {
@@ -1335,13 +1335,13 @@
     "list": []
   },
   "time": {
-    "from": "now-1y/M",
+    "from": "now-1y",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Andamento generale",
   "uid": "c110264f-054a-407c-952c-e9abab86c9ff",
-  "version": 11,
+  "version": 2,
   "weekStart": ""
 }
